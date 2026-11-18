@@ -1,6 +1,6 @@
 # 直销（加盟）商城
 
-一期工程骨架。门店端微信 H5 + 厂家端 Web 后台 + 单体多模块后端 + 定时任务。
+一期工程。门店端微信 H5 + 厂家端 Web 后台 + 多模块后端 + 定时任务。
 
 业务口径见 [spec.md](.trae/specs/build-direct-mall-phase1/spec.md)，任务拆分见 [tasks.md](.trae/specs/build-direct-mall-phase1/tasks.md)。
 
