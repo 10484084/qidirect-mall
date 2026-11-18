@@ -1,0 +1,27 @@
+# 前端构建镜像：一次性产出门店端 H5、公众号支付 bridge 页与厂家端后台静态资源
+# 产物位置：/out/h5、/out/pay-bridge、/out/admin-web，由 nginx 服务的 volumes 挂载使用。
+FROM node:20-alpine AS build
+
+WORKDIR /build
+
+COPY mall-h5/package.json mall-h5/package-lock.json ./mall-h5/
+COPY mall-admin-web/package.json mall-admin-web/package-lock.json ./mall-admin-web/
+
+RUN cd mall-h5 && npm ci --no-audit --no-fund \
+ && cd ../mall-admin-web && npm ci --no-audit --no-fund
+
+COPY mall-h5 ./mall-h5
+COPY mall-admin-web ./mall-admin-web
+
+# mall-h5 的 build 脚本会依次产出 dist（H5）与 dist/pay-bridge（bridge 页）
+RUN cd mall-h5 && npm run build \
+ && cd ../mall-admin-web && npm run build
+
+FROM alpine:3.20 AS export
+
+WORKDIR /out
+COPY --from=build /build/mall-h5/dist ./h5
+COPY --from=build /build/mall-h5/dist/pay-bridge ./pay-bridge
+COPY --from=build /build/mall-admin-web/dist ./admin-web
+
+CMD ["sh", "-c", "cp -r /out/. /dist/ && echo 'frontend dist exported'"]

@@ -1,0 +1,88 @@
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: mall-api
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:qidirect_mall}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+jwt:
+  secret: ${JWT_SECRET:qidirect-mall-dev-secret-please-change-32chars}
+  expire-days: ${JWT_EXPIRE_DAYS:7}
+
+security:
+  user-type: store
+  aes-key: ${AES_KEY:qidirect-mall-aes-key-32-bytes!!}
+  hash-salt: ${HASH_SALT:qidirect-mall-hash-salt}
+
+invite:
+  base-url: ${INVITE_BASE_URL:https://mall.example.com/register}
+
+storage:
+  type: ${STORAGE_TYPE:local}
+  local-dir: ${STORAGE_LOCAL_DIR:./uploads}
+  public-url: ${STORAGE_PUBLIC_URL:/files}
+  oss:
+    endpoint: ${OSS_ENDPOINT:}
+    bucket: ${OSS_BUCKET:}
+    access-key: ${OSS_ACCESS_KEY:}
+    secret: ${OSS_SECRET:}
+    public-url: ${OSS_PUBLIC_URL:}
+
+sms:
+  provider: ${SMS_PROVIDER:mock}
+
+payment:
+  provider: ${PAYMENT_PROVIDER:mock}
+  compensate-initial-delay-ms: 60000
+  compensate-ms: 60000
+  saobei:
+    api-base: ${SAOBEI_API_BASE:https://pay.lcsw.cn/lcsw/pay}
+    merchant-no: ${SAOBEI_MERCHANT_NO:}
+    terminal-id: ${SAOBEI_TERMINAL_ID:}
+    access-token: ${SAOBEI_ACCESS_TOKEN:}
+    service-id: ${SAOBEI_SERVICE_ID:}
+    notify-url: ${SAOBEI_NOTIFY_URL:https://mall.example.com/api/notify/saobei}
+  wechat:
+    app-id: ${WX_APPID:}
+    secret: ${WX_SECRET:}
+    bridge-url: ${WX_BRIDGE_URL:https://mall.example.com/pay-bridge}
+    authorize-url: ${WX_AUTHORIZE_URL:https://open.weixin.qq.com/connect/oauth2/authorize}
+    token-url: ${WX_TOKEN_URL:https://api.weixin.qq.com/sns/oauth2/access_token}
+
+knife4j:
+  enable: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    com.qidirect.mall: info

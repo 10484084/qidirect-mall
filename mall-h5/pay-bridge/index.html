@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>正在发起支付</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f7f8fa;
+        font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+      .tip {
+        padding: 0 24px;
+        text-align: center;
+        color: #323233;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+      .muted {
+        margin-top: 8px;
+        color: #969799;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tip" id="tip">
+      正在发起支付...
+      <div class="muted">请勿关闭本页面</div>
+    </div>
+    <script>
+      /**
+       * 公众号网页授权回跳页：微信带 code 回到此页，用 code 换取 openid 并调起 JSAPI。
+       * 授权 state 携带 payNo；授权地址由 GET /api/pay/{payNo}/authorize 返回。
+       */
+      (function () {
+        var TOKEN_KEY = 'mall_h5_token';
+        var tip = document.getElementById('tip');
+        var query = new URLSearchParams(window.location.search);
+        var payNo = query.get('state') || '';
+        var code = query.get('code') || '';
+
+        function fail(message) {
+          tip.innerHTML = '';
+          tip.appendChild(document.createTextNode(message || '支付发起失败'));
+          var muted = document.createElement('div');
+          muted.className = 'muted';
+          muted.appendChild(document.createTextNode('请返回重新发起支付'));
+          tip.appendChild(muted);
+        }
+
+        function backToPay() {
+          var target = '/h5/#/pay/' + encodeURIComponent(payNo);
+          var amount = query.get('amount');
+          if (amount) target += '?amount=' + encodeURIComponent(amount);
+          window.location.replace(target);
+        }
+
+        function invoke(payParams) {
+          if (!payParams || !payParams.package) return false;
+          if (typeof window.WeixinJSBridge === 'undefined') return false;
+          window.WeixinJSBridge.invoke('getBrandWCPayRequest', payParams, function () {
+            backToPay();
+          });
+          return true;
+        }
+
+        if (!payNo) {
+          fail('缺少支付单号');
+          return;
+        }
+        if (!code) {
+          fail('微信授权失败');
+          return;
+        }
+        var token = localStorage.getItem(TOKEN_KEY) || '';
+        if (!token) {
+          fail('登录已过期，请重新登录后再支付');
+          return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/pay/' + encodeURIComponent(payNo) + '/jsapi');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.onload = function () {
+          var body;
+          try {
+            body = JSON.parse(xhr.responseText);
+          } catch (e) {
+            fail('支付发起失败');
+            return;
+          }
+          if (!body || body.code !== 0 || !body.data) {
+            fail((body && body.msg) || '支付发起失败');
+            return;
+          }
+          var data = body.data;
+          if (data.paid) {
+            backToPay();
+            return;
+          }
+          if (data.payUrl) {
+            window.location.replace(data.payUrl);
+            return;
+          }
+          if (invoke(data.payParams)) return;
+          fail('请在微信中打开以完成支付');
+        };
+        xhr.onerror = function () {
+          fail('网络异常，请重试');
+        };
+        xhr.send(JSON.stringify({ code: code }));
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: mall-job
+  main:
+    web-application-type: none
+  profiles:
+    active: job
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:qidirect_mall}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 5000
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+jwt:
+  secret: ${JWT_SECRET:qidirect-mall-dev-secret-please-change-32chars}
+  expire-days: ${JWT_EXPIRE_DAYS:7}
+
+security:
+  user-type: store
+  aes-key: ${AES_KEY:qidirect-mall-aes-key-32-bytes!!}
+  hash-salt: ${HASH_SALT:qidirect-mall-hash-salt}
+
+invite:
+  base-url: ${INVITE_BASE_URL:https://mall.example.com/register}
+
+storage:
+  type: ${STORAGE_TYPE:local}
+  local-dir: ${STORAGE_LOCAL_DIR:./uploads}
+  public-url: ${STORAGE_PUBLIC_URL:/files}
+  oss:
+    endpoint: ${OSS_ENDPOINT:}
+    bucket: ${OSS_BUCKET:}
+    access-key: ${OSS_ACCESS_KEY:}
+    secret: ${OSS_SECRET:}
+    public-url: ${OSS_PUBLIC_URL:}
+
+sms:
+  provider: ${SMS_PROVIDER:mock}
+
+payment:
+  provider: ${PAYMENT_PROVIDER:mock}
+  compensate-initial-delay-ms: 60000
+  compensate-ms: 60000
+  saobei:
+    api-base: ${SAOBEI_API_BASE:https://pay.lcsw.cn/lcsw/pay}
+    merchant-no: ${SAOBEI_MERCHANT_NO:}
+    terminal-id: ${SAOBEI_TERMINAL_ID:}
+    access-token: ${SAOBEI_ACCESS_TOKEN:}
+    service-id: ${SAOBEI_SERVICE_ID:}
+    notify-url: ${SAOBEI_NOTIFY_URL:https://mall.example.com/api/notify/saobei}
+
+order:
+  timeout-scan-initial-delay-ms: 30000
+  timeout-scan-ms: 60000
+
+performance:
+  # 每月 1 日 01:30 结算上月业绩
+  settle-cron: ${PERFORMANCE_SETTLE_CRON:0 30 1 1 * *}
+
+withdraw:
+  # 每日 00:05 计算提现窗口（今日是否开放、下次开放日）
+  window-cron: ${WITHDRAW_WINDOW_CRON:0 5 0 * * *}
+  # 每日 09:00 检查超 7 天未打款批次
+  batch-alert-cron: ${WITHDRAW_BATCH_ALERT_CRON:0 0 9 * * *}
+
+reconcile:
+  # 每日 02:30 对账：预存、佣金、冻结三条断言
+  cron: ${RECONCILE_CRON:0 30 2 * * *}
+
+logging:
+  level:
+    com.qidirect.mall: info
