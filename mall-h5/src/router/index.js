@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import { getToken } from '../utils/token';
-import { hasBypass, isMobileWechat } from '../utils/wechat';
 
 const routes = [
   { path: '/guide', name: 'guide', component: () => import('../views/GuideView.vue'), meta: { public: true } },
@@ -35,9 +34,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  if (to.name !== 'guide' && !isMobileWechat() && !hasBypass()) {
-    return { name: 'guide', query: { redirect: to.fullPath } };
-  }
   if (!to.meta.public && !getToken()) {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
