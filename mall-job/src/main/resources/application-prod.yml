@@ -1,0 +1,29 @@
+# ===== 生产环境配置（mall-job，定时任务）=====
+# 中间件部署在同一台服务器（docker compose 网络，服务名即主机名）
+# 注意：需与 job profile 共同激活（SPRING_PROFILES_ACTIVE=job,prod）
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:qidirect_mall}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: 0
+
+storage:
+  type: local
+  local-dir: ${STORAGE_LOCAL_DIR:/app/uploads}
+
+sms:
+  provider: ${SMS_PROVIDER:mock}
+
+payment:
+  provider: ${PAYMENT_PROVIDER:mock}
+
+logging:
+  level:
+    root: warn
+    com.qidirect.mall: info

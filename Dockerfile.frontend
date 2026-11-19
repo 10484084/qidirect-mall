@@ -7,8 +7,8 @@ WORKDIR /build
 COPY mall-h5/package.json mall-h5/package-lock.json ./mall-h5/
 COPY mall-admin-web/package.json mall-admin-web/package-lock.json ./mall-admin-web/
 
-RUN cd mall-h5 && npm ci --no-audit --no-fund \
- && cd ../mall-admin-web && npm ci --no-audit --no-fund
+RUN cd mall-h5 && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com \
+ && cd ../mall-admin-web && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com
 
 COPY mall-h5 ./mall-h5
 COPY mall-admin-web ./mall-admin-web

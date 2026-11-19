@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { resolve } from 'node:path';
 
 const apiTarget = process.env.VITE_ADMIN_API_TARGET || 'http://127.0.0.1:8080';
 
@@ -25,6 +26,12 @@ const rewriteAdminWeb = () => {
 export default defineConfig({
   base: '/admin-web/',
   plugins: [vue(), rewriteAdminWeb()],
+  resolve: {
+    alias: {
+      // 绕开 rollup 4.68 解析 @vue/devtools-api 的 bug，生产构建不需要 devtools
+      '@vue/devtools-api': resolve(__dirname, 'devtools-stub.mjs')
+    }
+  },
   server: {
     port: 5174,
     proxy: {

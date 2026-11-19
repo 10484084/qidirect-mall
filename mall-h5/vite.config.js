@@ -9,6 +9,12 @@ export default defineConfig({
   // bridge 页脚本全部内联，产物只有一份 html，无需静态资源基址。
   base: '/h5/',
   plugins: [vue()],
+  resolve: {
+    alias: {
+      // 绕开 rollup 4.68 解析 @vue/devtools-api 的 bug，生产构建不需要 devtools
+      '@vue/devtools-api': resolve(__dirname, 'devtools-stub.mjs')
+    }
+  },
   build: {
     outDir: process.env.BUILD_BRIDGE === '1' ? 'dist/pay-bridge' : 'dist',
     emptyOutDir: process.env.BUILD_BRIDGE !== '1',
