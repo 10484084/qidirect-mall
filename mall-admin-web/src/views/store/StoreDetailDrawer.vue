@@ -35,6 +35,9 @@ const parentFormRef = ref();
 const phoneVisible = ref(false);
 const phoneForm = reactive({ phone: '' });
 
+const pwdVisible = ref(false);
+const pwdForm = reactive({ password: '' });
+
 const freezeVisible = ref(false);
 const freezeForm = reactive({ reason: '' });
 
@@ -119,6 +122,17 @@ async function submitPhone() {
   detail.value = await storeApi.detail(storeId.value);
 }
 
+async function submitPwd() {
+  if (!/^.{6,32}$/.test(pwdForm.password)) {
+    ElMessage.warning('密码长度需在 6-32 位之间');
+    return;
+  }
+  await storeApi.resetPassword(storeId.value, pwdForm.password);
+  ElMessage.success('登录密码已设置');
+  pwdVisible.value = false;
+  pwdForm.password = '';
+}
+
 async function toggleFreeze() {
   const freezing = profile.value.status === 1;
   if (freezing) {
@@ -148,6 +162,7 @@ defineExpose({ open });
         <div class="actions">
           <el-button type="primary" plain @click="showQr">邀请二维码</el-button>
           <el-button @click="phoneVisible = true">重置手机号</el-button>
+          <el-button @click="pwdVisible = true">设置登录密码</el-button>
           <el-button @click="openBank">收款卡特批</el-button>
           <el-button @click="openParent">改上级</el-button>
           <el-button :type="profile.status === 1 ? 'danger' : 'success'" plain @click="toggleFreeze">
@@ -355,6 +370,31 @@ defineExpose({ open });
       <template #footer>
         <el-button @click="phoneVisible = false">取消</el-button>
         <el-button type="primary" @click="submitPhone">确认</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="pwdVisible" title="设置登录密码" width="400px" append-to-body>
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        title="门店端使用「用户名 + 密码」登录，用户名默认为手机号"
+        style="margin-bottom: 12px"
+      />
+      <el-form label-width="80px">
+        <el-form-item label="登录密码">
+          <el-input
+            v-model="pwdForm.password"
+            type="password"
+            show-password
+            maxlength="32"
+            placeholder="6-32 位"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="pwdVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPwd">确认</el-button>
       </template>
     </el-dialog>
 

@@ -12,6 +12,7 @@ import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.domain.dto.admin.AdminParentChangeRequest;
 import com.qidirect.mall.domain.dto.admin.AdminResetPhoneRequest;
+import com.qidirect.mall.domain.dto.admin.AdminResetPwdRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreCreateRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreStatusRequest;
 import com.qidirect.mall.domain.dto.admin.BankOverrideRequest;
@@ -37,6 +38,7 @@ import com.qidirect.mall.infra.mapper.WalletMapper;
 import com.qidirect.mall.infra.security.SecurityUtils;
 import com.qidirect.mall.infra.util.DataCipher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +74,7 @@ public class AdminStoreService {
     private final WalletService walletService;
     private final DataCipher dataCipher;
     private final StorePathCache storePathCache;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 门店列表，支持关键字、档位、状态、实名状态、重复人员与上级筛选。
@@ -239,6 +242,22 @@ public class AdminStoreService {
                 .set("oldPhone", oldPhone)
                 .set("newPhone", phone)
                 .toString());
+    }
+
+    /**
+     * 设置/重置门店登录密码（BCrypt）。username 为空时回填为手机号。
+     */
+    @Transactional
+    public void resetPassword(Long storeId, AdminResetPwdRequest request) {
+        Store store = storeGuard.requireStore(storeId);
+        Store patch = new Store();
+        patch.setId(storeId);
+        if (StrUtil.isBlank(store.getUsername())) {
+            patch.setUsername(store.getPhone());
+        }
+        patch.setPassword(passwordEncoder.encode(request.password().trim()));
+        storeMapper.updateById(patch);
+        logOperation(SecurityUtils.currentUserId(), "STORE_RESET_PASSWORD", storeId, "{}");
     }
 
     /**

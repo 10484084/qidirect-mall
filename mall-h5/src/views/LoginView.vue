@@ -7,54 +7,29 @@
     </div>
 
     <div class="card form-card">
-      <van-tabs v-model:active="mode" shrink>
-        <van-tab title="登录" name="login" />
-        <van-tab title="注册" name="register" />
-      </van-tabs>
-
       <van-form @submit="onSubmit">
         <van-cell-group inset class="form-group">
           <van-field
-            v-model="form.phone"
-            type="tel"
-            maxlength="11"
-            label="手机号"
-            placeholder="请输入手机号"
-            :rules="[{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确' }]"
+            v-model="form.username"
+            label="用户名"
+            maxlength="32"
+            clearable
+            placeholder="请输入用户名（默认为手机号）"
+            :rules="[{ required: true, message: '请输入用户名' }]"
           />
           <van-field
-            v-model="form.code"
-            type="digit"
-            maxlength="6"
-            label="验证码"
-            placeholder="请输入 6 位验证码"
-            :rules="[{ pattern: /^\d{6}$/, message: '验证码为 6 位数字' }]"
-          >
-            <template #button>
-              <van-button size="small" type="primary" plain :disabled="counting > 0" @click="sendCode">
-                {{ counting > 0 ? `${counting}s` : '获取验证码' }}
-              </van-button>
-            </template>
-          </van-field>
-          <van-field
-            v-if="mode === 'register'"
-            v-model="form.inviteCode"
-            label="邀请码"
-            maxlength="16"
-            placeholder="选填，填写后将绑定上级"
-          />
-          <van-field
-            v-if="mode === 'register'"
-            v-model="form.nickname"
-            label="昵称"
+            v-model="form.password"
+            type="password"
+            label="密码"
             maxlength="64"
-            placeholder="选填，默认使用手机号"
+            placeholder="请输入密码"
+            :rules="[{ required: true, message: '请输入密码' }]"
           />
         </van-cell-group>
 
         <div class="submit-box">
           <van-button type="primary" block round native-type="submit" :loading="submitting">
-            {{ mode === 'login' ? '登录' : '注册并登录' }}
+            登录
           </van-button>
         </div>
       </van-form>
@@ -67,61 +42,25 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from 'vant';
-import { authApi } from '../api';
 import { useUserStore } from '../stores/user';
 
 const route = useRoute();
 const router = useRouter();
 const user = useUserStore();
 
-const mode = ref(route.name === 'register' || route.query.mode === 'register' ? 'register' : 'login');
 const form = reactive({
-  phone: '',
-  code: '',
-  inviteCode: (route.query.inviteCode || route.query.code || '').toString(),
-  nickname: ''
+  username: '',
+  password: ''
 });
-const counting = ref(0);
 const submitting = ref(false);
-let timer = null;
-
-async function sendCode() {
-  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
-    showToast('请先输入正确的手机号');
-    return;
-  }
-  try {
-    await authApi.sendSms(form.phone);
-    showToast('验证码已发送');
-    counting.value = 60;
-    timer = setInterval(() => {
-      counting.value -= 1;
-      if (counting.value <= 0) {
-        clearInterval(timer);
-        timer = null;
-      }
-    }, 1000);
-  } catch (e) {
-    // 错误已由请求层提示
-  }
-}
 
 async function onSubmit() {
   submitting.value = true;
   try {
-    if (mode.value === 'login') {
-      await user.login({ phone: form.phone, code: form.code });
-    } else {
-      await user.register({
-        phone: form.phone,
-        code: form.code,
-        inviteCode: form.inviteCode || undefined,
-        nickname: form.nickname || undefined
-      });
-    }
+    await user.login({ username: form.username, password: form.password });
     showToast('登录成功');
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     router.replace(redirect.startsWith('/login') ? '/' : redirect);
@@ -131,10 +70,6 @@ async function onSubmit() {
     submitting.value = false;
   }
 }
-
-onBeforeUnmount(() => {
-  if (timer) clearInterval(timer);
-});
 </script>
 
 <style scoped>
@@ -167,11 +102,11 @@ onBeforeUnmount(() => {
 }
 
 .form-card {
-  padding: 6px 0 14px;
+  padding: 20px 0 14px;
 }
 
 .form-group {
-  margin: 12px 12px 0;
+  margin: 0 12px;
 }
 
 .submit-box {

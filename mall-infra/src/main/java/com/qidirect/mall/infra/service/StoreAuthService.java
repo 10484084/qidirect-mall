@@ -8,6 +8,7 @@ import com.qidirect.mall.common.enums.UserType;
 import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.common.util.JwtUtil;
+import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
 import com.qidirect.mall.domain.entity.Store;
@@ -16,6 +17,7 @@ import com.qidirect.mall.domain.vo.StoreLoginVO;
 import com.qidirect.mall.infra.mapper.StoreMapper;
 import com.qidirect.mall.infra.mapper.WalletMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,7 @@ public class StoreAuthService {
     private final SmsCodeService smsCodeService;
     private final JwtUtil jwtUtil;
     private final StorePathCache storePathCache;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public StoreLoginVO register(RegisterRequest request) {
@@ -54,6 +57,8 @@ public class StoreAuthService {
         store.setLevelPaidAmount(0L);
         store.setName("");
         store.setPhone(phone);
+        store.setUsername(phone);
+        store.setPassword(null);
         store.setNickname(StrUtil.isBlank(request.nickname())
                 ? "门店" + phone.substring(phone.length() - 4)
                 : request.nickname().trim());
@@ -110,6 +115,24 @@ public class StoreAuthService {
             throw new BizException(ErrorCode.STORE_FROZEN);
         }
         smsCodeService.verify(phone, request.code());
+        return toLoginVO(store);
+    }
+
+    /**
+     * 用户名 + 密码登录。username 默认为手机号；password 为 BCrypt 密文，
+     * 未设置密码（NULL）时不可登录，需由后台「设置登录密码」开启。
+     */
+    public StoreLoginVO loginByUsername(PwdLoginRequest request) {
+        String username = request.username().trim();
+        Store store = storeMapper.selectOne(
+                Wrappers.<Store>lambdaQuery().eq(Store::getUsername, username));
+        if (store == null || store.getPassword() == null
+                || !passwordEncoder.matches(request.password(), store.getPassword())) {
+            throw new BizException(ErrorCode.LOGIN_FAILED);
+        }
+        if (store.getStatus() != null && store.getStatus() == 2) {
+            throw new BizException(ErrorCode.STORE_FROZEN);
+        }
         return toLoginVO(store);
     }
 

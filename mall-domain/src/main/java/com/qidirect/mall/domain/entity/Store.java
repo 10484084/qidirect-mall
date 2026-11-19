@@ -36,6 +36,12 @@ public class Store {
 
     private String phone;
 
+    /** 登录用户名，默认取手机号 */
+    private String username;
+
+    /** BCrypt 密文，NULL=未设置（不可用密码登录） */
+    private String password;
+
     private String nickname;
 
     private String avatar;

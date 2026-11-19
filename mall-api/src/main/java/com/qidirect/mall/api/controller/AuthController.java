@@ -1,6 +1,7 @@
 package com.qidirect.mall.api.controller;
 
 import com.qidirect.mall.common.api.ApiResponse;
+import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
 import com.qidirect.mall.domain.dto.auth.SmsSendRequest;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 门店端认证：短信验证码、注册、登录。
+ * 门店端认证：用户名密码登录（主）、短信验证码、注册。
  */
 @RestController
 @RequestMapping("/auth")
@@ -39,5 +40,10 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<StoreLoginVO> login(@Valid @RequestBody SmsLoginRequest request) {
         return ApiResponse.ok(storeAuthService.login(request));
+    }
+
+    @PostMapping("/pwd-login")
+    public ApiResponse<StoreLoginVO> pwdLogin(@Valid @RequestBody PwdLoginRequest request) {
+        return ApiResponse.ok(storeAuthService.loginByUsername(request));
     }
 }

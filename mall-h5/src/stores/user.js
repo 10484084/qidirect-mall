@@ -21,7 +21,8 @@ export const useUserStore = defineStore('user', {
       this.eligibility = null;
     },
     async login(payload) {
-      const data = await authApi.login(payload);
+      // 用户名密码登录（username 默认为手机号，由后台设置密码）
+      const data = await authApi.pwdLogin(payload);
       this.applyLogin(data);
       await this.loadProfile();
       return data;

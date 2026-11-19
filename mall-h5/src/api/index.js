@@ -1,6 +1,7 @@
 import { del, get, post, put } from './request';
 
 export const authApi = {
+  pwdLogin: (data) => post('/auth/pwd-login', data),
   sendSms: (phone) => post('/auth/sms', { phone }),
   register: (data) => post('/auth/register', data),
   login: (data) => post('/auth/login', data)

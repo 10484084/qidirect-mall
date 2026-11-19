@@ -5,7 +5,8 @@ import { hasBypass, isMobileWechat } from '../utils/wechat';
 const routes = [
   { path: '/guide', name: 'guide', component: () => import('../views/GuideView.vue'), meta: { public: true } },
   { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { public: true } },
-  { path: '/register', name: 'register', component: () => import('../views/LoginView.vue'), meta: { public: true } },
+  // 注册入口已隐藏：邀请注册由后台/线下完成，路由保留兜底重定向
+  { path: '/register', redirect: '/login' },
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { tab: true } },
   { path: '/products', name: 'products', component: () => import('../views/ProductsView.vue'), meta: { tab: true } },
   { path: '/products/:id', name: 'product-detail', component: () => import('../views/ProductDetailView.vue') },

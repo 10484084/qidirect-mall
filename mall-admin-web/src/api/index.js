@@ -14,6 +14,7 @@ export const storeApi = {
   detail: (id) => get(`/stores/${id}`),
   create: (data) => post('/stores', data),
   resetPhone: (id, phone) => post(`/stores/${id}/reset-phone`, { phone }),
+  resetPassword: (id, password) => post(`/stores/${id}/reset-password`, { password }),
   freeze: (id, reason) => post(`/stores/${id}/freeze`, { reason }),
   unfreeze: (id, reason) => post(`/stores/${id}/unfreeze`, { reason }),
   inviteQr: (id) => get(`/stores/${id}/invite-qr`),
