@@ -39,6 +39,8 @@ services:
   nginx:
     image: nginx:1.27-alpine
     restart: always
+    environment:
+      TZ: Asia/Shanghai
     ports:
       - "80:80"
       - "443:443"
