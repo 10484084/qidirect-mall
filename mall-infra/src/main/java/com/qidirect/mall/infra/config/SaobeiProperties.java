@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "payment.saobei")
 public class SaobeiProperties {
 
-    /** 网关根地址，不含具体接口路径 */
-    private String apiBase = "https://pay.lcsw.cn/lcsw/pay";
+    /** 网关根地址，不含具体接口路径（完整 URL 形如 {apiBase}/pay/open/qrpay） */
+    private String apiBase = "https://pay.lcsw.cn/lcsw";
 
     private String merchantNo = "";
 

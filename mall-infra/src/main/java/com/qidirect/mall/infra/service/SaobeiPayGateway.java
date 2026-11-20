@@ -2,6 +2,7 @@ package com.qidirect.mall.infra.service;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -21,10 +22,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
- * 扫呗支付网关：4.3 公众号 JSAPI、4.5 查单、4.8 关单、4.10 回调验签。
+ * 扫呗支付网关（普通支付 2.0，pay.lcsw.cn）：
+ * 4.11 聚合码下单、4.3 公众号 JSAPI、4.5 查单、4.8 关单、4.10 回调验签。
+ * 通信协议 application/json；签名 = 字典序参数 + "&access_token=终端令牌" 后 MD5 小写。
  * 所有方法均执行外部 HTTP 请求，调用方必须在数据库事务之外调用。
  */
 @Slf4j
@@ -37,14 +41,25 @@ public class SaobeiPayGateway implements PaymentGateway {
     private static final String TRADE_SUCCESS = "SUCCESS";
     private static final int TIMEOUT_MS = 10_000;
     private static final DateTimeFormatter TERMINAL_TIME = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-    private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    /** 4.11 聚合码下单，pay_ver 202 */
+    private static final String SERVICE_QRPAY = "016";
+    /** 4.3 公众号下单，pay_ver 202 */
+    private static final String SERVICE_JSAPI = "012";
+    /** 4.5 查单，pay_ver 202 */
+    private static final String SERVICE_QUERY = "020";
+    /** 4.8 关单，pay_ver 201（注意与其它接口不同） */
+    private static final String SERVICE_CLOSE = "041";
+    private static final String VER_CURRENT = "202";
+    private static final String VER_CLOSE = "201";
 
     private final SaobeiProperties properties;
 
     @Override
     public JsapiResult jsapi(Payment payment, String openId) {
         requireConfigured();
-        Map<String, String> params = baseParams(payment);
+        Map<String, String> params = requestBase(VER_CURRENT, properties.getPayType(), SERVICE_JSAPI,
+                payment.getPayNo(), terminalTime(payment));
         params.put("open_id", openId);
         params.put("notify_url", properties.getNotifyUrl());
         params.put("total_fee", String.valueOf(payment.getAmount()));
@@ -62,9 +77,8 @@ public class SaobeiPayGateway implements PaymentGateway {
     @Override
     public String cashierUrl(Payment payment) {
         requireConfigured();
-        Map<String, String> params = baseParams(payment);
-        params.put("pay_type", "000");
-        params.put("service_id", "016");
+        Map<String, String> params = requestBase(VER_CURRENT, "000", SERVICE_QRPAY,
+                payment.getPayNo(), terminalTime(payment));
         params.put("total_fee", String.valueOf(payment.getAmount()));
         params.put("auto_pay", "1");
         params.put("repeated_trace", "3");
@@ -88,7 +102,16 @@ public class SaobeiPayGateway implements PaymentGateway {
     @Override
     public void close(Payment payment) {
         requireConfigured();
-        Map<String, String> response = post(properties.getClosePath(), baseParams(payment));
+        // 4.8：terminal_trace/time 是本次关单请求自己的新流水号与实时时间；目标订单走 out_trade_no 或 pay_trace+pay_time
+        Map<String, String> params = requestBase(VER_CLOSE, "000", SERVICE_CLOSE,
+                newTrace(), LocalDateTime.now());
+        if (StrUtil.isNotBlank(payment.getOutTradeNo())) {
+            params.put("out_trade_no", payment.getOutTradeNo());
+        } else {
+            params.put("pay_trace", payment.getPayNo());
+            params.put("pay_time", TERMINAL_TIME.format(terminalTime(payment)));
+        }
+        Map<String, String> response = post(properties.getClosePath(), params);
         if (!SUCCESS.equals(response.get("return_code"))) {
             throw new BizException(ErrorCode.PAY_FAILED.getCode(), message(response, "支付关单失败"));
         }
@@ -101,17 +124,32 @@ public class SaobeiPayGateway implements PaymentGateway {
     @Override
     public PaymentQueryResult query(Payment payment) {
         requireConfigured();
-        Map<String, String> response = post(properties.getQueryPath(), baseParams(payment));
+        // 4.5：terminal_trace/time 为本次查询请求的新流水号；查询目标 = out_trade_no 或 pay_trace+pay_time（下单时的原值）
+        Map<String, String> params = requestBase(VER_CURRENT, "000", SERVICE_QUERY,
+                newTrace(), LocalDateTime.now());
+        if (StrUtil.isNotBlank(payment.getOutTradeNo())) {
+            params.put("out_trade_no", payment.getOutTradeNo());
+        } else {
+            params.put("pay_trace", payment.getPayNo());
+            params.put("pay_time", TERMINAL_TIME.format(terminalTime(payment)));
+        }
+        Map<String, String> response = post(properties.getQueryPath(), params);
         if (!SUCCESS.equals(response.get("return_code"))) {
+            // 聚合码 auto_pay 下单后用户未扫码时订单尚未生成，扫呗返回"订单信息不存在"，属正常未支付状态
+            String msg = StrUtil.nullToEmpty(response.get("return_msg"));
+            if (msg.contains("订单信息不存在")) {
+                return new PaymentQueryResult(false, "", null);
+            }
             throw new BizException(ErrorCode.PAY_FAILED.getCode(), message(response, "支付查单失败"));
         }
         if (!SUCCESS.equals(response.get("result_code"))) {
-            log.info("扫呗查单未命中：payNo={} response={}", payment.getPayNo(), response);
+            // result_code=02 失败（无需继续查询）、03 支付中：均视为未支付
+            log.info("扫呗查单未命中：payNo={} msg={}", payment.getPayNo(), response.get("return_msg"));
             return new PaymentQueryResult(false, "", null);
         }
         boolean paid = TRADE_SUCCESS.equalsIgnoreCase(StrUtil.nullToEmpty(response.get("trade_state")));
         return new PaymentQueryResult(paid, StrUtil.nullToEmpty(response.get("out_trade_no")),
-                parsePaidAt(response.get("pay_time")));
+                parsePaidAt(StrUtil.blankToDefault(response.get("end_time"), response.get("pay_time"))));
     }
 
     @Override
@@ -124,7 +162,8 @@ public class SaobeiPayGateway implements PaymentGateway {
     }
 
     /**
-     * 扫呗签名：参数按名升序拼接 k=v&...，追加密钥后取 MD5 小写。
+     * 扫呗签名：参数按名升序拼接 k=v&...，末尾追加 &access_token=终端令牌 后取 MD5 小写。
+     * 空值不参与签名（本方请求不传空值；回调报文空值由扫呗侧同规则处理）。
      */
     static String sign(Map<String, String> params, String accessToken) {
         String content = params.entrySet().stream()
@@ -133,24 +172,35 @@ public class SaobeiPayGateway implements PaymentGateway {
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
-        return DigestUtil.md5Hex(content + "&key=" + StrUtil.nullToEmpty(accessToken));
+        return DigestUtil.md5Hex(content + "&access_token=" + StrUtil.nullToEmpty(accessToken));
     }
 
-    private Map<String, String> baseParams(Payment payment) {
+    /**
+     * 请求公共参数：pay_ver / pay_type / service_id / 商户终端号 / 本次请求流水号与时间。
+     */
+    private Map<String, String> requestBase(String payVer, String payType, String serviceId,
+                                            String terminalTrace, LocalDateTime terminalTime) {
         Map<String, String> params = new LinkedHashMap<>();
-        params.put("pay_ver", properties.getPayVer());
-        params.put("pay_type", properties.getPayType());
-        if (StrUtil.isNotBlank(properties.getServiceId())) {
-            params.put("service_id", properties.getServiceId());
-        }
+        params.put("pay_ver", payVer);
+        params.put("pay_type", payType);
+        params.put("service_id", serviceId);
         params.put("merchant_no", properties.getMerchantNo());
         params.put("terminal_id", properties.getTerminalId());
-        params.put("terminal_trace", payment.getPayNo());
-        // 终端交易时间取支付单创建时间：查单(4.5 方式二)/关单(4.8)必须用下单时的原值才能命中订单
-        params.put("terminal_time", TERMINAL_TIME.format(terminalTime(payment)));
+        params.put("terminal_trace", terminalTrace);
+        params.put("terminal_time", TERMINAL_TIME.format(terminalTime));
         return params;
     }
 
+    /**
+     * 查单/关单请求流水号：每次请求新生成（6-32 位）。
+     */
+    private String newTrace() {
+        return "Q" + System.currentTimeMillis() + ThreadLocalRandom.current().nextInt(100, 999);
+    }
+
+    /**
+     * 下单时间：取支付单创建时间，保证查单方式二（pay_trace+pay_time）/关单命中原订单。
+     */
     private LocalDateTime terminalTime(Payment payment) {
         return payment.getCreatedAt() == null ? LocalDateTime.now() : payment.getCreatedAt();
     }
@@ -159,25 +209,29 @@ public class SaobeiPayGateway implements PaymentGateway {
      * 订单描述：去除扫呗禁止的特殊符号（+ 空格 / ? % # & = 【），超长截断。
      */
     private String sanitizeOrderBody(Payment payment) {
-        String body = "订单支付 " + payment.getPayNo();
+        String body = "订单支付-" + payment.getPayNo();
         return body.replaceAll("[+ /?%#&=【]", "-");
     }
 
     private Map<String, String> post(String path, Map<String, String> params) {
         params.put("key_sign", sign(params, properties.getAccessToken()));
         String url = StrUtil.removeSuffix(properties.getApiBase(), "/") + path;
-        Map<String, Object> form = new LinkedHashMap<>();
-        params.forEach(form::put);
+        // 扫呗 2.0 通信协议为 application/json，表单提交返回 415
         String body;
         try {
-            body = HttpRequest.post(url).form(form).timeout(TIMEOUT_MS).execute().body();
+            body = HttpRequest.post(url)
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .body(JSONUtil.toJsonStr(params))
+                    .timeout(TIMEOUT_MS)
+                    .execute()
+                    .body();
         } catch (Exception e) {
-            log.error("扫呗请求异常：url={} payNo={} error={}", url, params.get("terminal_trace"), e.toString());
+            log.error("扫呗请求异常：url={} payNo={} error={}", url, params.get("pay_trace"), e.toString());
             throw new BizException(ErrorCode.PAY_FAILED.getCode(), "支付网关连接失败");
         }
         Map<String, String> response = parseBody(body);
         if (response.isEmpty()) {
-            log.error("扫呗响应无法解析：url={} payNo={} body={}", url, params.get("terminal_trace"), body);
+            log.error("扫呗响应无法解析：url={} trace={} body={}", url, params.get("terminal_trace"), body);
             throw new BizException(ErrorCode.PAY_FAILED.getCode(), "支付网关响应异常");
         }
         return response;
@@ -239,7 +293,8 @@ public class SaobeiPayGateway implements PaymentGateway {
         if (StrUtil.isBlank(value)) {
             return null;
         }
-        for (DateTimeFormatter formatter : List.of(TERMINAL_TIME, DATE_TIME)) {
+        for (DateTimeFormatter formatter : List.of(TERMINAL_TIME,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) {
             try {
                 return LocalDateTime.parse(value, formatter);
             } catch (Exception ignored) {

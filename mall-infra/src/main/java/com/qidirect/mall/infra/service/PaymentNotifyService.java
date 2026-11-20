@@ -23,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentNotifyService {
 
-    private static final String TRADE_SUCCESS = "SUCCESS";
+    private static final String SUCCESS = "01";
     private static final DateTimeFormatter TERMINAL_TIME = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -50,12 +50,15 @@ public class PaymentNotifyService {
             log.warn("支付回调缺少支付单号：{}", rawBody);
             return;
         }
-        if (!TRADE_SUCCESS.equalsIgnoreCase(StrUtil.nullToEmpty(params.get("trade_state")))) {
+        // 4.10 回调仅在支付成功时推送（无 trade_state 字段），以 return_code/result_code=01 判定
+        if (!SUCCESS.equals(params.get("return_code")) || !SUCCESS.equals(params.get("result_code"))) {
+            log.warn("支付回调非成功状态，忽略：payNo={} body={}", payNo, rawBody);
             markHandled(notifyLog.getId());
             return;
         }
         paymentService.handlePaidNotify(payNo, parseAmount(params.get("total_fee")),
-                params.get("out_trade_no"), parsePaidAt(params.get("pay_time")));
+                params.get("out_trade_no"), parsePaidAt(StrUtil.blankToDefault(
+                        params.get("end_time"), params.get("pay_time"))));
         markHandled(notifyLog.getId());
     }
 
