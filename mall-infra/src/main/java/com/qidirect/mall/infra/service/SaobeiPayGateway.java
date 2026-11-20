@@ -54,6 +54,37 @@ public class SaobeiPayGateway implements PaymentGateway {
                 extractPayParams(response), StrUtil.nullToEmpty(response.get("out_trade_no")));
     }
 
+    /**
+     * 4.11 聚合码下单：pay_type=000 自动识别微信/支付宝，auto_pay=1 扫码直接拉起支付，
+     * repeated_trace=3 同一流水号+时间只允许成功一次（失败可重试）。
+     * 返回收银台链接 qr_url，由调用方在微信/支付宝内直接打开。
+     */
+    @Override
+    public String cashierUrl(Payment payment) {
+        requireConfigured();
+        Map<String, String> params = baseParams(payment);
+        params.put("pay_type", "000");
+        params.put("service_id", "016");
+        params.put("total_fee", String.valueOf(payment.getAmount()));
+        params.put("auto_pay", "1");
+        params.put("repeated_trace", "3");
+        if (StrUtil.isNotBlank(properties.getNotifyUrl())) {
+            params.put("notify_url", properties.getNotifyUrl());
+        }
+        String body = sanitizeOrderBody(payment);
+        if (StrUtil.isNotBlank(body)) {
+            params.put("order_body", body);
+        }
+        Map<String, String> response = post(properties.getQrpayPath(), params);
+        requireSuccess(response, "聚合收银台下单");
+        String qrUrl = response.get("qr_url");
+        if (StrUtil.isBlank(qrUrl)) {
+            log.error("扫呗聚合码未返回收银台链接：payNo={} response={}", payment.getPayNo(), response);
+            throw new BizException(ErrorCode.PAY_FAILED.getCode(), "支付收银台生成失败");
+        }
+        return qrUrl;
+    }
+
     @Override
     public void close(Payment payment) {
         requireConfigured();
@@ -115,8 +146,21 @@ public class SaobeiPayGateway implements PaymentGateway {
         params.put("merchant_no", properties.getMerchantNo());
         params.put("terminal_id", properties.getTerminalId());
         params.put("terminal_trace", payment.getPayNo());
-        params.put("terminal_time", LocalDateTime.now().format(TERMINAL_TIME));
+        // 终端交易时间取支付单创建时间：查单(4.5 方式二)/关单(4.8)必须用下单时的原值才能命中订单
+        params.put("terminal_time", TERMINAL_TIME.format(terminalTime(payment)));
         return params;
+    }
+
+    private LocalDateTime terminalTime(Payment payment) {
+        return payment.getCreatedAt() == null ? LocalDateTime.now() : payment.getCreatedAt();
+    }
+
+    /**
+     * 订单描述：去除扫呗禁止的特殊符号（+ 空格 / ? % # & = 【），超长截断。
+     */
+    private String sanitizeOrderBody(Payment payment) {
+        String body = "订单支付 " + payment.getPayNo();
+        return body.replaceAll("[+ /?%#&=【]", "-");
     }
 
     private Map<String, String> post(String path, Map<String, String> params) {

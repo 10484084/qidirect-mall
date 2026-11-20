@@ -47,7 +47,8 @@ public class PaymentService {
     private String paymentProvider;
 
     /**
-     * 获取支付调起信息：mock 模式返回模拟支付地址，真实模式返回公众号授权地址。
+     * 获取支付调起信息：mock 模式返回模拟支付地址，扫呗模式返回 4.11 聚合码收银台链接
+     * （微信/支付宝内打开即拉起支付，无需商户自有公众号）。
      */
     public PayPrepayVO prepayInfo(Long storeId, String payNo) {
         Payment payment = requireOwned(storeId, payNo);
@@ -58,8 +59,22 @@ public class PaymentService {
         if (isMock()) {
             return new PayPrepayVO(payNo, payment.getStatus(), false, null, mockPayUrl(payNo), Map.of());
         }
-        return new PayPrepayVO(payNo, payment.getStatus(), false,
-                wechatAuthService.authorizeUrl(payNo), null, Map.of());
+        String cashierUrl = paymentGateway.cashierUrl(payment);
+        transactionTemplate.executeWithoutResult(status -> {
+            Payment locked = paymentMapper.selectForUpdate(payment.getId());
+            if (locked == null || locked.getStatus() == null
+                    || locked.getStatus() == STATUS_SUCCESS
+                    || locked.getStatus() == STATUS_CLOSED
+                    || locked.getStatus() == STATUS_REFUNDED) {
+                return;
+            }
+            // 生成收银台链接后进入支付中，等待回调/查单确认
+            paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
+                    .eq(Payment::getId, locked.getId())
+                    .in(Payment::getStatus, STATUS_PENDING, STATUS_PAYING, 3)
+                    .set(Payment::getStatus, STATUS_PAYING));
+        });
+        return new PayPrepayVO(payNo, STATUS_PAYING, false, null, cashierUrl, Map.of());
     }
 
     /**

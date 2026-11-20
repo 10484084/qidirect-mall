@@ -25,6 +25,11 @@ public class MockPaymentGateway implements PaymentGateway {
     }
 
     @Override
+    public String cashierUrl(Payment payment) {
+        return "/api/notify/mock/pay/" + payment.getPayNo();
+    }
+
+    @Override
     public void close(Payment payment) {
         paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
                 .eq(Payment::getId, payment.getId())
