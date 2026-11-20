@@ -72,7 +72,7 @@ mock_pay() { json_get "$(curl -s -X GET "$API/notify/mock/pay/$1")" code; }
 # mock_notify payNo amount：模拟扫呗成功回调（Mock 网关验签恒通过），用于验证关单后回调路径
 mock_notify() {
   curl -s -X POST "$API/notify/saobei" -H 'Content-Type: application/x-www-form-urlencoded' \
-    -d "terminal_trace=$1&trade_state=SUCCESS&total_fee=$2&out_trade_no=$1"
+    -d "terminal_trace=$1&return_code=01&result_code=01&total_fee=$2&out_trade_no=$1"
 }
 deposit_of() { sql "SELECT deposit_balance FROM wallet WHERE store_id=$1"; }
 commission_of() { sql "SELECT commission_balance FROM wallet WHERE store_id=$1"; }

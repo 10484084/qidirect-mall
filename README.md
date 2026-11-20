@@ -110,7 +110,7 @@ DB_PASSWORD=你的密码 ./scripts/backup.sh
 | `PAYMENT_PROVIDER=saobei` | 启用 `SaobeiPayGateway`，同时关闭 Mock 下单入口 |
 | `SAOBEI_MERCHANT_NO` / `SAOBEI_TERMINAL_ID` / `SAOBEI_ACCESS_TOKEN` | 商户号、终端号、终端令牌（参与 MD5 签名），任一为空时下单/查单/关单直接报「扫呗支付参数未配置」 |
 | `SAOBEI_SERVICE_ID` | 服务商编号，直连商户留空 |
-| `SAOBEI_API_BASE` | 网关根地址，默认 `https://pay.lcsw.cn/lcsw/pay`（不含接口路径） |
+| `SAOBEI_API_BASE` | 网关根地址，默认 `https://pay.lcsw.cn/lcsw`（不含接口路径） |
 | `SAOBEI_NOTIFY_URL` | 回调地址，必须为公网 HTTPS 且指向 `/api/notify/saobei` |
 
 回调与签名要点：

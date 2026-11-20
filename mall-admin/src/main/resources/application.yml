@@ -61,7 +61,7 @@ sms:
 payment:
   provider: ${PAYMENT_PROVIDER:mock}
   saobei:
-    api-base: ${SAOBEI_API_BASE:https://pay.lcsw.cn/lcsw/pay}
+    api-base: ${SAOBEI_API_BASE:https://pay.lcsw.cn/lcsw}
     merchant-no: ${SAOBEI_MERCHANT_NO:}
     terminal-id: ${SAOBEI_TERMINAL_ID:}
     access-token: ${SAOBEI_ACCESS_TOKEN:}
