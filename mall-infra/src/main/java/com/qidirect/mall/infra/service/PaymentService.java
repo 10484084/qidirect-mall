@@ -35,6 +35,8 @@ public class PaymentService {
     private static final int STATUS_SUCCESS = 2;
     private static final int STATUS_CLOSED = 4;
     private static final int STATUS_REFUNDED = 5;
+    /** 支付渠道：2=聚合码（走扫呗收银台），与 1=JSAPI、3=线下区分 */
+    private static final int CHANNEL_QR = 2;
     private static final int SCAN_BATCH_SIZE = 200;
 
     private final PaymentMapper paymentMapper;
@@ -68,11 +70,12 @@ public class PaymentService {
                     || locked.getStatus() == STATUS_REFUNDED) {
                 return;
             }
-            // 生成收银台链接后进入支付中，等待回调/查单确认
+            // 生成收银台链接后进入支付中，等待回调/查单确认；渠道标记为聚合码(2)
             paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
                     .eq(Payment::getId, locked.getId())
                     .in(Payment::getStatus, STATUS_PENDING, STATUS_PAYING, 3)
-                    .set(Payment::getStatus, STATUS_PAYING));
+                    .set(Payment::getStatus, STATUS_PAYING)
+                    .set(Payment::getChannel, CHANNEL_QR));
         });
         return new PayPrepayVO(payNo, STATUS_PAYING, false, null, cashierUrl, Map.of());
     }
