@@ -111,6 +111,26 @@ public class PaymentService {
 
     public PaymentStatusVO status(Long storeId, String payNo) {
         Payment payment = requireOwned(storeId, payNo);
+        // 非支付中的状态直接返回
+        if (!Objects.equals(payment.getStatus(), STATUS_PENDING)
+                && !Objects.equals(payment.getStatus(), STATUS_PAYING)) {
+            return new PaymentStatusVO(payNo, payment.getStatus(),
+                    Objects.equals(payment.getStatus(), STATUS_SUCCESS));
+        }
+        // 支付中：前端返回页面轮询时主动向扫呗发起 4.5 实时查单，命中已支付立即入账，
+        // 让用户从收银台返回后无需等待回调/60s 补偿即可看到支付成功
+        if (!isMock()) {
+            try {
+                PaymentGateway.PaymentQueryResult result = paymentGateway.query(payment);
+                if (result.paid()) {
+                    completePaid(payment.getId(), result);
+                    payment = requireOwned(storeId, payNo);
+                }
+            } catch (Exception e) {
+                log.warn("支付状态实时查单失败，回退读取库内状态：payNo={} error={}", payNo, e.toString());
+            }
+        }
+        payment = paymentMapper.selectById(payment.getId());
         return new PaymentStatusVO(payNo, payment.getStatus(),
                 Objects.equals(payment.getStatus(), STATUS_SUCCESS));
     }

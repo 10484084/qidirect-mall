@@ -6,9 +6,12 @@
       <div class="card pay-card">
         <template v-if="state === 'paying'">
           <van-icon name="balance-pay" size="46" color="#1f6feb" />
-          <div class="pay-title">正在支付</div>
+          <div class="pay-title">{{ jumped ? '等待支付结果' : '正在支付' }}</div>
           <div class="muted small">应付金额 ¥{{ fenToYuan(amount) }}</div>
-          <van-loading class="mt-12" size="20">等待支付结果...</van-loading>
+          <div v-if="jumped" class="muted small mt-12">
+            如浏览器仍停留在收银台，请点击左上角「返回」回到本页，支付结果将自动确认
+          </div>
+          <van-loading v-else class="mt-12" size="20">等待支付结果...</van-loading>
         </template>
 
         <template v-else-if="state === 'success'">
@@ -59,8 +62,10 @@ const orderId = route.query.orderId ? Number(route.query.orderId) : null;
 const amount = Number(route.query.amount || 0);
 const state = ref('paying');
 const message = ref('支付超时，请重新发起支付');
+const jumped = ref(false);
 let timer = null;
 let deadline = 0;
+const jumpFlag = `payJump:${payNo}`;
 
 onMounted(() => {
   if (!assertPayAllowed()) {
@@ -68,10 +73,30 @@ onMounted(() => {
     message.value = '当前环境不支持微信支付';
     return;
   }
+  // 从扫呗收银台返回（历史返回/bfcache 恢复）：不再重复跳转，直接轮询确认
+  if (sessionStorage.getItem(jumpFlag)) {
+    jumped.value = true;
+    poll(5 * 60 * 1000);
+    return;
+  }
   start();
 });
 
-onBeforeUnmount(stopPolling);
+// 微信浏览器 bfcache 恢复页面时定时器可能被冻结，回到前台立即重新轮询
+window.addEventListener('pageshow', handleShow);
+document.addEventListener('visibilitychange', handleShow);
+
+function handleShow() {
+  if (state.value !== 'paying' || !timer) return;
+  if (!document.hidden) poll(jumped.value ? 5 * 60 * 1000 : 90 * 1000);
+}
+
+onBeforeUnmount(() => {
+  stopPolling();
+  window.removeEventListener('pageshow', handleShow);
+  document.removeEventListener('visibilitychange', handleShow);
+  sessionStorage.removeItem(jumpFlag);
+});
 
 function stopPolling() {
   if (timer) {
@@ -98,6 +123,8 @@ async function start() {
         success();
         return;
       }
+      sessionStorage.setItem(jumpFlag, '1');
+      jumped.value = true;
       window.location.href = info.payUrl;
       return;
     }
@@ -112,9 +139,9 @@ async function start() {
   }
 }
 
-function poll() {
+function poll(totalMs = 90 * 1000) {
   stopPolling();
-  deadline = Date.now() + 90 * 1000;
+  deadline = Date.now() + totalMs;
   timer = setInterval(async () => {
     if (Date.now() > deadline) {
       stopPolling();
@@ -134,11 +161,12 @@ function poll() {
     } catch (e) {
       // 轮询失败继续
     }
-  }, 1500);
+  }, jumped.value ? 3000 : 1500);
 }
 
 function success() {
   stopPolling();
+  sessionStorage.removeItem(jumpFlag);
   state.value = 'success';
 }
 
