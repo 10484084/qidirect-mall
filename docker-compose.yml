@@ -1,6 +1,7 @@
 name: qidirect-mall
 
 x-app-env: &app-env
+  TZ: Asia/Shanghai
   DB_HOST: mysql
   DB_PORT: "3306"
   DB_NAME: ${DB_NAME:-qidirect_mall}
