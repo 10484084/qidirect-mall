@@ -190,7 +190,7 @@ onMounted(async () => {
           prop="phone"
           :rules="[
             { required: true, message: '请输入手机号' },
-            { pattern: /^1\d{10}$/, message: '手机号格式不正确' }
+            { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确' }
           ]"
         >
           <el-input v-model="createForm.phone" maxlength="11" />

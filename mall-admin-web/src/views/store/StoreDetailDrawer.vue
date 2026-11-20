@@ -112,7 +112,7 @@ async function submitParent() {
 }
 
 async function submitPhone() {
-  if (!/^1\d{10}$/.test(phoneForm.phone)) {
+  if (!/^1[3-9]\d{9}$/.test(phoneForm.phone)) {
     ElMessage.warning('请输入正确的手机号');
     return;
   }

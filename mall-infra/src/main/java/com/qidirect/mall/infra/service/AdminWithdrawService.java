@@ -212,7 +212,7 @@ public class AdminWithdrawService {
     }
 
     /**
-     * CSV 导出：明文卡号，需导出权限，并写操作日志。
+     * CSV 导出：卡号脱敏，需导出权限，并写操作日志。
      */
     @Transactional
     public String exportCsv(Long batchId) {
@@ -242,7 +242,7 @@ public class AdminWithdrawService {
                     .append(csvCell(store == null ? "" : store.getPhone())).append(',')
                     .append(csvCell(withdraw.getBankHolder())).append(',')
                     .append(csvCell(withdraw.getBankName())).append(',')
-                    .append(csvCell(decryptQuietly(withdraw.getBankAccount()))).append(',')
+                    .append(csvCell(maskBankAccount(decryptQuietly(withdraw.getBankAccount())))).append(',')
                     .append(csvCell(BigDecimal.valueOf(withdraw.getAmount(), 2).toPlainString())).append(',')
                     .append(csvCell(withdraw.getApplyTime())).append('\n');
         }
