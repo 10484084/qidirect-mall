@@ -1,7 +1,5 @@
 <template>
   <div class="page purchase-page">
-    <PageHeader title="加盟 / 预存" />
-
     <div class="page-body">
       <div v-if="profile" class="card current-card">
         <div class="flex-between">
@@ -99,7 +97,6 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showDialog, showToast } from 'vant';
-import PageHeader from '../components/PageHeader.vue';
 import { purchaseApi, rechargeApi } from '../api';
 import { useUserStore } from '../stores/user';
 import { actionText, fenToYuan, formatTime } from '../utils/format';

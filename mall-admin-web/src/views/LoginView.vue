@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '../stores/user';
@@ -9,6 +9,7 @@ const router = useRouter();
 const userStore = useUserStore();
 const formRef = ref();
 const loading = ref(false);
+const step = ref('account');
 
 const form = reactive({
   account: '',
@@ -20,13 +21,35 @@ const rules = {
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 };
 
-async function onSubmit() {
+const maskedAccount = computed(() => form.account.trim());
+
+async function nextStep() {
   if (!formRef.value) return;
-  const valid = await formRef.value.validate().catch(() => false);
-  if (!valid) return;
+  const valid = await formRef.value.validateField('account').catch(() => false);
+  if (valid === false) return;
+  if (!form.account.trim()) {
+    ElMessage.warning('请输入账号');
+    return;
+  }
+  step.value = 'password';
+}
+
+function backStep() {
+  form.password = '';
+  step.value = 'account';
+}
+
+async function onSubmit() {
+  if (step.value === 'account') {
+    await nextStep();
+    return;
+  }
+  if (!formRef.value) return;
+  const valid = await formRef.value.validateField('password').catch(() => false);
+  if (valid === false) return;
   loading.value = true;
   try {
-    await userStore.login(form.account, form.password);
+    await userStore.login(form.account.trim(), form.password);
     ElMessage.success('登录成功');
     const redirect = route.query.redirect;
     router.replace(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/dashboard');
@@ -45,12 +68,29 @@ async function onSubmit() {
       <div class="login-sub text-muted">管理门店、商品、订单、提现与财务</div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @keyup.enter="onSubmit">
         <el-form-item label="账号" prop="account">
-          <el-input v-model="form.account" placeholder="请输入管理员账号" clearable />
+          <el-input
+            v-model="form.account"
+            placeholder="请输入管理员账号"
+            clearable
+            :disabled="step === 'password'"
+          />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
+        <el-form-item v-if="step === 'password'" label="密码" prop="password">
+          <el-input
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+            show-password
+            autofocus
+          />
         </el-form-item>
-        <el-button type="primary" class="login-btn" :loading="loading" @click="onSubmit">登 录</el-button>
+        <el-button type="primary" class="login-btn" :loading="loading" @click="onSubmit">
+          {{ step === 'account' ? '下一步' : '登 录' }}
+        </el-button>
+        <div v-if="step === 'password'" class="login-foot">
+          <span class="text-muted small">当前账号：{{ maskedAccount }}</span>
+          <el-link type="primary" :underline="false" @click="backStep">修改</el-link>
+        </div>
       </el-form>
     </el-card>
   </div>
@@ -84,5 +124,17 @@ async function onSubmit() {
 
 .login-btn {
   width: 100%;
+}
+
+.login-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.small {
+  font-size: 12px;
 }
 </style>

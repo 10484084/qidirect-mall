@@ -1,9 +1,9 @@
 <template>
   <div class="page with-tab cart-page">
-    <div class="head">
+    <div v-if="items.length" class="head">
       <div class="flex-between">
-        <span class="title">购物车</span>
-        <span v-if="items.length" class="muted small" @click="clearAll">清空</span>
+        <span />
+        <span class="muted small" @click="clearAll">清空</span>
       </div>
     </div>
 
@@ -143,13 +143,8 @@ onMounted(load);
 <style scoped>
 .head {
   background: #fff;
-  padding: 14px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid #f2f3f5;
-}
-
-.title {
-  font-size: 17px;
-  font-weight: 600;
 }
 
 .cart-page {

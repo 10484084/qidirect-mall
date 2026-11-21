@@ -1,6 +1,5 @@
 <template>
   <div class="page with-tab orders-page">
-    <div class="head">我的订单</div>
     <van-tabs v-model:active="status" sticky @change="reload">
       <van-tab title="全部" :name="-1" />
       <van-tab title="待支付" :name="0" />
@@ -128,13 +127,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.head {
-  background: #fff;
-  padding: 14px 16px;
-  font-size: 17px;
-  font-weight: 600;
-}
-
 .orders-page {
   padding-bottom: 70px;
 }
