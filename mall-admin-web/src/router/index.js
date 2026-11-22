@@ -180,7 +180,8 @@ export const menuRoutes = [
         path: 'sms-templates',
         name: 'sms-templates',
         component: () => import('../views/system/SmsTemplateView.vue'),
-        meta: { title: '短信模板', icon: 'ChatDotSquare' }
+        // 短信通道未开通，模块暂时隐藏；恢复时去掉 hidden 即可
+        meta: { title: '短信模板', icon: 'ChatDotSquare', hidden: true }
       },
       {
         path: 'admin-users',
@@ -260,6 +261,9 @@ router.beforeEach((to) => {
   }
   const perm = to.meta.perm || findParentPerm(to);
   if (perm && !userStore.hasAnyPerm(perm)) {
+    return { path: '/dashboard' };
+  }
+  if (to.meta.hidden) {
     return { path: '/dashboard' };
   }
   return true;

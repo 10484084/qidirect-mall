@@ -15,7 +15,9 @@ const activeMenu = computed(() => route.path);
 const menus = computed(() =>
   menuRoutes
     .map((item) => {
-      const children = (item.children || []).filter((c) => userStore.hasAnyPerm(c.meta.perm));
+      const children = (item.children || []).filter(
+        (c) => !c.meta.hidden && userStore.hasAnyPerm(c.meta.perm)
+      );
       return { ...item, children };
     })
     .filter((item) => item.children.length > 0 && userStore.hasAnyPerm(item.meta.perm))
