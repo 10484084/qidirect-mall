@@ -6,16 +6,20 @@ WORKDIR /build
 
 COPY mall-h5/package.json mall-h5/package-lock.json ./mall-h5/
 COPY mall-admin-web/package.json mall-admin-web/package-lock.json ./mall-admin-web/
+COPY mall-admin-m/package.json mall-admin-m/package-lock.json ./mall-admin-m/
 
 RUN cd mall-h5 && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com \
- && cd ../mall-admin-web && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com
+ && cd ../mall-admin-web && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com \
+ && cd ../mall-admin-m && npm ci --no-audit --no-fund --registry=https://registry.npmmirror.com
 
 COPY mall-h5 ./mall-h5
 COPY mall-admin-web ./mall-admin-web
+COPY mall-admin-m ./mall-admin-m
 
 # mall-h5 的 build 脚本会依次产出 dist（H5）与 dist/pay-bridge（bridge 页）
 RUN cd mall-h5 && npm run build \
- && cd ../mall-admin-web && npm run build
+ && cd ../mall-admin-web && npm run build \
+ && cd ../mall-admin-m && npm run build
 
 FROM alpine:3.20 AS export
 
@@ -23,5 +27,6 @@ WORKDIR /out
 COPY --from=build /build/mall-h5/dist ./h5
 COPY --from=build /build/mall-h5/dist/pay-bridge ./pay-bridge
 COPY --from=build /build/mall-admin-web/dist ./admin-web
+COPY --from=build /build/mall-admin-m/dist ./admin-m
 
 CMD ["sh", "-c", "cp -r /out/. /dist/ && echo 'frontend dist exported'"]

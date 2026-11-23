@@ -1,0 +1,145 @@
+:root {
+  --brand: #1f6feb;
+  --brand-dark: #0f4fbf;
+  --page-bg: #f4f6f9;
+  --text-main: #1f2329;
+  --text-sub: #8a9099;
+  --money: #e5493a;
+  --card-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app,
+.app-root {
+  min-height: 100vh;
+}
+
+/* 列表页留出底部 tabbar 空间 */
+.page {
+  min-height: 100vh;
+  padding: 12px 12px 76px;
+}
+
+.page-plain {
+  min-height: 100vh;
+  padding-bottom: 24px;
+}
+
+/* 吸顶搜索/筛选条 */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #fff;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.section-title {
+  margin: 16px 4px 8px;
+  font-size: 13px;
+  color: var(--text-sub);
+  font-weight: 500;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(31, 35, 41, 0.04);
+}
+
+.card:active {
+  background: #fafbfc;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.row + .row {
+  margin-top: 8px;
+}
+
+.muted {
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+.money {
+  color: var(--money);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.tag-text {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 18px;
+  background: #eef3ff;
+  color: var(--brand);
+}
+
+.tag-warn {
+  background: #fff4e5;
+  color: #d97706;
+}
+
+.tag-danger {
+  background: #fdecea;
+  color: #d93025;
+}
+
+.tag-success {
+  background: #e8f7ee;
+  color: #16a34a;
+}
+
+.tag-gray {
+  background: #f1f2f4;
+  color: #6b7280;
+}
+
+.empty-tip {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.list-end {
+  padding: 14px 0 4px;
+  text-align: center;
+  color: #b7bcc4;
+  font-size: 12px;
+}
