@@ -70,17 +70,6 @@
         </van-grid>
       </div>
 
-      <div v-if="activities.length" class="card">
-        <div class="card-title">预存活动</div>
-        <div v-for="item in activities" :key="item.id" class="activity" @click="$router.push('/purchase')">
-          <div>
-            <div>{{ item.title }}</div>
-            <div class="muted small">{{ item.startTime ? formatTime(item.startTime) : '' }} 至 {{ item.endTime ? formatTime(item.endTime) : '' }}</div>
-          </div>
-          <van-icon name="arrow" color="#8a9099" />
-        </div>
-      </div>
-
       <div class="card">
         <div class="card-title">
           推荐商品
@@ -96,14 +85,13 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
-import { noticeApi, productApi, rechargeApi, walletApi } from '../api';
+import { noticeApi, productApi, walletApi } from '../api';
 import { useUserStore } from '../stores/user';
-import { fenToYuan, formatTime } from '../utils/format';
+import { fenToYuan } from '../utils/format';
 
 const user = useUserStore();
 const wallet = ref({ depositBalance: 0, commissionBalance: 0, availableCommission: 0 });
 const unread = ref(0);
-const activities = ref([]);
 const products = ref([]);
 
 const profile = computed(() => user.profile);
@@ -112,15 +100,13 @@ const recommendProducts = computed(() => products.value.filter((p) => p.recommen
 onMounted(async () => {
   try {
     if (!user.profile) await user.loadProfile();
-    const [walletData, unreadData, activityData, productData] = await Promise.all([
+    const [walletData, unreadData, productData] = await Promise.all([
       walletApi.wallet(),
       noticeApi.unreadCount(),
-      rechargeApi.list(),
       productApi.list()
     ]);
     wallet.value = walletData;
     unread.value = Number(unreadData) || 0;
-    activities.value = activityData || [];
     products.value = (productData || []).slice(0, 8);
   } catch (e) {
     // 错误已由请求层提示

@@ -59,14 +59,6 @@ export const giftRuleApi = {
   remove: (id) => del(`/gift-rules/${id}`)
 };
 
-export const rechargeApi = {
-  page: (params) => get('/recharge-activities', params),
-  create: (data) => post('/recharge-activities', data),
-  update: (id, data) => put(`/recharge-activities/${id}`, data),
-  changeStatus: (id, status) => post(`/recharge-activities/${id}/status`, null, { params: { status } }),
-  remove: (id) => del(`/recharge-activities/${id}`)
-};
-
 export const agreementApi = {
   list: () => get('/agreements'),
   create: (data) => post('/agreements', data),

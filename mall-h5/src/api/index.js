@@ -24,10 +24,6 @@ export const purchaseApi = {
   create: (data) => post('/purchase/orders', data)
 };
 
-export const rechargeApi = {
-  list: () => get('/recharge-activities')
-};
-
 export const productApi = {
   categories: () => get('/product-categories'),
   list: (params) => get('/products', params),
