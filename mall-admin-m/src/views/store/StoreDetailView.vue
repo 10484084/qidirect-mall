@@ -13,13 +13,11 @@ const loading = ref(true);
 const detail = ref(null);
 
 const phoneVisible = ref(false);
-const pwdVisible = ref(false);
 const freezeVisible = ref(false);
 const qrVisible = ref(false);
 const submitting = ref(false);
 
 const phone = ref('');
-const password = ref('');
 const freezeReason = ref('');
 const qr = ref(null);
 
@@ -58,21 +56,19 @@ async function submitPhone() {
   }
 }
 
-function openPwd() {
-  password.value = '';
-  pwdVisible.value = true;
-}
-
-async function submitPwd() {
-  if (!/^.{6,32}$/.test(password.value)) {
-    showFailToast('密码长度需在 6-32 位之间');
+async function resetPwd() {
+  try {
+    await showConfirmDialog({
+      title: '重置登录密码',
+      message: '将把该门店登录密码重置为初始密码 admin，门店下次登录后需要重新修改。确定继续吗？'
+    });
+  } catch (e) {
     return;
   }
   submitting.value = true;
   try {
-    await storeApi.resetPassword(profile.value.id, password.value);
-    showSuccessToast('登录密码已更新');
-    pwdVisible.value = false;
+    await storeApi.resetPassword(profile.value.id);
+    showSuccessToast('密码已重置为 admin');
   } finally {
     submitting.value = false;
   }
@@ -177,7 +173,7 @@ onMounted(load);
       <div class="section-title">门店操作</div>
       <div class="card actions">
         <van-button size="small" plain type="primary" @click="openPhone">重置手机号</van-button>
-        <van-button size="small" plain type="primary" @click="openPwd">设置登录密码</van-button>
+        <van-button size="small" plain type="primary" @click="resetPwd">重置密码</van-button>
         <van-button size="small" plain type="primary" @click="showQr">邀请二维码</van-button>
         <van-button
           size="small"
@@ -242,26 +238,6 @@ onMounted(load);
         <div class="sheet-actions">
           <van-button plain block round @click="phoneVisible = false">取消</van-button>
           <van-button type="primary" block round :loading="submitting" @click="submitPhone">确认</van-button>
-        </div>
-      </div>
-    </van-popup>
-
-    <van-popup v-model:show="pwdVisible" position="bottom" round safe-area-inset-bottom>
-      <div class="sheet">
-        <div class="sheet-title">设置登录密码</div>
-        <van-cell-group inset>
-          <van-field
-            v-model="password"
-            label="新密码"
-            type="password"
-            maxlength="32"
-            placeholder="6-32 位"
-            autocomplete="new-password"
-          />
-        </van-cell-group>
-        <div class="sheet-actions">
-          <van-button plain block round @click="pwdVisible = false">取消</van-button>
-          <van-button type="primary" block round :loading="submitting" @click="submitPwd">确认</van-button>
         </div>
       </div>
     </van-popup>

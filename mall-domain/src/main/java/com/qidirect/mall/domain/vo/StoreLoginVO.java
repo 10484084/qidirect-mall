@@ -10,7 +10,8 @@ public record StoreLoginVO(
         String nickname,
         Long levelId,
         Integer authStatus,
-        String inviteCode) {
+        String inviteCode,
+        Boolean needChangePwd) {
 
     public boolean joined() {
         return levelId != null && levelId > 0;

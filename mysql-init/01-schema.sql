@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `store` (
   `phone`             VARCHAR(20)  NOT NULL,
   `username`          VARCHAR(32)  NULL COMMENT '登录用户名，默认取手机号',
   `password`          VARCHAR(100) NULL COMMENT 'BCrypt 密文，NULL=未设置',
+  `pwd_need_change`   TINYINT      NOT NULL DEFAULT 0 COMMENT '1=使用初始密码需强制修改',
   `nickname`          VARCHAR(64)  NOT NULL DEFAULT '',
   `avatar`            VARCHAR(255) NOT NULL DEFAULT '',
   `join_time`         DATETIME     NULL,

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { authApi, storeApi } from '../api';
-import { clearToken, getToken, setToken } from '../utils/token';
+import { clearToken, getToken, setNeedChangePwd, setToken } from '../utils/token';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -16,9 +16,14 @@ export const useUserStore = defineStore('user', {
   actions: {
     applyLogin(data) {
       setToken(data.token);
+      setNeedChangePwd(Boolean(data.needChangePwd));
       this.token = data.token;
       this.profile = null;
       this.eligibility = null;
+    },
+    async changePassword(payload) {
+      await authApi.changePassword(payload);
+      setNeedChangePwd(false);
     },
     async login(payload) {
       // 用户名密码登录（username 默认为手机号，由后台设置密码）

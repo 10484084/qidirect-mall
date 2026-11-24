@@ -1,4 +1,5 @@
 const TOKEN_KEY = 'mall_h5_token';
+const PWD_FLAG_KEY = 'mall_h5_pwd_need_change';
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || '';
@@ -8,8 +9,24 @@ export function setToken(token) {
   localStorage.setItem(TOKEN_KEY, token || '');
 }
 
+/**
+ * 门店是否仍在使用初始密码（后台创建/重置后为 true），需强制改密。
+ */
+export function needChangePwd() {
+  return localStorage.getItem(PWD_FLAG_KEY) === '1';
+}
+
+export function setNeedChangePwd(flag) {
+  if (flag) {
+    localStorage.setItem(PWD_FLAG_KEY, '1');
+  } else {
+    localStorage.removeItem(PWD_FLAG_KEY);
+  }
+}
+
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(PWD_FLAG_KEY);
 }
 
 /**

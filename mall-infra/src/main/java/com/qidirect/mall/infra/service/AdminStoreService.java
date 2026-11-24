@@ -61,6 +61,8 @@ public class AdminStoreService {
     private static final int INVITE_LENGTH = 8;
     private static final int STATUS_NORMAL = 1;
     private static final int STATUS_FROZEN = 2;
+    /** 后台新建/重置门店统一使用的初始密码，门店首次登录后强制修改 */
+    private static final String DEFAULT_PASSWORD = "admin";
 
     private final StoreMapper storeMapper;
     private final StoreParentChangeMapper storeParentChangeMapper;
@@ -175,6 +177,9 @@ public class AdminStoreService {
         store.setLevelPaidAmount(0L);
         store.setName(StrUtil.trimToEmpty(request.name()));
         store.setPhone(phone);
+        store.setUsername(phone);
+        store.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        store.setPwdNeedChange(1);
         store.setNickname(StrUtil.isBlank(request.nickname())
                 ? "门店" + phone.substring(phone.length() - 4) : request.nickname().trim());
         store.setAvatar("");
@@ -246,19 +251,21 @@ public class AdminStoreService {
     }
 
     /**
-     * 设置/重置门店登录密码（BCrypt）。username 为空时回填为手机号。
+     * 重置门店登录密码为初始密码 admin，并标记为需强制修改（忘记密码时厂家使用）。
      */
     @Transactional
-    public void resetPassword(Long storeId, AdminResetPwdRequest request) {
+    public void resetPassword(Long storeId) {
         Store store = storeGuard.requireStore(storeId);
         Store patch = new Store();
         patch.setId(storeId);
         if (StrUtil.isBlank(store.getUsername())) {
             patch.setUsername(store.getPhone());
         }
-        patch.setPassword(passwordEncoder.encode(request.password().trim()));
+        patch.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        patch.setPwdNeedChange(1);
         storeMapper.updateById(patch);
-        logOperation(SecurityUtils.currentUserId(), "STORE_RESET_PASSWORD", storeId, "{}");
+        logOperation(SecurityUtils.currentUserId(), "STORE_RESET_PASSWORD", storeId,
+                JSONUtil.createObj().set("resetToDefault", true).toString());
     }
 
     /**

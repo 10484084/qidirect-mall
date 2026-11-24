@@ -8,6 +8,7 @@ import com.qidirect.mall.common.enums.UserType;
 import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.common.util.JwtUtil;
+import com.qidirect.mall.domain.dto.auth.ChangePasswordRequest;
 import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
@@ -136,6 +137,30 @@ public class StoreAuthService {
         return toLoginVO(store);
     }
 
+    /**
+     * 门店自助修改密码：首次用初始密码登录后必须调用，改完清除强制修改标记。
+     */
+    @Transactional
+    public void changePassword(Long storeId, ChangePasswordRequest request) {
+        Store store = storeMapper.selectById(storeId);
+        if (store == null) {
+            throw new BizException(ErrorCode.STORE_NOT_FOUND);
+        }
+        if (store.getPassword() == null
+                || !passwordEncoder.matches(request.oldPassword(), store.getPassword())) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "原密码不正确");
+        }
+        String newPwd = request.newPassword().trim();
+        if ("admin".equalsIgnoreCase(newPwd)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "新密码不能与初始密码相同");
+        }
+        Store patch = new Store();
+        patch.setId(storeId);
+        patch.setPassword(passwordEncoder.encode(newPwd));
+        patch.setPwdNeedChange(0);
+        storeMapper.updateById(patch);
+    }
+
     private Store resolveParent(String inviteCode) {
         if (StrUtil.isBlank(inviteCode)) {
             return null;
@@ -172,6 +197,7 @@ public class StoreAuthService {
         claims.put(AuthConstants.CLAIM_LEVEL_ID, store.getLevelId());
         String token = jwtUtil.createToken(UserType.STORE, store.getId(), claims);
         return new StoreLoginVO(token, store.getId(), store.getPhone(), store.getNickname(),
-                store.getLevelId(), store.getAuthStatus(), store.getInviteCode());
+                store.getLevelId(), store.getAuthStatus(), store.getInviteCode(),
+                store.getPwdNeedChange() != null && store.getPwdNeedChange() == 1);
     }
 }

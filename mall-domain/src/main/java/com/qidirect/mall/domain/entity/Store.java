@@ -42,6 +42,9 @@ public class Store {
     /** BCrypt 密文，NULL=未设置（不可用密码登录） */
     private String password;
 
+    /** 1=仍在使用初始密码（后台创建的 admin），登录后需强制修改 */
+    private Integer pwdNeedChange;
+
     private String nickname;
 
     private String avatar;

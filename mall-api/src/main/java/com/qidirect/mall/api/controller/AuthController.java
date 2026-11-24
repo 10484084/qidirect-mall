@@ -1,6 +1,7 @@
 package com.qidirect.mall.api.controller;
 
 import com.qidirect.mall.common.api.ApiResponse;
+import com.qidirect.mall.domain.dto.auth.ChangePasswordRequest;
 import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
@@ -8,6 +9,7 @@ import com.qidirect.mall.domain.dto.auth.SmsSendRequest;
 import com.qidirect.mall.domain.vo.StoreLoginVO;
 import com.qidirect.mall.infra.service.SmsCodeService;
 import com.qidirect.mall.infra.service.StoreAuthService;
+import com.qidirect.mall.infra.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +47,14 @@ public class AuthController {
     @PostMapping("/pwd-login")
     public ApiResponse<StoreLoginVO> pwdLogin(@Valid @RequestBody PwdLoginRequest request) {
         return ApiResponse.ok(storeAuthService.loginByUsername(request));
+    }
+
+    /**
+     * 门店修改登录密码：初始密码为 admin 时，登录后必须调用此接口完成修改。
+     */
+    @PostMapping("/change-password")
+    public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        storeAuthService.changePassword(SecurityUtils.currentStoreId(), request);
+        return ApiResponse.ok();
     }
 }

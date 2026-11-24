@@ -4,7 +4,6 @@ import com.qidirect.mall.common.api.ApiResponse;
 import com.qidirect.mall.common.api.PageResult;
 import com.qidirect.mall.domain.dto.admin.AdminParentChangeRequest;
 import com.qidirect.mall.domain.dto.admin.AdminResetPhoneRequest;
-import com.qidirect.mall.domain.dto.admin.AdminResetPwdRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreCreateRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreStatusRequest;
 import com.qidirect.mall.domain.dto.admin.BankOverrideRequest;
@@ -77,9 +76,8 @@ public class AdminStoreController {
     }
 
     @PostMapping("/{id}/reset-password")
-    public ApiResponse<Void> resetPassword(@PathVariable Long id,
-                                           @Valid @RequestBody AdminResetPwdRequest request) {
-        adminStoreService.resetPassword(id, request);
+    public ApiResponse<Void> resetPassword(@PathVariable Long id) {
+        adminStoreService.resetPassword(id);
         return ApiResponse.ok();
     }
 

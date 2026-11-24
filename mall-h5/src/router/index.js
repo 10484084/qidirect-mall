@@ -1,11 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import { getToken } from '../utils/token';
+import { getToken, needChangePwd } from '../utils/token';
 
 const routes = [
   { path: '/guide', name: 'guide', component: () => import('../views/GuideView.vue'), meta: { public: true } },
   { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { public: true } },
   // 注册入口已隐藏：邀请注册由后台/线下完成，路由保留兜底重定向
   { path: '/register', redirect: '/login' },
+  { path: '/change-password', name: 'change-password', component: () => import('../views/ChangePasswordView.vue') },
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { tab: true } },
   { path: '/products', name: 'products', component: () => import('../views/ProductsView.vue'), meta: { tab: true } },
   { path: '/products/:id', name: 'product-detail', component: () => import('../views/ProductDetailView.vue') },
@@ -37,8 +38,12 @@ router.beforeEach((to) => {
   if (!to.meta.public && !getToken()) {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
-  if ((to.name === 'login' || to.name === 'register') && getToken()) {
-    return { path: '/' };
+  // 初始密码未修改前，除改密页外一律拦到改密页
+  if (getToken() && needChangePwd() && to.name !== 'change-password' && !to.meta.public) {
+    return { name: 'change-password' };
+  }
+  if (to.name === 'login' && getToken()) {
+    return { path: needChangePwd() ? '/change-password' : '/' };
   }
   return true;
 });
@@ -60,6 +65,7 @@ router.afterEach((to) => {
     profile: '门店资料',
     notices: '消息',
     login: '登录',
+    'change-password': '修改密码',
     guide: '请在微信中打开'
   };
   document.title = titles[to.name] || '直销商城';

@@ -60,7 +60,12 @@ const submitting = ref(false);
 async function onSubmit() {
   submitting.value = true;
   try {
-    await user.login({ username: form.username, password: form.password });
+    const data = await user.login({ username: form.username, password: form.password });
+    if (data && data.needChangePwd) {
+      showToast('首次登录，请先修改初始密码');
+      router.replace('/change-password');
+      return;
+    }
     showToast('登录成功');
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     router.replace(redirect.startsWith('/login') ? '/' : redirect);

@@ -43,6 +43,7 @@
         <van-cell title="团队业绩" icon="chart-trending-o" is-link to="/performance" />
         <van-cell title="记录时间线" icon="notes-o" is-link to="/timeline" />
         <van-cell title="站内消息" icon="bell" is-link to="/notices" :value="unread > 0 ? `${unread} 条未读` : ''" />
+        <van-cell title="修改登录密码" icon="lock" is-link to="/change-password" />
       </van-cell-group>
 
       <van-cell-group inset class="menu">
