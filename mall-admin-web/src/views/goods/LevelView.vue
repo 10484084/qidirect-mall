@@ -117,7 +117,7 @@ onMounted(load);
       type="info"
       :closable="false"
       show-icon
-      title="专属权益（长期有效/业绩奖/买赠）仅最高 sort 档位可开启；调整 sort 后请确认权益开关。"
+      title="专属权益（长期提成 / 团队奖励 / 买赠权益）仅最高 sort 档位可开启；调整排序后请确认权益开关。"
     />
 
     <el-card shadow="never">
@@ -135,21 +135,21 @@ onMounted(load);
           </template>
         </el-table-column>
         <el-table-column prop="upgradeDays" label="升级期(天)" width="110" />
-        <el-table-column label="长期有效" width="100">
+        <el-table-column label="长期提成" width="100">
           <template #default="{ row }">
             <el-tag :type="row.longTerm ? 'success' : 'info'" size="small">
               {{ row.longTerm ? '开启' : '关闭' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="业绩奖" width="100">
+        <el-table-column label="团队奖励" width="100">
           <template #default="{ row }">
             <el-tag :type="row.hasBonus ? 'success' : 'info'" size="small">
               {{ row.hasBonus ? '开启' : '关闭' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="买赠" width="100">
+        <el-table-column label="买赠权益" width="100">
           <template #default="{ row }">
             <el-tag :type="row.hasGift ? 'success' : 'info'" size="small">
               {{ row.hasGift ? '开启' : '关闭' }}
@@ -196,7 +196,7 @@ onMounted(load);
           title="当前排序不是最高档位，保存时权益开关将自动关闭。"
           class="mb12"
         />
-        <el-form-item label="长期有效">
+        <el-form-item label="长期提成">
           <el-switch
             v-model="form.longTerm"
             :active-value="1"
@@ -204,7 +204,7 @@ onMounted(load);
             :disabled="!isMaxLevel"
           />
         </el-form-item>
-        <el-form-item label="业绩奖">
+        <el-form-item label="团队奖励">
           <el-switch
             v-model="form.hasBonus"
             :active-value="1"
