@@ -42,10 +42,10 @@
         </template>
         <template v-else-if="!user.joined">
           <div>
-            <div class="action-title">选择档位加盟</div>
-            <div class="muted small">加盟后可预存订货并享受团队提成</div>
+            <div class="action-title">选择档位储值</div>
+            <div class="muted small">储值后可订货并享受团队提成</div>
           </div>
-          <van-button size="small" type="primary" round @click="$router.push('/purchase')">去加盟</van-button>
+          <van-button size="small" type="primary" round @click="$router.push('/purchase')">去储值</van-button>
         </template>
         <template v-else>
           <div>
@@ -59,7 +59,7 @@
       <div class="card">
         <div class="card-title">快捷入口</div>
         <van-grid :column-num="4" :border="false" clickable>
-          <van-grid-item icon="shop-o" text="加盟预存" @click="$router.push('/purchase')" />
+          <van-grid-item icon="shop-o" text="预存储值" @click="$router.push('/purchase')" />
           <van-grid-item icon="apps-o" text="选购商品" @click="$router.push('/products')" />
           <van-grid-item icon="balance-pay" text="我的钱包" @click="$router.push('/wallet')" />
           <van-grid-item icon="cash-back-record" text="提现" @click="$router.push('/withdraw')" />
