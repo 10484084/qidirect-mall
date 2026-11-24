@@ -8,9 +8,12 @@
         <span class="amount">{{ fenToYuan(wallet.depositBalance) }}</span>
       </div>
       <div class="hero-sub">
+        <span>仅下单抵扣，不可提现</span>
+      </div>
+      <div class="hero-sub hero-sub--second">
         <span>佣金余额 {{ fenToYuan(wallet.commissionBalance) }}</span>
         <span>冻结 {{ fenToYuan(wallet.frozenAmount) }}</span>
-        <span>可提现 {{ fenToYuan(wallet.availableCommission) }}</span>
+        <span>可提佣金 {{ fenToYuan(wallet.availableCommission) }}</span>
       </div>
       <van-button size="small" round class="withdraw-btn" @click="$router.push('/withdraw')">申请提现</van-button>
     </div>
@@ -116,6 +119,12 @@ onMounted(() => {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.75);
   margin-top: 8px;
+}
+
+.hero-sub--second {
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .withdraw-btn {

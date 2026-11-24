@@ -8,7 +8,8 @@
           提现额度
           <van-tag :type="config.open ? 'success' : 'warning'">{{ config.open ? '今日开放' : '今日不开放' }}</van-tag>
         </div>
-        <div class="kv"><span class="muted">可提现余额</span><span class="money">{{ fenToYuan(config.availableAmount) }}</span></div>
+        <div class="kv"><span class="muted">可提佣金余额</span><span class="money">{{ fenToYuan(config.availableAmount) }}</span></div>
+        <div class="kv"><span class="muted">可提现范围</span><span class="small-tip-text">仅佣金可提现，预存余额只能下单抵扣</span></div>
         <div class="kv"><span class="muted">最低提现金额</span><span>¥{{ fenToYuan(config.minAmount) }}</span></div>
         <div class="kv"><span class="muted">开放日</span><span>{{ config.openDays || '每月 15 日与月末最后一天' }}</span></div>
         <div v-if="!config.open && config.nextOpenDate" class="kv">
@@ -103,7 +104,7 @@ async function submit() {
     return;
   }
   if (fen > config.value.availableAmount) {
-    showToast('提现金额超过可提现余额');
+    showToast('提现金额超过可提佣金余额');
     return;
   }
   if (fen < config.value.minAmount) {
@@ -135,6 +136,13 @@ onMounted(load);
 
 .form-btn {
   padding: 16px 4px 4px;
+}
+
+.small-tip-text {
+  font-size: 12px;
+  color: #969799;
+  text-align: right;
+  flex: 1;
 }
 
 .bank-missing {

@@ -166,7 +166,7 @@ public class WalletService {
         Wallet wallet = lockWallet(storeId);
         long available = wallet.getCommissionBalance() - wallet.getFrozenAmount();
         if (available < amount) {
-            throw new BizException(ErrorCode.WALLET_BALANCE_NOT_ENOUGH, "可提现余额不足");
+            throw new BizException(ErrorCode.WALLET_BALANCE_NOT_ENOUGH, "可提佣金余额不足");
         }
         updateWallet(wallet, wallet.getDepositBalance(), wallet.getCommissionBalance(),
                 wallet.getFrozenAmount() + amount);

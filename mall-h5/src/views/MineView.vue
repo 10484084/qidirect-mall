@@ -31,7 +31,7 @@
         </div>
         <div class="balance-item">
           <div class="balance-value">{{ fenToYuan(wallet.availableCommission) }}</div>
-          <div class="muted small">可提现</div>
+          <div class="muted small">可提佣金</div>
         </div>
       </div>
 

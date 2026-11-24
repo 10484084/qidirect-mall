@@ -26,7 +26,7 @@
         <div class="divider" />
         <div class="wallet-item">
           <div class="wallet-value">{{ fenToYuan(wallet.availableCommission) }}</div>
-          <div class="wallet-label">可提现</div>
+          <div class="wallet-label">可提佣金</div>
         </div>
       </div>
     </div>
