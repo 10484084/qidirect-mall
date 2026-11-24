@@ -81,12 +81,12 @@
             placeholder="须与实名姓名一致"
             :rules="[{ required: true, message: '请输入持卡人' }]"
           />
-          <van-field
+          <BankSelect
             v-model="bankForm.bankName"
+            name="bankName"
             label="开户行"
-            maxlength="64"
-            placeholder="如 中国工商银行桓台支行"
-            :rules="[{ required: true, message: '请输入开户行' }]"
+            placeholder="请选择开户行"
+            :rules="[{ required: true, message: '请选择开户行' }]"
           />
           <van-field
             v-model="bankForm.bankAccount"
@@ -112,6 +112,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { showToast } from 'vant';
 import PageHeader from '../components/PageHeader.vue';
+import BankSelect from '../components/BankSelect.vue';
 import { storeApi } from '../api';
 import { useUserStore } from '../stores/user';
 import { formatTime } from '../utils/format';

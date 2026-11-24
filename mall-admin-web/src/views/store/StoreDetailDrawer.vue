@@ -5,6 +5,7 @@ import ImageUploader from '../../components/ImageUploader.vue';
 import StoreSelect from '../../components/StoreSelect.vue';
 import { storeApi } from '../../api';
 import { AUTH_STATUS, PARENT_CHANGE_STATUS, STORE_STATUS, statusMeta } from '../../utils/dict';
+import { BANK_NAMES } from '../../utils/banks';
 import { fen2yuan } from '../../utils/format';
 
 const visible = ref(false);
@@ -316,8 +317,10 @@ defineExpose({ open });
         <el-form-item label="持卡人" prop="bankHolder" :rules="[{ required: true, message: '请输入持卡人' }]">
           <el-input v-model="bankForm.bankHolder" />
         </el-form-item>
-        <el-form-item label="开户行" prop="bankName" :rules="[{ required: true, message: '请输入开户行' }]">
-          <el-input v-model="bankForm.bankName" />
+        <el-form-item label="开户行" prop="bankName" :rules="[{ required: true, message: '请选择开户行' }]">
+          <el-select v-model="bankForm.bankName" filterable allow-create default-first-option placeholder="选择或输入开户行">
+            <el-option v-for="b in BANK_NAMES" :key="b" :label="b" :value="b" />
+          </el-select>
         </el-form-item>
         <el-form-item
           label="银行卡号"
