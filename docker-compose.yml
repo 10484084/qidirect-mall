@@ -13,7 +13,7 @@ x-app-env: &app-env
   JWT_SECRET: ${JWT_SECRET:-qidirect-mall-dev-secret-please-change-32chars}
   AES_KEY: ${AES_KEY:-qidirect-mall-aes-key-32-bytes!!}
   HASH_SALT: ${HASH_SALT:-qidirect-mall-hash-salt}
-  INVITE_BASE_URL: ${INVITE_BASE_URL:-https://mall.example.com/register}
+  INVITE_BASE_URL: ${INVITE_BASE_URL:-https://mall.example.com/h5/#/register}
   STORAGE_TYPE: ${STORAGE_TYPE:-local}
   STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL:-/files}
   OSS_ENDPOINT: ${OSS_ENDPOINT:-}

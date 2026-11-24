@@ -33,6 +33,9 @@ import java.util.Map;
 public class StoreAuthService {
 
     private static final String INVITE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    /** 新门店初始密码，登录后强制修改 */
+    private static final String DEFAULT_PASSWORD = "admin";
     private static final int INVITE_LENGTH = 8;
 
     private final StoreMapper storeMapper;
@@ -59,7 +62,9 @@ public class StoreAuthService {
         store.setName("");
         store.setPhone(phone);
         store.setUsername(phone);
-        store.setPassword(null);
+        // 与后台建店一致：统一初始密码 admin，登录后强制修改
+        store.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        store.setPwdNeedChange(1);
         store.setNickname(StrUtil.isBlank(request.nickname())
                 ? "门店" + phone.substring(phone.length() - 4)
                 : request.nickname().trim());
