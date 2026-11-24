@@ -7,6 +7,7 @@ import com.qidirect.mall.domain.vo.RechargeActivityAdminVO;
 import com.qidirect.mall.infra.service.AdminRechargeActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,6 +52,12 @@ public class AdminRechargeActivityController {
     @PostMapping("/{id}/status")
     public ApiResponse<Void> changeStatus(@PathVariable Long id, @RequestParam Integer status) {
         adminRechargeActivityService.changeStatus(id, status);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        adminRechargeActivityService.delete(id);
         return ApiResponse.ok();
     }
 }

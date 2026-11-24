@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { levelApi, rechargeApi } from '../../api';
 import { fen2yuan } from '../../utils/format';
 
@@ -93,6 +93,21 @@ async function toggle(row) {
   load();
 }
 
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除预存活动「${row.title}」吗？删除后不可恢复；已产生预存订单的活动会被拒绝，请改用停用。`,
+      '删除预存活动',
+      { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
+    );
+  } catch (e) {
+    return;
+  }
+  await rechargeApi.remove(row.id);
+  ElMessage.success('已删除');
+  load();
+}
+
 onMounted(async () => {
   levels.value = (await levelApi.list()) || [];
   load();
@@ -149,10 +164,11 @@ onMounted(async () => {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="toggle(row)">{{ row.status === 1 ? '停用' : '启用' }}</el-button>
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link type="danger" @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

@@ -13,11 +13,13 @@ import com.qidirect.mall.domain.dto.admin.RechargeActivitySaveRequest;
 import com.qidirect.mall.domain.entity.OperationLog;
 import com.qidirect.mall.domain.entity.RechargeActivity;
 import com.qidirect.mall.domain.entity.RechargeActivityTier;
+import com.qidirect.mall.domain.entity.RechargeOrder;
 import com.qidirect.mall.domain.entity.StoreLevel;
 import com.qidirect.mall.domain.vo.RechargeActivityAdminVO;
 import com.qidirect.mall.infra.mapper.OperationLogMapper;
 import com.qidirect.mall.infra.mapper.RechargeActivityMapper;
 import com.qidirect.mall.infra.mapper.RechargeActivityTierMapper;
+import com.qidirect.mall.infra.mapper.RechargeOrderMapper;
 import com.qidirect.mall.infra.mapper.StoreLevelMapper;
 import com.qidirect.mall.infra.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,7 @@ public class AdminRechargeActivityService {
 
     private final RechargeActivityMapper rechargeActivityMapper;
     private final RechargeActivityTierMapper rechargeActivityTierMapper;
+    private final RechargeOrderMapper rechargeOrderMapper;
     private final StoreLevelMapper storeLevelMapper;
     private final OperationLogMapper operationLogMapper;
 
@@ -93,6 +96,28 @@ public class AdminRechargeActivityService {
                         .set("status", activity.getStatus())
                         .set("levelIds", levelIds)
                         .toString());
+    }
+
+    /**
+     * 删除预存活动：已产生预存订单的活动不允许删除，只能停用，避免历史订单丢失归属。
+     */
+    @Transactional
+    public void delete(Long id) {
+        RechargeActivity activity = rechargeActivityMapper.selectById(id);
+        if (activity == null) {
+            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "预存活动不存在");
+        }
+        Long used = rechargeOrderMapper.selectCount(Wrappers.<RechargeOrder>lambdaQuery()
+                .eq(RechargeOrder::getActivityId, id));
+        if (used != null && used > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "该活动已产生 " + used + " 笔预存订单，不能删除，请改为停用");
+        }
+        rechargeActivityTierMapper.delete(Wrappers.<RechargeActivityTier>lambdaQuery()
+                .eq(RechargeActivityTier::getActivityId, id));
+        rechargeActivityMapper.deleteById(id);
+        logOperation(SecurityUtils.currentUserId(), "RECHARGE_ACTIVITY_DELETE", id,
+                JSONUtil.createObj().set("title", activity.getTitle()).toString());
     }
 
     public void changeStatus(Long id, Integer status) {
