@@ -84,7 +84,7 @@ export const menuRoutes = [
         path: 'purchase',
         name: 'purchase',
         component: () => import('../views/trade/PurchaseView.vue'),
-        meta: { title: '代客加盟/线下收款', icon: 'ShoppingBag' }
+        meta: { title: '线下加盟', icon: 'ShoppingBag' }
       },
       {
         path: 'wallet-adjust',

@@ -101,7 +101,7 @@ onMounted(async () => {
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">代客加盟 / 线下收款</h2>
+      <h2 class="page-title">线下加盟</h2>
     </div>
 
     <el-card shadow="never">
@@ -109,7 +109,7 @@ onMounted(async () => {
         type="info"
         :closable="false"
         show-icon
-        title="未加盟门店使用「代客加盟」直接开通档位；已加盟门店的升级/续费请使用「线下收款」登记。"
+        title="未储值门店可用「代客加盟」直接开通档位；已储值门店的升级/续费请用「线下收款」登记。"
         class="mb16"
       />
       <el-tabs v-model="tab">
