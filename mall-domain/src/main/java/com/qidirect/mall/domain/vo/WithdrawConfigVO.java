@@ -17,5 +17,7 @@ public record WithdrawConfigVO(
         boolean bankBound,
         String bankHolder,
         String bankName,
-        String bankAccountMasked) {
+        String bankAccountMasked,
+        /** 完整卡号，仅本人可见的提现配置接口返回 */
+        String bankAccount) {
 }

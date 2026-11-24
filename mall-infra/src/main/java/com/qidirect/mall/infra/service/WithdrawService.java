@@ -70,7 +70,8 @@ public class WithdrawService {
                 bankBound,
                 bankBound ? store.getBankHolder() : "",
                 bankBound ? store.getBankName() : "",
-                bankBound ? maskBankAccount(decryptQuietly(store.getBankAccount())) : "");
+                bankBound ? maskBankAccount(decryptQuietly(store.getBankAccount())) : "",
+                bankBound ? decryptQuietly(store.getBankAccount()) : "");
     }
 
     /**

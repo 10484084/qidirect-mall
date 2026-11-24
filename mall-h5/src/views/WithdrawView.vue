@@ -21,7 +21,7 @@
         <template v-if="config.bankBound">
           <div class="kv"><span class="muted">持卡人</span><span>{{ config.bankHolder }}</span></div>
           <div class="kv"><span class="muted">开户行</span><span>{{ config.bankName }}</span></div>
-          <div class="kv"><span class="muted">卡号</span><span>{{ config.bankAccountMasked }}</span></div>
+          <div class="kv"><span class="muted">卡号</span><span class="card-no">{{ config.bankAccount || config.bankAccountMasked }}</span></div>
         </template>
         <div v-else class="bank-missing">
           暂未绑定收款卡
@@ -142,6 +142,13 @@ onMounted(load);
   color: #969799;
   text-align: right;
   flex: 1;
+}
+
+.card-no {
+  font-family: Menlo, Consolas, monospace;
+  letter-spacing: 0.5px;
+  word-break: break-all;
+  text-align: right;
 }
 
 .bank-missing {
