@@ -5,13 +5,13 @@
         <div class="flex-between">
           <div>
             <div class="muted small">当前档位</div>
-            <div class="current-level">{{ user.joined ? profile.levelName : '未加盟' }}</div>
+            <div class="current-level">{{ user.joined ? profile.levelName : '未储值' }}</div>
           </div>
           <div class="right-info">
             <div v-if="profile.upgradeDeadline" class="muted small">
               升级窗口至 {{ formatTime(profile.upgradeDeadline) }}
             </div>
-            <div v-else class="muted small">加盟后可参与预存与升级</div>
+            <div v-else class="muted small">储值后可参与预存与升级</div>
           </div>
         </div>
       </div>
