@@ -67,15 +67,6 @@
         <p class="muted small">持卡人须与实名姓名一致，不一致请联系厂家后台特批。</p>
       </div>
 
-      <div class="card">
-        <div class="card-title">申请更换上级</div>
-        <van-field v-model="parentForm.newParentId" label="新上级ID" type="digit" placeholder="请输入新上级门店 ID" />
-        <van-field v-model="parentForm.reason" label="申请原因" maxlength="255" placeholder="选填" />
-        <div class="form-btn">
-          <van-button size="small" type="primary" round plain :loading="submittingParent" @click="submitParent">提交申请</van-button>
-        </div>
-        <p class="muted small">门店端仅可提交申请，是否生效由厂家审批。</p>
-      </div>
     </div>
 
     <van-popup v-model:show="bankVisible" position="bottom" round safe-area-inset-bottom>
@@ -131,10 +122,8 @@ const hasBank = computed(() => Boolean(profile.value && profile.value.bankAccoun
 
 const baseForm = reactive({ nickname: '', avatar: '' });
 const bankForm = reactive({ bankHolder: '', bankName: '', bankAccount: '' });
-const parentForm = reactive({ newParentId: '', reason: '' });
 const savingBase = ref(false);
 const savingBank = ref(false);
-const submittingParent = ref(false);
 const bankVisible = ref(false);
 
 function openBank() {
@@ -189,24 +178,6 @@ async function submitBank() {
   }
 }
 
-async function submitParent() {
-  if (!parentForm.newParentId) {
-    showToast('请输入新上级门店 ID');
-    return;
-  }
-  submittingParent.value = true;
-  try {
-    await storeApi.parentChange({
-      newParentId: Number(parentForm.newParentId),
-      reason: parentForm.reason || undefined
-    });
-    parentForm.newParentId = '';
-    parentForm.reason = '';
-    showToast('申请已提交，等待厂家审批');
-  } finally {
-    submittingParent.value = false;
-  }
-}
 </script>
 
 <style scoped>
