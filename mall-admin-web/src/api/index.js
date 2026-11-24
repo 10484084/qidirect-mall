@@ -31,7 +31,9 @@ export const parentChangeApi = {
 export const levelApi = {
   list: () => get('/levels'),
   create: (data) => post('/levels', data),
-  update: (id, data) => put(`/levels/${id}`, data)
+  update: (id, data) => put(`/levels/${id}`, data),
+  changeStatus: (id, status) => post(`/levels/${id}/status`, null, { params: { status } }),
+  remove: (id) => del(`/levels/${id}`)
 };
 
 export const categoryApi = {

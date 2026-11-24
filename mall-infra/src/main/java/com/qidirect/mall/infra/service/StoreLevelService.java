@@ -4,9 +4,17 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.domain.dto.admin.LevelSaveRequest;
+import com.qidirect.mall.domain.entity.RechargeActivityTier;
+import com.qidirect.mall.domain.entity.RechargeOrder;
+import com.qidirect.mall.domain.entity.SkuLevelPrice;
+import com.qidirect.mall.domain.entity.Store;
 import com.qidirect.mall.domain.entity.StoreLevel;
 import com.qidirect.mall.domain.vo.StoreLevelVO;
+import com.qidirect.mall.infra.mapper.RechargeActivityTierMapper;
+import com.qidirect.mall.infra.mapper.RechargeOrderMapper;
+import com.qidirect.mall.infra.mapper.SkuLevelPriceMapper;
 import com.qidirect.mall.infra.mapper.StoreLevelMapper;
+import com.qidirect.mall.infra.mapper.StoreMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -16,17 +24,36 @@ import java.util.List;
 
 /**
  * 档位管理。长期提成、业绩奖、买赠只能由最高 sort 档位开启。
+ * 列表按金额（fee）升序返回，前台只展示启用档位。
  */
 @Service
 @RequiredArgsConstructor
 public class StoreLevelService {
 
     private static final int DEFAULT_UPGRADE_DAYS = 60;
+    private static final int STATUS_ENABLED = 1;
+    private static final int STATUS_FROZEN = 0;
 
     private final StoreLevelMapper storeLevelMapper;
+    private final StoreMapper storeMapper;
+    private final RechargeOrderMapper rechargeOrderMapper;
+    private final RechargeActivityTierMapper rechargeActivityTierMapper;
+    private final SkuLevelPriceMapper skuLevelPriceMapper;
 
     public List<StoreLevelVO> list() {
         return storeLevelMapper.selectList(Wrappers.<StoreLevel>lambdaQuery()
+                        .orderByAsc(StoreLevel::getFee)
+                        .orderByAsc(StoreLevel::getSort))
+                .stream().map(this::toVO).toList();
+    }
+
+    /**
+     * 前台可选档位：仅启用状态，按金额升序。
+     */
+    public List<StoreLevelVO> listEnabled() {
+        return storeLevelMapper.selectList(Wrappers.<StoreLevel>lambdaQuery()
+                        .eq(StoreLevel::getStatus, STATUS_ENABLED)
+                        .orderByAsc(StoreLevel::getFee)
                         .orderByAsc(StoreLevel::getSort))
                 .stream().map(this::toVO).toList();
     }
@@ -46,6 +73,7 @@ public class StoreLevelService {
         validateNoBenefitBelow(sort, null);
         StoreLevel level = new StoreLevel();
         apply(level, request);
+        level.setStatus(STATUS_ENABLED);
         try {
             storeLevelMapper.insert(level);
         } catch (DuplicateKeyException e) {
@@ -66,6 +94,45 @@ public class StoreLevelService {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "档位排序值已存在");
         }
         return toVO(level);
+    }
+
+    /**
+     * 冻结/启用档位。冻结只影响前台能否继续选择，已有门店与订单不受影响。
+     */
+    @Transactional
+    public void changeStatus(Long id, Integer status) {
+        if (status == null || (status != STATUS_ENABLED && status != STATUS_FROZEN)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "档位状态不正确");
+        }
+        StoreLevel level = requireLevel(id);
+        level.setStatus(status);
+        storeLevelMapper.updateById(level);
+    }
+
+    /**
+     * 删除档位：已有门店处于该档位或已产生储值订单时不允许删除，只能冻结。
+     * 未使用时级联清理活动档位关联与商品档位价。
+     */
+    @Transactional
+    public void delete(Long id) {
+        StoreLevel level = requireLevel(id);
+        Long stores = storeMapper.selectCount(Wrappers.<Store>lambdaQuery()
+                .eq(Store::getLevelId, id));
+        if (stores != null && stores > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "已有 " + stores + " 家门店处于「" + level.getName() + "」，不能删除，请改为冻结");
+        }
+        Long orders = rechargeOrderMapper.selectCount(Wrappers.<RechargeOrder>lambdaQuery()
+                .eq(RechargeOrder::getLevelId, id));
+        if (orders != null && orders > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "该档位已产生 " + orders + " 笔储值订单，不能删除，请改为冻结");
+        }
+        rechargeActivityTierMapper.delete(Wrappers.<RechargeActivityTier>lambdaQuery()
+                .eq(RechargeActivityTier::getLevelId, id));
+        skuLevelPriceMapper.delete(Wrappers.<SkuLevelPrice>lambdaQuery()
+                .eq(SkuLevelPrice::getLevelId, id));
+        storeLevelMapper.deleteById(id);
     }
 
     private void apply(StoreLevel level, LevelSaveRequest request) {
@@ -116,6 +183,7 @@ public class StoreLevelService {
 
     private StoreLevelVO toVO(StoreLevel level) {
         return new StoreLevelVO(level.getId(), level.getName(), level.getFee(), level.getSort(),
+                level.getStatus() == null ? STATUS_ENABLED : level.getStatus(),
                 level.getUpgradeDays(), level.getLongTerm(), level.getHasBonus(), level.getHasGift());
     }
 }

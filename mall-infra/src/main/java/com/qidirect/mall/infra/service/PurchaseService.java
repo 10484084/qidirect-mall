@@ -93,7 +93,7 @@ public class PurchaseService {
     public List<PurchaseOptionVO> options(Long storeId) {
         Store store = storeGuard.requireStore(storeId);
         LocalDateTime now = LocalDateTime.now();
-        return storeLevelService.list().stream()
+        return storeLevelService.listEnabled().stream()
                 .map(vo -> storeLevelService.requireLevel(vo.id()))
                 .map(level -> optionFor(store, level, now))
                 .toList();

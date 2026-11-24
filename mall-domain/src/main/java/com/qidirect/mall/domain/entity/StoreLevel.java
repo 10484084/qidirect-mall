@@ -25,6 +25,9 @@ public class StoreLevel {
 
     private Integer sort;
 
+    /** 1=启用 0=冻结（冻结后前台不可选择） */
+    private Integer status;
+
     private Integer upgradeDays;
 
     /** 享长期提成 */

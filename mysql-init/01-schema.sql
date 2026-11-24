@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `store_level` (
   `name`         VARCHAR(32) NOT NULL,
   `fee`          BIGINT      NOT NULL COMMENT '加盟费（分）',
   `sort`         INT         NOT NULL DEFAULT 0,
+  `status`       TINYINT     NOT NULL DEFAULT 1 COMMENT '1=启用 0=冻结',
   `upgrade_days` INT         NOT NULL DEFAULT 60,
   `long_term`    TINYINT     NOT NULL DEFAULT 0 COMMENT '享长期提成',
   `has_bonus`    TINYINT     NOT NULL DEFAULT 0 COMMENT '享团队业绩奖',

@@ -8,6 +8,7 @@ public record StoreLevelVO(
         String name,
         Long fee,
         Integer sort,
+        Integer status,
         Integer upgradeDays,
         Integer longTerm,
         Integer hasBonus,

@@ -6,12 +6,14 @@ import com.qidirect.mall.domain.vo.StoreLevelVO;
 import com.qidirect.mall.infra.service.StoreLevelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -40,5 +42,23 @@ public class AdminLevelController {
     public ApiResponse<StoreLevelVO> update(@PathVariable Long id,
                                             @Valid @RequestBody LevelSaveRequest request) {
         return ApiResponse.ok(storeLevelService.update(id, request));
+    }
+
+    /**
+     * 冻结/启用档位：冻结后前台不可选择，已有门店与订单不受影响。
+     */
+    @PostMapping("/{id}/status")
+    public ApiResponse<Void> changeStatus(@PathVariable Long id, @RequestParam Integer status) {
+        storeLevelService.changeStatus(id, status);
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 删除档位：有门店在使用或已产生储值订单时拒绝，需改用冻结。
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        storeLevelService.delete(id);
+        return ApiResponse.ok();
     }
 }

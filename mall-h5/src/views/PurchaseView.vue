@@ -17,29 +17,9 @@
       </div>
 
       <div class="card">
-        <div class="card-title">选择购买入口</div>
-        <div class="source-list">
-          <div class="source-item" :class="{ active: sourceKey === 'resident' }" @click="selectSource('resident')">
-            <div class="source-title">常驻预存 / 升级</div>
-            <div class="muted small">随时可参与</div>
-          </div>
-          <div
-            v-for="activity in activities"
-            :key="activity.id"
-            class="source-item"
-            :class="{ active: sourceKey === String(activity.id) }"
-            @click="selectSource(String(activity.id))"
-          >
-            <div class="source-title">{{ activity.title }}</div>
-            <div class="muted small">限 {{ activity.limitPerStore }} 次/店</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">选择档位</div>
+        <div class="card-title">选择储值档位</div>
         <div
-          v-for="option in currentOptions"
+          v-for="option in options"
           :key="option.levelId"
           class="option-item"
           :class="{ active: selectedLevelId === option.levelId }"
@@ -60,7 +40,7 @@
             </span>
           </div>
         </div>
-        <div v-if="!currentOptions.length" class="text-empty">暂无可选档位</div>
+        <div v-if="!options.length" class="text-empty">暂无可选档位</div>
       </div>
 
       <div class="card agreement-card">
@@ -80,7 +60,7 @@
         <div class="money pay-amount">{{ fenToYuan(currentOption ? currentOption.payAmount : 0) }}</div>
       </div>
       <van-button type="primary" round :loading="submitting" :disabled="!currentOption" @click="submit">
-        {{ currentOption && currentOption.action === 'JOIN' ? '立即加盟' : '立即支付' }}
+        {{ currentOption && currentOption.action === 'JOIN' ? '立即储值' : '立即支付' }}
       </van-button>
     </div>
 
@@ -97,7 +77,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showDialog, showToast } from 'vant';
-import { purchaseApi, rechargeApi } from '../api';
+import { purchaseApi } from '../api';
 import { useUserStore } from '../stores/user';
 import { actionText, fenToYuan, formatTime } from '../utils/format';
 import { assertPayAllowed } from '../utils/pay';
@@ -106,36 +86,25 @@ const router = useRouter();
 const user = useUserStore();
 
 const options = ref([]);
-const activities = ref([]);
 const agreement = ref({});
 const agreementVisible = ref(false);
-const sourceKey = ref('resident');
 const selectedLevelId = ref(null);
 const agreed = ref(false);
 const submitting = ref(false);
 
 const profile = computed(() => user.profile);
 
-const currentOptions = computed(() => {
-  if (sourceKey.value === 'resident') return options.value;
-  const activity = activities.value.find((item) => String(item.id) === sourceKey.value);
-  return activity ? activity.options || [] : [];
-});
-
-const currentOption = computed(() => currentOptions.value.find((item) => item.levelId === selectedLevelId.value) || null);
-
-const currentActivityId = computed(() => (sourceKey.value === 'resident' ? null : Number(sourceKey.value)));
+// 只有档位一种购买入口，前端不再提供活动选择
+const currentOption = computed(() => options.value.find((item) => item.levelId === selectedLevelId.value) || null);
 
 onMounted(async () => {
   try {
     if (!user.profile) await user.loadProfile();
-    const [optionData, activityData, agreementData] = await Promise.all([
+    const [optionData, agreementData] = await Promise.all([
       purchaseApi.options(),
-      rechargeApi.list().catch(() => []),
       purchaseApi.agreement().catch(() => ({}))
     ]);
     options.value = optionData || [];
-    activities.value = activityData || [];
     agreement.value = agreementData || {};
     const first = options.value[0];
     if (first) selectedLevelId.value = first.levelId;
@@ -143,12 +112,6 @@ onMounted(async () => {
     // 错误已提示
   }
 });
-
-function selectSource(key) {
-  sourceKey.value = key;
-  const first = currentOptions.value[0];
-  selectedLevelId.value = first ? first.levelId : null;
-}
 
 function showAgreement() {
   if (!agreement.value.content) {
@@ -178,7 +141,7 @@ async function submit() {
   try {
     const order = await purchaseApi.create({
       levelId: currentOption.value.levelId,
-      activityId: currentActivityId.value,
+      activityId: 0,
       agreed: true
     });
     user.loadProfile().catch(() => {});

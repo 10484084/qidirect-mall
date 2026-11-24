@@ -42,7 +42,7 @@ export const menuRoutes = [
         path: 'levels',
         name: 'levels',
         component: () => import('../views/goods/LevelView.vue'),
-        meta: { title: '档位管理', icon: 'Medal' }
+        meta: { title: '储值档位', icon: 'Medal' }
       },
       {
         path: 'categories',
@@ -54,19 +54,13 @@ export const menuRoutes = [
         path: 'products',
         name: 'products',
         component: () => import('../views/goods/ProductView.vue'),
-        meta: { title: '商品与三档价', icon: 'Present' }
+        meta: { title: '商品档案', icon: 'Present' }
       },
       {
         path: 'gift-rules',
         name: 'gift-rules',
         component: () => import('../views/goods/GiftRuleView.vue'),
         meta: { title: '买赠规则', icon: 'Box' }
-      },
-      {
-        path: 'recharge',
-        name: 'recharge',
-        component: () => import('../views/goods/RechargeView.vue'),
-        meta: { title: '预存活动', icon: 'Wallet' }
       },
       {
         path: 'agreements',

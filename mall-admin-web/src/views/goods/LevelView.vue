@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { levelApi } from '../../api';
 import { fen2yuan, yuan2fen } from '../../utils/format';
 
@@ -16,7 +16,7 @@ async function load() {
   }
 }
 
-const sorted = computed(() => [...levels.value].sort((a, b) => a.sort - b.sort));
+const sorted = computed(() => [...levels.value].sort((a, b) => (a.fee - b.fee) || (a.sort - b.sort)));
 const maxSort = computed(() => (sorted.value.length ? sorted.value[sorted.value.length - 1].sort : 0));
 
 const dialogVisible = ref(false);
@@ -77,13 +77,35 @@ async function submit() {
   await load();
 }
 
+async function toggleStatus(row) {
+  const next = row.status === 1 ? 0 : 1;
+  await levelApi.changeStatus(row.id, next);
+  ElMessage.success(next === 1 ? '已启用' : '已冻结，前台不再展示该档位');
+  load();
+}
+
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除档位「${row.name}」吗？已有门店处于该档位或已产生储值订单时会被拒绝，请改用冻结。`,
+      '删除档位',
+      { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
+    );
+  } catch (e) {
+    return;
+  }
+  await levelApi.remove(row.id);
+  ElMessage.success('已删除');
+  load();
+}
+
 onMounted(load);
 </script>
 
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">档位管理</h2>
+      <h2 class="page-title">储值档位</h2>
       <div>
         <el-button @click="load">刷新</el-button>
         <el-button type="primary" @click="openCreate">新增档位</el-button>
@@ -102,10 +124,16 @@ onMounted(load);
       <el-table v-loading="loading" :data="sorted" border stripe>
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="name" label="档位名称" min-width="120" />
-        <el-table-column label="加盟费" width="130">
+        <el-table-column label="档位金额" width="130">
           <template #default="{ row }">¥{{ fen2yuan(row.fee) }}</template>
         </el-table-column>
-        <el-table-column prop="sort" label="排序" width="80" />
+        <el-table-column label="状态" width="90">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? '启用' : '冻结' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="upgradeDays" label="升级期(天)" width="110" />
         <el-table-column label="长期有效" width="100">
           <template #default="{ row }">
@@ -128,9 +156,13 @@ onMounted(load);
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="190" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link type="primary" @click="toggleStatus(row)">
+              {{ row.status === 1 ? '冻结' : '启用' }}
+            </el-button>
+            <el-button link type="danger" @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -142,9 +174,9 @@ onMounted(load);
           <el-input v-model="form.name" maxlength="32" />
         </el-form-item>
         <el-form-item
-          label="加盟费(元)"
+          label="档位金额(元)"
           prop="feeYuan"
-          :rules="[{ required: true, message: '请输入加盟费' }]"
+          :rules="[{ required: true, message: '请输入档位金额' }]"
         >
           <el-input-number v-model="form.feeYuan" :min="0" :precision="2" :step="1000" style="width: 200px" />
         </el-form-item>

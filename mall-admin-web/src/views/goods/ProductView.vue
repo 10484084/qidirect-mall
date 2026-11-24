@@ -13,7 +13,8 @@ const levels = ref([]);
 
 const query = reactive({ keyword: '', categoryId: null, status: null, page: 1, size: 20 });
 
-const sortedLevels = computed(() => [...levels.value].sort((a, b) => a.sort - b.sort));
+// 档位价格列按档位金额升序排列，列名取档位名称
+const sortedLevels = computed(() => [...levels.value].sort((a, b) => (a.fee - b.fee) || (a.sort - b.sort)));
 
 const dialogVisible = ref(false);
 const editing = ref(null);
@@ -217,7 +218,7 @@ onMounted(async () => {
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">商品与三档价</h2>
+      <h2 class="page-title">商品档案</h2>
       <div>
         <el-button @click="load">刷新</el-button>
         <el-button type="primary" @click="openCreate">新增商品</el-button>
@@ -350,7 +351,7 @@ onMounted(async () => {
           </el-col>
         </el-row>
 
-        <el-divider content-position="left">规格与档位价（元）</el-divider>
+        <el-divider content-position="left">规格与档位价格（元）</el-divider>
         <el-table :data="form.skus" border size="small">
           <el-table-column label="规格名称" min-width="140">
             <template #default="{ row }">
