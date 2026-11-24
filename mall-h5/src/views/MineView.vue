@@ -30,11 +30,6 @@
         <van-cell title="修改登录密码" icon="lock" is-link to="/change-password" />
       </van-cell-group>
 
-      <van-cell-group inset class="menu">
-        <van-cell title="加盟 / 预存" icon="shop-o" is-link to="/purchase" />
-        <van-cell title="我的订单" icon="orders-o" is-link to="/orders" />
-      </van-cell-group>
-
       <div class="logout">
         <van-button block round plain type="danger" @click="onLogout">退出登录</van-button>
       </div>
