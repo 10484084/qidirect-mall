@@ -22,8 +22,7 @@
     <div class="page-body">
       <van-cell-group inset class="menu">
         <van-cell title="我的钱包" icon="gold-coin-o" is-link to="/wallet" />
-        <van-cell title="门店资料与实名" icon="contact-o" is-link to="/profile" />
-        <van-cell title="收款卡" icon="credit-pay" is-link to="/profile" />
+        <van-cell title="我的资料" icon="contact-o" is-link to="/profile" />
         <van-cell title="邀请好友" icon="qr" is-link to="/invite" />
         <van-cell title="我的团队" icon="friends-o" is-link to="/team" />
         <van-cell title="团队业绩" icon="chart-trending-o" is-link to="/performance" />

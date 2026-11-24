@@ -1,6 +1,6 @@
 <template>
   <div class="page profile-page">
-    <PageHeader title="门店资料" />
+    <PageHeader title="我的资料" />
 
     <div class="page-body">
       <div v-if="profile" class="card">

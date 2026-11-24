@@ -64,7 +64,7 @@ router.afterEach((to) => {
     performance: '团队业绩',
     timeline: '记录',
     invite: '邀请好友',
-    profile: '门店资料',
+    profile: '我的资料',
     'auth-verify': '实名认证',
     'bind-bank': '绑定收款卡',
     notices: '消息',
