@@ -34,6 +34,10 @@
         </div>
       </van-form>
 
+      <p class="forgot-tip">
+        <span class="link" @click="$router.push('/forgot-password')">忘记密码？</span>
+      </p>
+
       <p class="agreement-tip">
         登录即表示同意《用户服务协议》与《隐私政策》
       </p>
@@ -78,6 +82,16 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.forgot-tip {
+  margin: 12px 16px 0;
+  text-align: right;
+  font-size: 13px;
+}
+
+.forgot-tip .link {
+  color: var(--brand);
+}
+
 .login-page {
   min-height: 100vh;
   padding: 56px 20px 32px;

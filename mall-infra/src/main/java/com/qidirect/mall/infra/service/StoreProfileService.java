@@ -17,6 +17,7 @@ import com.qidirect.mall.domain.entity.StoreParentChange;
 import com.qidirect.mall.domain.vo.InviteQrVO;
 import com.qidirect.mall.domain.vo.OrderEligibilityVO;
 import com.qidirect.mall.domain.vo.StoreProfileVO;
+import com.qidirect.mall.infra.identity.IdentityVerifyGateway;
 import com.qidirect.mall.infra.mapper.StoreLevelMapper;
 import com.qidirect.mall.infra.mapper.StoreMapper;
 import com.qidirect.mall.infra.mapper.StoreParentChangeMapper;
@@ -38,6 +39,7 @@ public class StoreProfileService {
     private final StoreMapper storeMapper;
     private final StoreLevelMapper storeLevelMapper;
     private final StoreParentChangeMapper storeParentChangeMapper;
+    private final IdentityVerifyGateway identityVerifyGateway;
     private final StoreGuard storeGuard;
     private final InviteQrService inviteQrService;
     private final DataCipher dataCipher;
@@ -100,6 +102,15 @@ public class StoreProfileService {
         if (!IdcardUtil.isValidCard(idCard)) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "身份证号不正确");
         }
+        // 身份二要素核验：姓名与身份证号必须与公安库一致，不通过不允许实名
+        String realName = StrUtil.trimToEmpty(request.realName());
+        if (StrUtil.isBlank(realName)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "请输入真实姓名");
+        }
+        if (!identityVerifyGateway.verify(realName, idCard)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "姓名与身份证号不一致，请核对后重试");
+        }
+
         String licenseNo = StrUtil.trimToEmpty(request.licenseNo()).toUpperCase();
         String idCardHash = dataCipher.hash(idCard);
         String licenseHash = dataCipher.hash(licenseNo);
@@ -113,7 +124,7 @@ public class StoreProfileService {
         if (StrUtil.isNotBlank(request.storeName())) {
             patch.setName(request.storeName().trim());
         }
-        patch.setRealName(request.realName().trim());
+        patch.setRealName(realName);
         patch.setIdCard(dataCipher.encrypt(idCard));
         patch.setIdCardHash(idCardHash);
         patch.setLicenseNo(licenseNo);

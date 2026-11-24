@@ -70,6 +70,19 @@
             <artifactId>core</artifactId>
         </dependency>
 
+        <!-- 阿里云短信 -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>dysmsapi20170525</artifactId>
+            <version>4.1.1</version>
+        </dependency>
+        <!-- 阿里云身份核验（身份证二要素） -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>alibabacloud-cloudauth20190307</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

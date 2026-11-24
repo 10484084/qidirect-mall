@@ -5,6 +5,7 @@ export const authApi = {
   changePassword: (data) => post('/auth/change-password', data),
   sendSms: (phone) => post('/auth/sms', { phone }),
   register: (data) => post('/auth/register', data),
+  resetPassword: (data) => post('/auth/reset-password', data),
   login: (data) => post('/auth/login', data)
 };
 

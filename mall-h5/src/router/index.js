@@ -5,6 +5,7 @@ const routes = [
   { path: '/guide', name: 'guide', component: () => import('../views/GuideView.vue'), meta: { public: true } },
   { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { public: true } },
   { path: '/register', name: 'register', component: () => import('../views/RegisterView.vue'), meta: { public: true } },
+  { path: '/forgot-password', name: 'forgot-password', component: () => import('../views/ForgotPasswordView.vue'), meta: { public: true } },
   { path: '/change-password', name: 'change-password', component: () => import('../views/ChangePasswordView.vue') },
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { tab: true } },
   { path: '/products', name: 'products', component: () => import('../views/ProductsView.vue'), meta: { tab: true } },
@@ -43,7 +44,7 @@ router.beforeEach((to) => {
   if (getToken() && needChangePwd() && to.name !== 'change-password' && !to.meta.public) {
     return { name: 'change-password' };
   }
-  if ((to.name === 'login' || to.name === 'register') && getToken()) {
+  if (['login', 'register', 'forgot-password'].includes(to.name) && getToken()) {
     return { path: needChangePwd() ? '/change-password' : '/' };
   }
   return true;
@@ -69,6 +70,7 @@ router.afterEach((to) => {
     notices: '消息',
     login: '登录',
     register: '门店注册',
+    'forgot-password': '忘记密码',
     'change-password': '修改密码',
     guide: '请在微信中打开'
   };

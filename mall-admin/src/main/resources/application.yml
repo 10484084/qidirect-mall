@@ -57,6 +57,17 @@ storage:
 
 sms:
   provider: ${SMS_PROVIDER:mock}
+  template-code: ${ALIYUN_SMS_TEMPLATE:LOGIN}
+  aliyun:
+    access-key-id: ${ALIYUN_SMS_AK:}
+    access-key-secret: ${ALIYUN_SMS_SK:}
+    sign-name: ${ALIYUN_SMS_SIGN:}
+
+identity:
+  provider: ${IDENTITY_PROVIDER:mock}
+  aliyun:
+    access-key-id: ${ALIYUN_ID_AK:${ALIYUN_SMS_AK:}}
+    access-key-secret: ${ALIYUN_ID_SK:${ALIYUN_SMS_SK:}}
 
 payment:
   provider: ${PAYMENT_PROVIDER:mock}

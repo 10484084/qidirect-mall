@@ -11,6 +11,7 @@ import com.qidirect.mall.common.util.JwtUtil;
 import com.qidirect.mall.domain.dto.auth.ChangePasswordRequest;
 import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
+import com.qidirect.mall.domain.dto.auth.ResetPasswordRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
 import com.qidirect.mall.domain.entity.Store;
 import com.qidirect.mall.domain.entity.Wallet;
@@ -161,6 +162,31 @@ public class StoreAuthService {
         }
         Store patch = new Store();
         patch.setId(storeId);
+        patch.setPassword(passwordEncoder.encode(newPwd));
+        patch.setPwdNeedChange(0);
+        storeMapper.updateById(patch);
+    }
+
+    /**
+     * 忘记密码：校验短信验证码后重置密码，重置后不强制再次改密。
+     */
+    @Transactional
+    public void resetPasswordBySms(ResetPasswordRequest request) {
+        String phone = request.phone().trim();
+        Store store = findByPhone(phone);
+        if (store == null) {
+            throw new BizException(ErrorCode.STORE_NOT_FOUND.getCode(), "该手机号未注册门店");
+        }
+        if (store.getStatus() != null && store.getStatus() == 0) {
+            throw new BizException(ErrorCode.STORE_FROZEN);
+        }
+        smsCodeService.verify(phone, request.code());
+        String newPwd = request.newPassword().trim();
+        if (DEFAULT_PASSWORD.equalsIgnoreCase(newPwd)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "新密码不能与初始密码相同");
+        }
+        Store patch = new Store();
+        patch.setId(store.getId());
         patch.setPassword(passwordEncoder.encode(newPwd));
         patch.setPwdNeedChange(0);
         storeMapper.updateById(patch);

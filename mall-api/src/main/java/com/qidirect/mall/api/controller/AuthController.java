@@ -4,6 +4,7 @@ import com.qidirect.mall.common.api.ApiResponse;
 import com.qidirect.mall.domain.dto.auth.ChangePasswordRequest;
 import com.qidirect.mall.domain.dto.auth.PwdLoginRequest;
 import com.qidirect.mall.domain.dto.auth.RegisterRequest;
+import com.qidirect.mall.domain.dto.auth.ResetPasswordRequest;
 import com.qidirect.mall.domain.dto.auth.SmsLoginRequest;
 import com.qidirect.mall.domain.dto.auth.SmsSendRequest;
 import com.qidirect.mall.domain.vo.StoreLoginVO;
@@ -37,6 +38,15 @@ public class AuthController {
     @PostMapping("/register")
     public ApiResponse<StoreLoginVO> register(@Valid @RequestBody RegisterRequest request) {
         return ApiResponse.ok(storeAuthService.register(request));
+    }
+
+    /**
+     * 忘记密码：手机号 + 短信验证码重置登录密码。
+     */
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        storeAuthService.resetPasswordBySms(request);
+        return ApiResponse.ok();
     }
 
     @PostMapping("/login")

@@ -4,8 +4,8 @@ import cn.hutool.core.util.RandomUtil;
 import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.infra.sms.SmsGateway;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -15,17 +15,25 @@ import java.util.Map;
  * 短信验证码：5 分钟有效，同一手机号 60 秒限流。
  */
 @Service
-@RequiredArgsConstructor
 public class SmsCodeService {
 
     private static final Duration CODE_TTL = Duration.ofMinutes(5);
     private static final Duration LIMIT_TTL = Duration.ofSeconds(60);
     private static final String CODE_KEY = "sms:code:";
     private static final String LIMIT_KEY = "sms:limit:";
-    private static final String TEMPLATE_CODE = "LOGIN";
+    /** 验证码模板编码，阿里云为 SMS_ 开头的模板 CODE */
+    private final String templateCode;
 
     private final StringRedisTemplate redisTemplate;
     private final SmsGateway smsGateway;
+
+    public SmsCodeService(StringRedisTemplate redisTemplate,
+                          SmsGateway smsGateway,
+                          @Value("${sms.template-code:LOGIN}") String templateCode) {
+        this.redisTemplate = redisTemplate;
+        this.smsGateway = smsGateway;
+        this.templateCode = templateCode;
+    }
 
     public void send(String phone) {
         Boolean acquired = redisTemplate.opsForValue()
@@ -35,7 +43,7 @@ public class SmsCodeService {
         }
         String code = RandomUtil.randomNumbers(6);
         redisTemplate.opsForValue().set(CODE_KEY + phone, code, CODE_TTL);
-        smsGateway.send(phone, TEMPLATE_CODE, Map.of("code", code));
+        smsGateway.send(phone, templateCode, Map.of("code", code));
     }
 
     /**

@@ -42,7 +42,23 @@ security:
   hash-salt: ${HASH_SALT:qidirect-mall-hash-salt}
 
 invite:
-  base-url: ${INVITE_BASE_URL:https://mall.example.com/register}
+  base-url: ${INVITE_BASE_URL:https://mall.example.com/h5/#/register}
+
+# 短信网关：mock 仅打日志；aliyun 走阿里云短信（需资质、签名、模板报备通过）
+sms:
+  provider: ${SMS_PROVIDER:mock}
+  template-code: ${ALIYUN_SMS_TEMPLATE:LOGIN}
+  aliyun:
+    access-key-id: ${ALIYUN_SMS_AK:}
+    access-key-secret: ${ALIYUN_SMS_SK:}
+    sign-name: ${ALIYUN_SMS_SIGN:}
+
+# 身份核验：mock 直接放行；aliyun 走身份二要素核验（不做人脸）
+identity:
+  provider: ${IDENTITY_PROVIDER:mock}
+  aliyun:
+    access-key-id: ${ALIYUN_ID_AK:${ALIYUN_SMS_AK:}}
+    access-key-secret: ${ALIYUN_ID_SK:${ALIYUN_SMS_SK:}}
 
 storage:
   type: ${STORAGE_TYPE:local}
@@ -54,9 +70,6 @@ storage:
     access-key: ${OSS_ACCESS_KEY:}
     secret: ${OSS_SECRET:}
     public-url: ${OSS_PUBLIC_URL:}
-
-sms:
-  provider: ${SMS_PROVIDER:mock}
 
 payment:
   provider: ${PAYMENT_PROVIDER:mock}

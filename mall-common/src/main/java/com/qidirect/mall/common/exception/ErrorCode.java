@@ -15,6 +15,7 @@ public enum ErrorCode {
     LOGIN_FAILED(10005, "账号或密码错误"),
     SMS_CODE_INVALID(10006, "验证码错误或已过期"),
     SMS_TOO_FREQUENT(10007, "验证码发送过于频繁，请稍后再试"),
+    SMS_SEND_FAILED(10008, "短信发送失败，请稍后重试"),
     SYSTEM_ERROR(10999, "系统繁忙，请稍后重试"),
 
     STORE_NOT_FOUND(20001, "门店不存在"),
