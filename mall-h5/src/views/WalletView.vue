@@ -3,19 +3,24 @@
     <PageHeader title="我的钱包" />
 
     <div class="wallet-hero">
-      <div class="hero-line">
-        <span>预存余额</span>
-        <span class="amount">{{ fenToYuan(wallet.depositBalance) }}</span>
+      <div class="hero-cols">
+        <div class="hero-col">
+          <div class="hero-num">{{ fenToYuan(wallet.depositBalance) }}</div>
+          <div class="hero-label">预存账户</div>
+        </div>
+        <div class="hero-col">
+          <div class="hero-num">{{ fenToYuan(wallet.commissionBalance) }}</div>
+          <div class="hero-label">佣金账户</div>
+        </div>
+        <div class="hero-col">
+          <div class="hero-num">{{ fenToYuan(wallet.availableCommission) }}</div>
+          <div class="hero-label">可提金额</div>
+        </div>
       </div>
-      <div class="hero-sub">
-        <span>仅下单抵扣，不可提现</span>
+      <div class="hero-foot">
+        <span class="hero-tip">冻结 {{ fenToYuan(wallet.frozenAmount) }} · 预存仅可下单抵扣</span>
+        <van-button size="mini" round class="withdraw-btn" @click="$router.push('/withdraw')">申请提现</van-button>
       </div>
-      <div class="hero-sub hero-sub--second">
-        <span>佣金余额 {{ fenToYuan(wallet.commissionBalance) }}</span>
-        <span>冻结 {{ fenToYuan(wallet.frozenAmount) }}</span>
-        <span>可提佣金 {{ fenToYuan(wallet.availableCommission) }}</span>
-      </div>
-      <van-button size="small" round class="withdraw-btn" @click="$router.push('/withdraw')">申请提现</van-button>
     </div>
 
     <van-tabs v-model:active="account" sticky @change="reload">
@@ -99,40 +104,48 @@ onMounted(() => {
   position: relative;
 }
 
-.hero-line {
+.hero-cols {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 6px;
 }
 
-.amount {
-  font-size: 28px;
+.hero-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-num {
+  font-size: 22px;
   font-weight: 600;
   color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.hero-sub {
-  display: flex;
-  gap: 14px;
+.hero-label {
+  margin-top: 6px;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.75);
-  margin-top: 8px;
 }
 
-.hero-sub--second {
-  margin-top: 4px;
+.hero-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.hero-tip {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .withdraw-btn {
-  position: absolute;
-  right: 16px;
-  top: 18px;
   color: #0f4fbf;
   border: none;
+  flex-shrink: 0;
 }
 
 .log-card {

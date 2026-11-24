@@ -20,22 +20,8 @@
     </div>
 
     <div class="page-body">
-      <div class="card balance-card" @click="$router.push('/wallet')">
-        <div class="balance-item">
-          <div class="balance-value">{{ fenToYuan(wallet.depositBalance) }}</div>
-          <div class="muted small">预存余额</div>
-        </div>
-        <div class="balance-item">
-          <div class="balance-value">{{ fenToYuan(wallet.commissionBalance) }}</div>
-          <div class="muted small">佣金余额</div>
-        </div>
-        <div class="balance-item">
-          <div class="balance-value">{{ fenToYuan(wallet.availableCommission) }}</div>
-          <div class="muted small">可提佣金</div>
-        </div>
-      </div>
-
       <van-cell-group inset class="menu">
+        <van-cell title="我的钱包" icon="gold-coin-o" is-link to="/wallet" />
         <van-cell title="门店资料与实名" icon="contact-o" is-link to="/profile" />
         <van-cell title="收款卡" icon="credit-pay" is-link to="/profile" />
         <van-cell title="邀请好友" icon="qr" is-link to="/invite" />
@@ -61,15 +47,13 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { noticeApi, walletApi } from '../api';
+import { noticeApi } from '../api';
 import { useCartStore } from '../stores/cart';
 import { useUserStore } from '../stores/user';
-import { fenToYuan } from '../utils/format';
 
 const router = useRouter();
 const user = useUserStore();
 const cart = useCartStore();
-const wallet = ref({ depositBalance: 0, commissionBalance: 0, availableCommission: 0 });
 const unread = ref(0);
 const profile = computed(() => user.profile);
 const shortName = computed(() => {
@@ -80,8 +64,7 @@ const shortName = computed(() => {
 onMounted(async () => {
   try {
     if (!user.profile) await user.loadProfile();
-    const [walletData, unreadCount] = await Promise.all([walletApi.wallet(), noticeApi.unreadCount()]);
-    wallet.value = walletData;
+    const unreadCount = await noticeApi.unreadCount();
     unread.value = Number(unreadCount) || 0;
   } catch (e) {
     // 错误已提示
@@ -139,22 +122,6 @@ function onLogout() {
   display: flex;
   gap: 6px;
   margin-top: 6px;
-}
-
-.balance-card {
-  display: flex;
-  padding: 14px 6px;
-}
-
-.balance-item {
-  flex: 1;
-  text-align: center;
-}
-
-.balance-value {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 4px;
 }
 
 .menu {
