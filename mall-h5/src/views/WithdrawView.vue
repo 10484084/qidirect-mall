@@ -11,7 +11,6 @@
         <div class="kv"><span class="muted">可提佣金余额</span><span class="money">{{ fenToYuan(config.availableAmount) }}</span></div>
         <div class="kv"><span class="muted">可提现范围</span><span class="small-tip-text">仅佣金可提现，预存余额只能下单抵扣</span></div>
         <div class="kv"><span class="muted">最低提现金额</span><span>¥{{ fenToYuan(config.minAmount) }}</span></div>
-        <div class="kv"><span class="muted">开放日</span><span>{{ config.openDays || '每月 15 日与月末最后一天' }}</span></div>
         <div v-if="!config.open && config.nextOpenDate" class="kv">
           <span class="muted">下次开放</span><span>{{ config.nextOpenDate }}</span>
         </div>
