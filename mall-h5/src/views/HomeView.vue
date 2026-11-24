@@ -38,7 +38,7 @@
             <div class="action-title">完成实名认证</div>
             <div class="muted small">实名后方可加盟与下单</div>
           </div>
-          <van-button size="small" type="primary" round @click="$router.push('/profile')">去实名</van-button>
+          <van-button size="small" type="primary" round @click="$router.push('/auth-verify')">去实名</van-button>
         </template>
         <template v-else-if="!user.joined">
           <div>

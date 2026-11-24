@@ -37,15 +37,14 @@
           <div class="kv"><span class="muted">身份证号</span><span>{{ profile.idCardMasked }}</span></div>
           <div class="kv"><span class="muted">营业执照号</span><span>{{ profile.licenseNo || '-' }}</span></div>
         </template>
-        <van-form v-else @submit="submitAuth">
-          <van-field v-model="authForm.realName" label="姓名" maxlength="32" placeholder="请输入真实姓名" :rules="[{ required: true, message: '请输入姓名' }]" />
-          <van-field v-model="authForm.idCard" label="身份证号" maxlength="18" placeholder="请输入身份证号" :rules="[{ required: true, message: '请输入身份证号' }]" />
-          <van-field v-model="authForm.storeName" label="门店名称" maxlength="64" placeholder="请输入门店名称" :rules="[{ required: true, message: '请输入门店名称' }]" />
-          <van-field v-model="authForm.licenseNo" label="营业执照号" maxlength="64" placeholder="选填" />
+        <div v-else class="auth-entry">
+          <p class="muted small">填写姓名与身份证号即可完成实名，随后绑定收款卡。</p>
           <div class="form-btn">
-            <van-button size="small" type="primary" round native-type="submit" :loading="submittingAuth">提交实名</van-button>
+            <van-button size="small" type="primary" round @click="$router.push('/auth-verify')">
+              去实名认证
+            </van-button>
           </div>
-        </van-form>
+        </div>
       </div>
 
       <div class="card">
@@ -93,11 +92,9 @@ const user = useUserStore();
 const profile = computed(() => user.profile);
 
 const baseForm = reactive({ nickname: '', avatar: '' });
-const authForm = reactive({ realName: '', idCard: '', storeName: '', licenseNo: '' });
 const bankForm = reactive({ bankHolder: '', bankName: '', bankAccount: '' });
 const parentForm = reactive({ newParentId: '', reason: '' });
 const savingBase = ref(false);
-const submittingAuth = ref(false);
 const savingBank = ref(false);
 const submittingParent = ref(false);
 
@@ -106,7 +103,6 @@ onMounted(async () => {
     if (!user.profile) await user.loadProfile();
     baseForm.nickname = profile.value.nickname || '';
     baseForm.avatar = profile.value.avatar || '';
-    authForm.realName = profile.value.realName || '';
     bankForm.bankHolder = profile.value.bankHolder || profile.value.realName || '';
     bankForm.bankName = profile.value.bankName || '';
   } catch (e) {
@@ -122,22 +118,6 @@ async function saveBase() {
     showToast('已保存');
   } finally {
     savingBase.value = false;
-  }
-}
-
-async function submitAuth() {
-  submittingAuth.value = true;
-  try {
-    await storeApi.submitAuth({
-      realName: authForm.realName,
-      idCard: authForm.idCard,
-      storeName: authForm.storeName,
-      licenseNo: authForm.licenseNo || undefined
-    });
-    await user.loadProfile();
-    showToast('实名信息已提交');
-  } finally {
-    submittingAuth.value = false;
   }
 }
 

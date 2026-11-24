@@ -109,7 +109,10 @@ public class StoreProfileService {
 
         Store patch = new Store();
         patch.setId(storeId);
-        patch.setName(request.storeName().trim());
+        // 门店名称只在前端填写时才覆盖，实名只要姓名与身份证
+        if (StrUtil.isNotBlank(request.storeName())) {
+            patch.setName(request.storeName().trim());
+        }
         patch.setRealName(request.realName().trim());
         patch.setIdCard(dataCipher.encrypt(idCard));
         patch.setIdCardHash(idCardHash);

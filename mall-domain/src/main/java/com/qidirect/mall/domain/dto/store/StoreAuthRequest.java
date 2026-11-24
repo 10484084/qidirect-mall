@@ -17,7 +17,6 @@ public record StoreAuthRequest(
         @Size(max = 18, message = "身份证号格式不正确")
         String idCard,
 
-        @NotBlank(message = "门店名称不能为空")
         @Size(max = 64, message = "门店名称过长")
         String storeName,
 
