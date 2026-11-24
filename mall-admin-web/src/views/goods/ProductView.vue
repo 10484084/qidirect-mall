@@ -22,6 +22,7 @@ const saving = ref(false);
 const form = reactive({
   categoryId: null,
   name: '',
+  unit: '',
   cover: '',
   images: [],
   description: '',
@@ -35,11 +36,13 @@ const form = reactive({
 const detailVisible = ref(false);
 const detailRow = ref(null);
 
-function emptySku() {
+// 第一个规格固定为主单位（factor=1，不可删除），其余为包装单位（1 包装 = N 主单位）
+function emptySku(isBase = false) {
   return {
     id: undefined,
+    isBase,
     specName: '',
-    factor: 1,
+    factor: isBase ? 1 : 2,
     sort: form.skus.length + 1,
     priceYuan: Object.fromEntries(sortedLevels.value.map((l) => [l.id, 0]))
   };
@@ -80,6 +83,7 @@ async function openCreate() {
   Object.assign(form, {
     categoryId: categories.value.length ? categories.value[0].id : null,
     name: '',
+    unit: '',
     cover: '',
     images: [],
     description: '',
@@ -91,7 +95,7 @@ async function openCreate() {
   });
   dialogVisible.value = true;
   await ensureLevels();
-  form.skus = [emptySku()];
+  form.skus = [emptySku(true)];
 }
 
 async function openEdit(row) {
@@ -101,6 +105,7 @@ async function openEdit(row) {
   Object.assign(form, {
     categoryId: detail.categoryId,
     name: detail.name,
+    unit: detail.unit || '',
     cover: detail.cover || '',
     images: detail.images || [],
     description: detail.description || '',
@@ -108,10 +113,11 @@ async function openEdit(row) {
     recommend: detail.recommend || 0,
     status: detail.status ?? 1,
     sort: detail.sort || 0,
-    skus: (detail.skus || []).map((s) => ({
+    skus: (detail.skus || []).map((s, index) => ({
       id: s.id,
+      isBase: index === 0 || s.factor === 1,
       specName: s.specName,
-      factor: s.factor,
+      factor: s.factor || 1,
       sort: s.sort || 1,
       priceYuan: Object.fromEntries(
         sortedLevels.value.map((l) => {
@@ -121,7 +127,13 @@ async function openEdit(row) {
       )
     }))
   });
-  if (!form.skus.length) form.skus = [emptySku()];
+  if (!form.skus.length) {
+    form.skus = [emptySku(true)];
+  } else {
+    // 保证第一行为主单位
+    form.skus.forEach((sku, i) => { sku.isBase = i === 0; });
+    form.skus[0].factor = 1;
+  }
   dialogVisible.value = true;
 }
 
@@ -146,15 +158,27 @@ async function submit() {
     ElMessage.warning('至少添加一个规格');
     return;
   }
-  for (const sku of form.skus) {
-    if (!sku.specName) {
-      ElMessage.warning('规格名称不能为空');
+  if (!form.unit.trim()) {
+    ElMessage.warning('请先填写主单位，如 瓶/袋/盒');
+    return;
+  }
+  for (let i = 0; i < form.skus.length; i += 1) {
+    const sku = form.skus[i];
+    if (sku.isBase) continue;
+    if (!sku.specName || !sku.specName.trim()) {
+      ElMessage.warning(`第 ${i} 个包装单位名称不能为空`);
+      return;
+    }
+    if (!sku.factor || Number(sku.factor) < 2) {
+      ElMessage.warning(`包装单位「${sku.specName}」需包含至少 2 个主单位`);
       return;
     }
   }
+  const unit = form.unit.trim();
   const payload = {
     categoryId: form.categoryId,
     name: form.name,
+    unit,
     cover: form.cover,
     images: form.images,
     description: form.description,
@@ -164,8 +188,8 @@ async function submit() {
     sort: form.sort,
     skus: form.skus.map((s) => ({
       id: s.id,
-      specName: s.specName,
-      factor: Number(s.factor) || 1,
+      specName: s.isBase ? unit : s.specName.trim(),
+      factor: s.isBase ? 1 : Number(s.factor) || 1,
       sort: s.sort || 1,
       prices: sortedLevels.value.map((l) => ({
         levelId: l.id,
@@ -315,6 +339,11 @@ onMounted(async () => {
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="主单位" required>
+              <el-input v-model="form.unit" maxlength="8" placeholder="如 瓶 / 袋 / 盒" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="排序">
               <el-input-number v-model="form.sort" :min="0" style="width: 160px" />
             </el-form-item>
@@ -351,16 +380,34 @@ onMounted(async () => {
           </el-col>
         </el-row>
 
-        <el-divider content-position="left">规格与档位价格（元）</el-divider>
+        <el-divider content-position="left">单位与档位价格（元）</el-divider>
+        <el-alert
+          type="info"
+          :closable="false"
+          show-icon
+          class="mb8"
+          title="先填主单位，再加包装单位：1 个包装单位 = N 个主单位（如 1 箱 = 12 瓶），价格按各自单位分别设置。"
+        />
         <el-table :data="form.skus" border size="small">
-          <el-table-column label="规格名称" min-width="140">
+          <el-table-column label="单位名称" min-width="160">
             <template #default="{ row }">
-              <el-input v-model="row.specName" placeholder="如 500g/箱" />
+              <div v-if="row.isBase" class="base-unit">
+                <el-tag size="small" type="success">主单位</el-tag>
+                <span class="base-unit__name">{{ form.unit || '请先填写主单位' }}</span>
+              </div>
+              <el-input v-else v-model="row.specName" placeholder="如 箱 / 件" />
             </template>
           </el-table-column>
-          <el-table-column label="换算系数" width="110">
+          <el-table-column label="含主单位数" width="140">
             <template #default="{ row }">
-              <el-input-number v-model="row.factor" :min="1" size="small" style="width: 90px" />
+              <span v-if="row.isBase">1</span>
+              <el-input-number
+                v-else
+                v-model="row.factor"
+                :min="2"
+                size="small"
+                style="width: 96px"
+              />
             </template>
           </el-table-column>
           <el-table-column label="排序" width="90">
@@ -380,15 +427,21 @@ onMounted(async () => {
               />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="70">
-            <template #default="{ $index }">
-              <el-button link type="danger" :disabled="form.skus.length <= 1" @click="removeSku($index)">
+          <el-table-column label="操作" width="80">
+            <template #default="{ row, $index }">
+              <el-button
+                v-if="!row.isBase"
+                link
+                type="danger"
+                @click="removeSku($index)"
+              >
                 删除
               </el-button>
+              <span v-else class="text-muted">—</span>
             </template>
           </el-table-column>
         </el-table>
-        <el-button class="mt8" plain @click="addSku">添加规格</el-button>
+        <el-button class="mt8" plain @click="addSku">添加包装单位</el-button>
       </el-form>
 
       <template #footer>

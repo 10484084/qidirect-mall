@@ -9,6 +9,7 @@ public record AdminProductVO(
         Long id,
         Long categoryId,
         String name,
+        String unit,
         String cover,
         List<String> images,
         String description,

@@ -139,6 +139,7 @@ CREATE TABLE IF NOT EXISTS `product` (
   `id`              BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   `category_id`     BIGINT UNSIGNED NOT NULL DEFAULT 0,
   `name`            VARCHAR(128) NOT NULL,
+  `unit`            VARCHAR(16) NOT NULL DEFAULT '' COMMENT '主单位，如 瓶',
   `cover`           VARCHAR(255) NOT NULL DEFAULT '',
   `images`          JSON NULL,
   `description`     TEXT NULL,

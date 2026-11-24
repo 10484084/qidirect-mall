@@ -13,6 +13,7 @@ import java.util.List;
 public record ProductSaveRequest(
         @NotNull Long categoryId,
         @NotBlank String name,
+        String unit,
         String cover,
         List<String> images,
         String description,

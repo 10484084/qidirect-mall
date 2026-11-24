@@ -180,6 +180,7 @@ public class ProductService {
     private void apply(Product product, ProductSaveRequest request) {
         product.setCategoryId(request.categoryId());
         product.setName(request.name().trim());
+        product.setUnit(StrUtil.nullToEmpty(StrUtil.trim(request.unit())));
         product.setCover(StrUtil.nullToEmpty(request.cover()));
         product.setImages(JSONUtil.toJsonStr(request.images() == null ? List.of() : request.images()));
         product.setDescription(StrUtil.nullToEmpty(request.description()));
@@ -284,7 +285,7 @@ public class ProductService {
                 })
                 .toList();
         return new AdminProductVO(product.getId(), product.getCategoryId(), product.getName(),
-                product.getCover(), parseImages(product.getImages()), product.getDescription(),
+                product.getUnit(), product.getCover(), parseImages(product.getImages()), product.getDescription(),
                 product.getV3GiftEnabled(), product.getRecommend(), product.getStatus(),
                 product.getSort(), skuVOs);
     }

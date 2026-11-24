@@ -24,6 +24,9 @@ public class Product {
 
     private String name;
 
+    /** 主单位，如 瓶；规格中的包装单位按 1 包装 = N 主单位换算 */
+    private String unit;
+
     private String cover;
 
     /** JSON 数组 */
