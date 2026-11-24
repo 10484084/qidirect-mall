@@ -1,6 +1,6 @@
 <template>
   <div class="page timeline-page">
-    <PageHeader title="记录" />
+    <PageHeader title="历史记录" />
 
     <van-tabs v-model:active="type" sticky @change="reload">
       <van-tab title="全部" name="" />

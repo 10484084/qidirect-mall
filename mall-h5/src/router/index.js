@@ -62,7 +62,7 @@ router.afterEach((to) => {
     withdraw: '提现',
     team: '我的团队',
     performance: '团队业绩',
-    timeline: '记录',
+    timeline: '历史记录',
     invite: '邀请好友',
     profile: '我的资料',
     'auth-verify': '实名认证',

@@ -26,8 +26,7 @@
         <van-cell title="邀请好友" icon="qr" is-link to="/invite" />
         <van-cell title="我的团队" icon="friends-o" is-link to="/team" />
         <van-cell title="团队业绩" icon="chart-trending-o" is-link to="/performance" />
-        <van-cell title="记录时间线" icon="notes-o" is-link to="/timeline" />
-        <van-cell title="站内消息" icon="bell" is-link to="/notices" :value="unread > 0 ? `${unread} 条未读` : ''" />
+        <van-cell title="历史记录" icon="notes-o" is-link to="/timeline" />
         <van-cell title="修改登录密码" icon="lock" is-link to="/change-password" />
       </van-cell-group>
 
@@ -46,14 +45,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { noticeApi } from '../api';
 import { useCartStore } from '../stores/cart';
 import { useUserStore } from '../stores/user';
 
 const router = useRouter();
 const user = useUserStore();
 const cart = useCartStore();
-const unread = ref(0);
 const profile = computed(() => user.profile);
 const shortName = computed(() => {
   const name = profile.value ? (profile.value.name || profile.value.nickname || '') : '';
@@ -63,8 +60,6 @@ const shortName = computed(() => {
 onMounted(async () => {
   try {
     if (!user.profile) await user.loadProfile();
-    const unreadCount = await noticeApi.unreadCount();
-    unread.value = Number(unreadCount) || 0;
   } catch (e) {
     // 错误已提示
   }
