@@ -12,20 +12,32 @@ const emit = defineEmits(['update:modelValue', 'change']);
 const options = ref([]);
 const loading = ref(false);
 const selectedLabel = ref('');
+const prefetched = ref(false);
 
+/**
+ * 空关键词也查一次：remote 模式下不预加载的话，下拉里没有任何选项，
+ * 用户看到的就是一个点不开的空输入框。
+ */
 async function search(keyword) {
-  if (!keyword) {
-    options.value = [];
-    return;
-  }
   loading.value = true;
   try {
-    const res = await storeApi.page({ keyword, page: 1, size: 20 });
+    const params = { page: 1, size: 50 };
+    const kw = (keyword || '').trim();
+    if (kw) params.keyword = kw;
+    const res = await storeApi.page(params);
     options.value = (res && res.records) || [];
   } catch (e) {
     options.value = [];
   } finally {
     loading.value = false;
+  }
+}
+
+function onVisibleChange(visible) {
+  // 首次展开时拉取门店列表，之后交给远程搜索
+  if (visible && !prefetched.value) {
+    prefetched.value = true;
+    search('');
   }
 }
 
@@ -60,6 +72,7 @@ watch(
 onMounted(() => {
   if (props.modelValue) search('');
 });
+
 </script>
 
 <template>
@@ -72,6 +85,8 @@ onMounted(() => {
     :loading="loading"
     :placeholder="placeholder"
     :clearable="clearable"
+    no-data-text="未匹配到门店，换个名称或手机号试试"
+    @visible-change="onVisibleChange"
     @update:model-value="emit('update:modelValue', $event)"
     @change="onSelect"
   >
