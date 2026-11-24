@@ -181,7 +181,7 @@ public class AdminStoreService {
         store.setInviteCode(generateInviteCode());
         store.setWxOpenid("");
         store.setStatus(STATUS_NORMAL);
-        store.setRealName("");
+        store.setRealName(StrUtil.trimToEmpty(request.realName()));
         store.setIdCard("");
         store.setIdCardHash("");
         store.setLicenseNo("");
@@ -216,6 +216,7 @@ public class AdminStoreService {
         Long adminId = SecurityUtils.currentUserId();
         logOperation(adminId, "STORE_CREATE", store.getId(), JSONUtil.createObj()
                 .set("phone", phone)
+                .set("realName", store.getRealName())
                 .set("nickname", store.getNickname())
                 .set("parentId", store.getParentId())
                 .toString());

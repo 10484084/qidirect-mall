@@ -25,7 +25,7 @@ const query = reactive({
 });
 
 const createVisible = ref(false);
-const createForm = reactive({ phone: '', nickname: '', name: '', parentId: null, remark: '' });
+const createForm = reactive({ realName: '', phone: '', name: '', parentId: null, remark: '' });
 const createFormRef = ref();
 
 async function load() {
@@ -68,7 +68,7 @@ async function submitCreate() {
   await storeApi.create({ ...createForm });
   ElMessage.success('门店已创建');
   createVisible.value = false;
-  Object.assign(createForm, { phone: '', nickname: '', name: '', parentId: null, remark: '' });
+  Object.assign(createForm, { realName: '', phone: '', name: '', parentId: null, remark: '' });
   load();
 }
 
@@ -185,6 +185,9 @@ onMounted(async () => {
 
     <el-dialog v-model="createVisible" title="新增门店" width="500px">
       <el-form ref="createFormRef" :model="createForm" label-width="90px">
+        <el-form-item label="姓名" prop="realName" :rules="[{ max: 32, message: '姓名过长' }]">
+          <el-input v-model="createForm.realName" maxlength="32" placeholder="请输入门店负责人姓名" />
+        </el-form-item>
         <el-form-item
           label="手机号"
           prop="phone"
@@ -197,9 +200,6 @@ onMounted(async () => {
         </el-form-item>
         <el-form-item label="门店名称">
           <el-input v-model="createForm.name" maxlength="64" />
-        </el-form-item>
-        <el-form-item label="昵称">
-          <el-input v-model="createForm.nickname" maxlength="64" />
         </el-form-item>
         <el-form-item label="上级门店">
           <StoreSelect v-model="createForm.parentId" placeholder="不选则为顶级门店" />
