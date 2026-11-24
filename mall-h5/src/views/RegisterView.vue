@@ -46,12 +46,6 @@
               </van-button>
             </template>
           </van-field>
-          <van-field
-            v-model="form.nickname"
-            label="昵称"
-            maxlength="64"
-            placeholder="选填，默认取手机号后四位"
-          />
         </van-cell-group>
 
         <div class="submit-box">
@@ -80,7 +74,7 @@ const router = useRouter();
 const user = useUserStore();
 
 const inviteCode = ref(typeof route.query.inviteCode === 'string' ? route.query.inviteCode.toUpperCase() : '');
-const form = reactive({ phone: '', code: '', nickname: '' });
+const form = reactive({ phone: '', code: '' });
 const sending = ref(false);
 const submitting = ref(false);
 const countdown = ref(0);
@@ -128,8 +122,7 @@ async function onSubmit() {
     const data = await user.register({
       phone,
       code: form.code.trim(),
-      inviteCode: inviteCode.value || undefined,
-      nickname: form.nickname.trim() || undefined
+      inviteCode: inviteCode.value || undefined
     });
     showToast('注册成功');
     if (data && data.needChangePwd) {
