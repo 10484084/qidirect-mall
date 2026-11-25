@@ -8,12 +8,12 @@
       <div class="info">
         <div class="name">{{ profile ? (profile.name || profile.nickname || profile.phone) : '门店用户' }}</div>
         <div class="muted small">{{ profile ? profile.phone : '' }}</div>
-        <div class="tags">
-          <van-tag v-if="user.joined" type="primary" plain>{{ profile.levelName }}</van-tag>
-          <van-tag v-else plain>未加盟</van-tag>
-          <van-tag :type="user.authed ? 'success' : 'warning'" plain>
+        <div class="meta-row">
+          <span class="level-chip">{{ user.joined ? profile.levelName : '未储值' }}</span>
+          <span class="auth-state" :class="user.authed ? 'is-ok' : 'is-warn'">
+            <van-icon :name="user.authed ? 'passed' : 'info-o'" size="12" />
             {{ user.authed ? '已实名' : '未实名' }}
-          </van-tag>
+          </span>
         </div>
       </div>
       <van-icon name="setting-o" size="20" @click="$router.push('/profile')" />
@@ -107,10 +107,40 @@ function onLogout() {
   margin-bottom: 3px;
 }
 
-.tags {
+.meta-row {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.level-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.auth-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.auth-state.is-ok {
+  color: #d8edc6;
+}
+
+.auth-state.is-warn {
+  color: #ffe0a3;
 }
 
 .menu {

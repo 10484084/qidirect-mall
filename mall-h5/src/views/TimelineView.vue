@@ -24,10 +24,9 @@
             </div>
             <div v-if="event.detail" class="muted small mt-8">{{ event.detail }}</div>
             <div class="flex-between mt-8">
-              <span class="muted small">{{ event.category || event.eventType }}</span>
               <span class="muted small">{{ formatTime(event.createdAt) }}</span>
+              <span v-if="event.bizNo" class="muted small">单号 {{ event.bizNo }}</span>
             </div>
-            <div v-if="event.bizNo" class="muted small mt-8">单号 {{ event.bizNo }}</div>
           </div>
           <div v-if="!events.length && finished" class="text-empty">暂无记录</div>
         </van-list>

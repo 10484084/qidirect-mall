@@ -83,6 +83,15 @@ export function bizTypeText(bizType) {
 
 export function eventTypeText(type) {
   return {
+    JOIN: '加盟成功',
+    UPGRADE: '升档成功',
+    RECHARGE: '预存成功',
+    ORDER: '订单创建',
+    SHIP: '订单发货',
+    ORDER_FINISH: '确认收货',
+    PAY_ABNORMAL: '支付异常',
+    LEVEL_CHANGE: '档位变更',
+    ADJUST: '余额调整',
     JOIN_PAID: '加盟成功',
     UPGRADE_PAID: '升档成功',
     RECHARGE_PAID: '预存成功',

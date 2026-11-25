@@ -18,15 +18,6 @@
       </div>
 
       <div class="card">
-        <div class="card-title">昵称与头像</div>
-        <van-field v-model="baseForm.nickname" label="昵称" maxlength="64" placeholder="请输入昵称" />
-        <van-field v-model="baseForm.avatar" label="头像链接" placeholder="选填，图片 URL" />
-        <div class="form-btn">
-          <van-button size="small" type="primary" round :loading="savingBase" @click="saveBase">保存</van-button>
-        </div>
-      </div>
-
-      <div class="card">
         <div class="card-title">
           实名认证
           <van-tag v-if="profile && profile.authStatus === 1" type="success">已认证</van-tag>
@@ -121,9 +112,7 @@ const user = useUserStore();
 const profile = computed(() => user.profile);
 const hasBank = computed(() => Boolean(profile.value && profile.value.bankAccountMasked));
 
-const baseForm = reactive({ nickname: '', avatar: '' });
 const bankForm = reactive({ bankHolder: '', bankName: '', bankAccount: '' });
-const savingBase = ref(false);
 const savingBank = ref(false);
 const bankVisible = ref(false);
 
@@ -137,25 +126,12 @@ function openBank() {
 onMounted(async () => {
   try {
     if (!user.profile) await user.loadProfile();
-    baseForm.nickname = profile.value.nickname || '';
-    baseForm.avatar = profile.value.avatar || '';
     bankForm.bankHolder = profile.value.bankHolder || profile.value.realName || '';
     bankForm.bankName = profile.value.bankName || '';
   } catch (e) {
     // 错误已提示
   }
 });
-
-async function saveBase() {
-  savingBase.value = true;
-  try {
-    await storeApi.updateProfile({ nickname: baseForm.nickname || undefined, avatar: baseForm.avatar || undefined });
-    await user.loadProfile();
-    showToast('已保存');
-  } finally {
-    savingBase.value = false;
-  }
-}
 
 async function submitBank() {
   const bankAccount = bankForm.bankAccount.replace(/\s/g, '');

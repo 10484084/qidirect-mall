@@ -27,14 +27,6 @@
             <van-button class="mt-12" type="primary" plain block round @click="copyLink">复制邀请链接</van-button>
           </div>
 
-          <div class="card tip">
-            <div class="card-title">提成与业绩说明</div>
-            <ul>
-              <li>首次加盟：上级任意档位均可获得一级 10% / 二级 3% 提成。</li>
-              <li>补差、预存、订货支付：仅 5 万档门店可按比例获得提成。</li>
-              <li>团队业绩奖：仅最高档位门店参与，按结算时整棵子树汇总。</li>
-            </ul>
-          </div>
         </template>
       </template>
     </div>

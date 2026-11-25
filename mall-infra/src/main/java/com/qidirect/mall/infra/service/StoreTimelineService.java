@@ -1,6 +1,7 @@
 package com.qidirect.mall.infra.service;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -12,6 +13,7 @@ import com.qidirect.mall.common.exception.ErrorCode;
 import com.qidirect.mall.domain.entity.StoreEvent;
 import com.qidirect.mall.domain.vo.StoreEventVO;
 import com.qidirect.mall.infra.mapper.StoreEventMapper;
+import com.qidirect.mall.infra.mapper.StoreLevelMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,7 @@ public class StoreTimelineService {
             "withdraw", List.of("WITHDRAW_APPLY", "WITHDRAW_AUDIT", "WITHDRAW_PAID", "WITHDRAW_FAIL"));
 
     private final StoreEventMapper storeEventMapper;
+    private final StoreLevelMapper storeLevelMapper;
 
     public PageResult<StoreEventVO> storePage(Long storeId, String category, long page, long size) {
         LambdaQueryWrapper<StoreEvent> query = Wrappers.<StoreEvent>lambdaQuery()
@@ -81,11 +84,43 @@ public class StoreTimelineService {
                 event.getAmount(),
                 event.getDirection(),
                 event.getAccount(),
-                StrUtil.nullToEmpty(event.getDetail()),
+                formatDetail(event.getDetail()),
                 parseImages(event.getProofImages()),
                 event.getOperatorType(),
                 event.getOperatorId(),
                 event.getCreatedAt());
+    }
+
+    /**
+     * 把事件明细 JSON 转成门店能看懂的中文，避免页面直接暴露 {"levelId":1} 这类原始结构。
+     */
+    private String formatDetail(String detail) {
+        if (StrUtil.isBlank(detail)) {
+            return "";
+        }
+        try {
+            JSONObject obj = JSONUtil.parseObj(detail);
+            Long levelId = obj.getLong("levelId");
+            if (levelId == null) {
+                return "";
+            }
+            String target = levelName(levelId);
+            Long beforeLevelId = obj.getLong("beforeLevelId");
+            if (beforeLevelId != null && beforeLevelId > 0) {
+                return levelName(beforeLevelId) + " → " + target;
+            }
+            return target == null ? "" : "开通" + target;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String levelName(Long levelId) {
+        if (levelId == null || levelId <= 0) {
+            return "";
+        }
+        var level = storeLevelMapper.selectById(levelId);
+        return level == null ? "" : level.getName();
     }
 
     private String categoryOf(String eventType) {
