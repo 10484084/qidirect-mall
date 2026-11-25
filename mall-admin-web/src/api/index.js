@@ -32,12 +32,15 @@ export const levelApi = {
 
 export const categoryApi = {
   list: () => get('/product-categories'),
+  sort: (ids) => put('/product-categories/sort', { ids }),
   create: (data) => post('/product-categories', data),
   update: (id, data) => put(`/product-categories/${id}`, data),
   remove: (id) => del(`/product-categories/${id}`)
 };
 
 export const productApi = {
+  sort: (ids) => put('/products/sort', { ids }),
+  setStatus: (id, status) => put(`/products/${id}/status`, null, { params: { status } }),
   page: (params) => get('/products', params),
   detail: (id) => get(`/products/${id}`),
   create: (data) => post('/products', data),

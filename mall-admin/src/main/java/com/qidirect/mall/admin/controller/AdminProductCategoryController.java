@@ -1,6 +1,7 @@
 package com.qidirect.mall.admin.controller;
 
 import com.qidirect.mall.common.api.ApiResponse;
+import com.qidirect.mall.domain.dto.admin.AdminSortRequest;
 import com.qidirect.mall.domain.dto.admin.ProductCategorySaveRequest;
 import com.qidirect.mall.domain.vo.ProductCategoryVO;
 import com.qidirect.mall.infra.service.ProductCategoryService;
@@ -41,6 +42,12 @@ public class AdminProductCategoryController {
     public ApiResponse<ProductCategoryVO> update(@PathVariable Long id,
                                                  @Valid @RequestBody ProductCategorySaveRequest request) {
         return ApiResponse.ok(productCategoryService.update(id, request));
+    }
+
+    @PutMapping("/sort")
+    public ApiResponse<Void> sort(@Valid @RequestBody AdminSortRequest request) {
+        productCategoryService.sort(request.ids());
+        return ApiResponse.ok();
     }
 
     @DeleteMapping("/{id}")

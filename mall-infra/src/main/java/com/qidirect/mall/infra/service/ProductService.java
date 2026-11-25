@@ -336,4 +336,37 @@ public class ProductService {
     private int flag(Integer value) {
         return value != null && value == 1 ? 1 : 0;
     }
+
+    /**
+     * 按传入顺序重排商品，sort 从 1 开始。
+     */
+    public void sort(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Long id = orderedIds.get(i);
+            if (id == null) {
+                continue;
+            }
+            Product patch = new Product();
+            patch.setId(id);
+            patch.setSort(i + 1);
+            productMapper.updateById(patch);
+        }
+    }
+
+    /**
+     * 上下架。
+     */
+    public void setStatus(Long id, Integer status) {
+        Product product = productMapper.selectById(id);
+        if (product == null) {
+            throw new BizException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        Product patch = new Product();
+        patch.setId(id);
+        patch.setStatus(status != null && status == 1 ? 1 : 0);
+        productMapper.updateById(patch);
+    }
 }

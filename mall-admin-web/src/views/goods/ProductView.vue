@@ -13,6 +13,91 @@ const levels = ref([]);
 
 const query = reactive({ keyword: '', categoryId: null, status: null, page: 1, size: 20 });
 
+const statusOptions = [
+  { label: '全部', value: null },
+  { label: '上架', value: 1 },
+  { label: '下架', value: 0 }
+];
+
+// 排序弹窗：左分类、右该分类商品，均可拖拽
+const sortVisible = ref(false);
+const sortCategories = ref([]);
+const sortProducts = ref([]);
+const sortCategoryId = ref(null);
+const sortSaving = ref(false);
+const dragIndex = ref(-1);
+const dragType = ref('');
+
+async function openSort() {
+  sortVisible.value = true;
+  const list = (await categoryApi.list()) || [];
+  sortCategories.value = list.map((c) => ({ ...c }));
+  if (!sortCategories.value.length) {
+    sortProducts.value = [];
+    return;
+  }
+  if (!sortCategoryId.value || !sortCategories.value.some((c) => c.id === sortCategoryId.value)) {
+    sortCategoryId.value = sortCategories.value[0].id;
+  }
+  await loadSortProducts();
+}
+
+async function loadSortProducts() {
+  if (!sortCategoryId.value) {
+    sortProducts.value = [];
+    return;
+  }
+  const res = await productApi.page({ categoryId: sortCategoryId.value, page: 1, size: 200 });
+  const rows = (res && res.records) || [];
+  sortProducts.value = rows
+    .slice()
+    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
+    .map((r) => ({ id: r.id, name: r.name, cover: r.cover }));
+}
+
+function pickCategory(id) {
+  sortCategoryId.value = id;
+  loadSortProducts();
+}
+
+function onDragStart(type, index) {
+  dragType.value = type;
+  dragIndex.value = index;
+}
+
+function onDrop(type, index) {
+  if (dragType.value !== type || dragIndex.value < 0 || dragIndex.value === index) {
+    return;
+  }
+  const list = type === 'category' ? sortCategories.value : sortProducts.value;
+  const [moved] = list.splice(dragIndex.value, 1);
+  list.splice(index, 0, moved);
+  dragIndex.value = -1;
+  dragType.value = '';
+}
+
+async function saveSort() {
+  if (!sortCategories.value.length) {
+    sortVisible.value = false;
+    return;
+  }
+  sortSaving.value = true;
+  try {
+    await categoryApi.sort(sortCategories.value.map((c) => c.id));
+    if (sortProducts.value.length) {
+      await productApi.sort(sortProducts.value.map((p) => p.id));
+    }
+    ElMessage.success('排序已保存');
+    sortVisible.value = false;
+    load();
+    if (query.categoryId) {
+      categories.value = (await categoryApi.list()) || [];
+    }
+  } finally {
+    sortSaving.value = false;
+  }
+}
+
 // 档位价格列按档位金额升序排列，列名取档位名称
 const sortedLevels = computed(() => [...levels.value].sort((a, b) => (a.fee - b.fee) || (a.sort - b.sort)));
 
@@ -333,6 +418,13 @@ async function saveGiftRule(saved) {
   removedGiftRuleIds.value = [];
 }
 
+async function toggleStatus(row) {
+  const next = row.status === 1 ? 0 : 1;
+  await productApi.setStatus(row.id, next);
+  ElMessage.success(next === 1 ? '已上架' : '已下架');
+  load();
+}
+
 async function onRemove(row) {
   try {
     await ElMessageBox.confirm(`确定删除商品「${row.name}」吗？`, '提示', { type: 'warning' });
@@ -380,14 +472,20 @@ onMounted(async () => {
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="query.status" clearable placeholder="全部" style="width: 110px">
-            <el-option label="上架" :value="1" />
-            <el-option label="下架" :value="0" />
-          </el-select>
+        <el-form-item label="是否上架">
+          <div class="status-switch">
+            <el-button
+              v-for="opt in statusOptions"
+              :key="String(opt.value)"
+              size="small"
+              :type="query.status === opt.value ? 'primary' : ''"
+              @click="query.status = opt.value; search()"
+            >{{ opt.label }}</el-button>
+          </div>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="search">查询</el-button>
+          <el-button @click="openSort">排序</el-button>
         </el-form-item>
       </el-form>
 
@@ -403,7 +501,6 @@ onMounted(async () => {
         <el-table-column label="分类" width="110">
           <template #default="{ row }">{{ categoryName(row.categoryId) }}</template>
         </el-table-column>
-        <el-table-column prop="sort" label="排序" width="80" />
         <el-table-column label="标记" width="160">
           <template #default="{ row }">
             <el-tag v-if="row.recommend" type="warning" size="small">推荐</el-tag>
@@ -417,10 +514,13 @@ onMounted(async () => {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="showDetail(row)">查看</el-button>
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">
+              {{ row.status === 1 ? '下架' : '上架' }}
+            </el-button>
             <el-button link type="danger" @click="onRemove(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -565,18 +665,110 @@ onMounted(async () => {
         </el-table>
         <el-button class="mt8" plain @click="addSku">添加多规格</el-button>
 
-        <el-row :gutter="16" class="extra-row">
-          <el-col :span="12">
-            <el-form-item label="上架状态">
-              <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="上架" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+
       </el-form>
 
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="sortVisible" title="排序" width="860px" top="6vh">
+      <div class="sort-wrap">
+        <div class="sort-col sort-col--category">
+          <div class="sort-col__title">商品分类</div>
+          <div class="sort-list">
+            <div
+              v-for="(cat, idx) in sortCategories"
+              :key="cat.id"
+              class="sort-item"
+              :class="{ active: cat.id === sortCategoryId }"
+              draggable="true"
+              @dragstart="onDragStart('category', idx)"
+              @dragover.prevent
+              @drop="onDrop('category', idx)"
+              @click="pickCategory(cat.id)"
+            >
+              <span class="drag-handle">⋮⋮</span>
+              <span class="sort-item__name">{{ cat.name }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="sort-col sort-col--product">
+          <div class="sort-col__title">
+            分类内商品
+            <span class="sort-col__hint">拖拽调整显示顺序</span>
+          </div>
+          <div class="sort-list">
+            <div
+              v-for="(p, idx) in sortProducts"
+              :key="p.id"
+              class="sort-item"
+              draggable="true"
+              @dragstart="onDragStart('product', idx)"
+              @dragover.prevent
+              @drop="onDrop('product', idx)"
+            >
+              <span class="drag-handle">⋮⋮</span>
+              <span class="sort-item__name">{{ p.name }}</span>
+            </div>
+            <div v-if="!sortProducts.length" class="sort-empty">该分类下暂无商品</div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="sortVisible = false">取消</el-button>
+        <el-button type="primary" :loading="sortSaving" @click="saveSort">保存排序</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="sortVisible" title="排序" width="860px" top="6vh">
+      <div class="sort-wrap">
+        <div class="sort-col sort-col--category">
+          <div class="sort-col__title">商品分类</div>
+          <div class="sort-list">
+            <div
+              v-for="(cat, idx) in sortCategories"
+              :key="cat.id"
+              class="sort-item"
+              :class="{ active: cat.id === sortCategoryId }"
+              draggable="true"
+              @dragstart="onDragStart('category', idx)"
+              @dragover.prevent
+              @drop="onDrop('category', idx)"
+              @click="pickCategory(cat.id)"
+            >
+              <span class="drag-handle">⋮⋮</span>
+              <span class="sort-item__name">{{ cat.name }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="sort-col sort-col--product">
+          <div class="sort-col__title">
+            分类内商品
+            <span class="sort-col__hint">拖拽调整显示顺序</span>
+          </div>
+          <div class="sort-list">
+            <div
+              v-for="(p, idx) in sortProducts"
+              :key="p.id"
+              class="sort-item"
+              draggable="true"
+              @dragstart="onDragStart('product', idx)"
+              @dragover.prevent
+              @drop="onDrop('product', idx)"
+            >
+              <span class="drag-handle">⋮⋮</span>
+              <span class="sort-item__name">{{ p.name }}</span>
+            </div>
+            <div v-if="!sortProducts.length" class="sort-empty">该分类下暂无商品</div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="sortVisible = false">取消</el-button>
+        <el-button type="primary" :loading="sortSaving" @click="saveSort">保存排序</el-button>
       </template>
     </el-dialog>
 
@@ -757,6 +949,190 @@ onMounted(async () => {
   width: 118px;
 }
 
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
 .media-row {
   display: flex;
   gap: 24px;
@@ -773,6 +1149,190 @@ onMounted(async () => {
   font-size: 14px;
   color: #606266;
   margin-bottom: 8px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
 }
 
 .media-row {
@@ -952,6 +1512,190 @@ onMounted(async () => {
   width: 118px;
 }
 
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
 .media-row {
   display: flex;
   gap: 24px;
@@ -968,6 +1712,190 @@ onMounted(async () => {
   font-size: 14px;
   color: #606266;
   margin-bottom: 8px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
+}
+
+.status-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-wrap {
+  display: flex;
+  gap: 16px;
+  height: 460px;
+}
+
+.sort-col {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sort-col--category {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sort-col--product {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-col__title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  background: #f7f8fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.sort-col__hint {
+  margin-left: 8px;
+  font-weight: 400;
+  color: #a8abb2;
+}
+
+.sort-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-item:hover {
+  border-color: #b9d3be;
+}
+
+.sort-item.active {
+  border-color: #326940;
+  background: #f2f8f3;
+}
+
+.drag-handle {
+  color: #c0c4cc;
+  cursor: move;
+}
+
+.sort-item__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sort-empty {
+  padding: 20px;
+  text-align: center;
+  color: #a8abb2;
+  font-size: 13px;
 }
 
 .media-row {

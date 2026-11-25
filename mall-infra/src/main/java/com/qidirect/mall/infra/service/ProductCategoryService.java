@@ -79,4 +79,23 @@ public class ProductCategoryService {
         return new ProductCategoryVO(category.getId(), StrUtil.nullToEmpty(category.getName()),
                 category.getSort(), category.getStatus());
     }
+
+    /**
+     * 按传入顺序重排分类，sort 从 1 开始。
+     */
+    public void sort(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Long id = orderedIds.get(i);
+            if (id == null) {
+                continue;
+            }
+            ProductCategory patch = new ProductCategory();
+            patch.setId(id);
+            patch.setSort(i + 1);
+            productCategoryMapper.updateById(patch);
+        }
+    }
 }
