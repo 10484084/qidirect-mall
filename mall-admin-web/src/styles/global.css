@@ -1,3 +1,14 @@
+:root {
+  /* 品牌色取自 Fadsline 发士莲 logo */
+  --el-color-primary: #326940;
+  --el-color-primary-light-3: #5f8a69;
+  --el-color-primary-light-5: #8fac95;
+  --el-color-primary-light-7: #bfd0c2;
+  --el-color-primary-light-8: #d5e1d7;
+  --el-color-primary-light-9: #eaf2ea;
+  --el-color-primary-dark-2: #245234;
+}
+
 * {
   box-sizing: border-box;
 }

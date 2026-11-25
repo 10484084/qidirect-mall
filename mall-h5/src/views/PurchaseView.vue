@@ -193,7 +193,7 @@ async function submit() {
 
 .source-item.active {
   border-color: var(--brand);
-  background: #eef4ff;
+  background: #eaf2ea;
 }
 
 .source-title {
@@ -216,7 +216,7 @@ async function submit() {
 
 .option-item.active {
   border-color: var(--brand);
-  background: #eef4ff;
+  background: #eaf2ea;
 }
 
 .option-name {

@@ -1,7 +1,7 @@
 <template>
   <div class="register-page">
     <div class="brand">
-      <div class="logo">店</div>
+      <img class="brand-logo" :src="logoUrl" alt="发士莲 Fadsline" />
       <h2>门店注册</h2>
       <p class="muted small">扫码注册后自动绑定上级门店</p>
     </div>
@@ -67,6 +67,7 @@ import { onBeforeUnmount, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from 'vant';
 import { authApi } from '../api';
+import logoUrl from '../assets/logo.png';
 import { useUserStore } from '../stores/user';
 
 const route = useRoute();
@@ -146,7 +147,7 @@ onBeforeUnmount(() => {
 .register-page {
   min-height: 100vh;
   padding: 48px 8px 32px;
-  background: linear-gradient(180deg, #eef4ff 0%, #f6f7f9 42%);
+  background: linear-gradient(180deg, #eaf2ea 0%, #f6f7f9 42%);
 }
 
 .brand {
@@ -154,18 +155,11 @@ onBeforeUnmount(() => {
   padding: 0 20px 22px;
 }
 
-.logo {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 12px;
-  border-radius: 16px;
-  background: var(--brand);
-  color: #fff;
-  font-size: 24px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.brand-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+  margin: 0 auto 10px;
 }
 
 .brand h2 {

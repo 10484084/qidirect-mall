@@ -58,7 +58,7 @@ function continueBrowse() {
 .guide {
   min-height: 100vh;
   padding: 64px 28px 32px;
-  background: linear-gradient(160deg, #1f6feb 0%, #0f4fbf 55%, #0a3a8f 100%);
+  background: linear-gradient(160deg, #3d7a4c 0%, #2b5c38 55%, #1e4426 100%);
   color: #fff;
   text-align: center;
 }

@@ -36,7 +36,7 @@
             :percentage="progressPercent"
             :show-pivot="false"
             stroke-width="8"
-            color="#1f6feb"
+            color="#326940"
             class="mt-8"
           />
           <div class="muted small mt-8">
@@ -153,7 +153,7 @@ onMounted(load);
   margin: 12px 0;
   padding: 18px;
   border-radius: 14px;
-  background: linear-gradient(150deg, #2b7cf5, #0f4fbf);
+  background: linear-gradient(150deg, #3d7a4c, #245234);
   color: #fff;
 }
 

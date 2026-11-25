@@ -1,6 +1,7 @@
 <template>
   <div class="page with-tab">
     <div class="hero">
+      <img class="hero-logo" :src="logoWhite" alt="发士莲 Fadsline" />
       <div class="flex-between">
         <div>
           <div class="store-name">{{ profile ? (profile.name || profile.nickname || profile.phone) : '门店用户' }}</div>
@@ -85,6 +86,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import ProductCard from '../components/ProductCard.vue';
+import logoWhite from '../assets/logo-white.png';
 import { noticeApi, productApi, walletApi } from '../api';
 import { useUserStore } from '../stores/user';
 import { fenToYuan } from '../utils/format';
@@ -115,9 +117,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.hero-logo {
+  display: block;
+  height: 20px;
+  width: auto;
+  margin-bottom: 10px;
+}
+
 .hero {
   padding: 22px 18px 26px;
-  background: linear-gradient(150deg, #2b7cf5 0%, #1f6feb 45%, #0f4fbf 100%);
+  background: linear-gradient(150deg, #4a8a5a 0%, #326940 45%, #245234 100%);
   color: #fff;
   border-radius: 0 0 22px 22px;
 }

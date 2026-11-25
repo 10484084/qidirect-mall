@@ -74,7 +74,8 @@ router.afterEach((to) => {
     'change-password': '修改密码',
     guide: '请在微信中打开'
   };
-  document.title = titles[to.name] || '直销商城';
+  const pageTitle = titles[to.name];
+  document.title = pageTitle ? `${pageTitle} · 发士莲门店系统` : '发士莲门店系统';
 });
 
 export default router;

@@ -99,7 +99,7 @@ onMounted(() => {
   margin: 12px;
   padding: 18px;
   border-radius: 14px;
-  background: linear-gradient(150deg, #2b7cf5, #0f4fbf);
+  background: linear-gradient(150deg, #3d7a4c, #245234);
   color: #fff;
   position: relative;
 }
@@ -143,7 +143,7 @@ onMounted(() => {
 }
 
 .withdraw-btn {
-  color: #0f4fbf;
+  color: #326940;
   border: none;
   flex-shrink: 0;
 }

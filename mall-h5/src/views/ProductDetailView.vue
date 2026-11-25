@@ -233,7 +233,7 @@ async function addToCart(buyNow) {
 
 .sku-item.active {
   border-color: var(--brand);
-  background: #eef4ff;
+  background: #eaf2ea;
   color: var(--brand);
 }
 

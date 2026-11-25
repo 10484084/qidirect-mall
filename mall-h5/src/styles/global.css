@@ -1,11 +1,18 @@
 :root {
-  --page-bg: #f6f7f9;
-  --brand: #1f6feb;
-  --brand-dark: #0f4fbf;
+  /* 品牌色取自 Fadsline 发士莲 logo：主绿 #326940，辅绿 #90C156 */
+  --page-bg: #f5f7f4;
+  --brand: #326940;
+  --brand-dark: #245234;
+  --brand-light: #e9f2e9;
+  --accent: #90c156;
   --money: #ee0a24;
   --text-main: #1f2329;
   --text-sub: #8a9099;
   --card-radius: 12px;
+
+  /* Vant 组件主色跟随品牌绿 */
+  --van-primary-color: #326940;
+  --van-success-color: #326940;
 }
 
 * {

@@ -1,4 +1,5 @@
 <script setup>
+import logoWhite from '../assets/logo-white.png';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
@@ -44,16 +45,16 @@ async function onCommand(cmd) {
   <el-container class="layout">
     <el-aside :width="collapsed ? '64px' : '220px'" class="aside">
       <div class="logo">
-        <span v-if="!collapsed">厂家后台</span>
-        <span v-else>厂</span>
+        <img :src="logoWhite" alt="发士莲" class="logo-img" />
+        <span v-if="!collapsed" class="logo-text">门店后台</span>
       </div>
       <el-menu
         :default-active="activeMenu"
         :collapse="collapsed"
         :collapse-transition="false"
-        background-color="#1f2d3d"
-        text-color="#bfcbd9"
-        active-text-color="#ffd04b"
+        background-color="#245234"
+        text-color="#d7e6da"
+        active-text-color="#ffffff"
         router
       >
         <template v-for="group in menus" :key="group.path">
@@ -116,7 +117,7 @@ async function onCommand(cmd) {
 }
 
 .aside {
-  background: #1f2d3d;
+  background: #245234;
   transition: width 0.2s;
   overflow-x: hidden;
 }
@@ -126,11 +127,33 @@ async function onCommand(cmd) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffd04b;
-  font-size: 18px;
+  gap: 8px;
+  padding: 0 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-img {
+  height: 22px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  color: #ffffff;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 2px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* 选中项用品牌辅绿点缀 */
+.aside :deep(.el-menu-item.is-active) {
+  background: rgba(144, 193, 86, 0.22) !important;
+}
+
+.aside :deep(.el-menu-item:hover),
+.aside :deep(.el-sub-menu__title:hover) {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .aside :deep(.el-menu) {

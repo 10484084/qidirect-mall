@@ -1,9 +1,8 @@
 <template>
   <div class="login-page">
     <div class="brand">
-      <div class="logo">店</div>
-      <h2>直销商城</h2>
-      <p class="muted small">门店加盟 · 预存订货 · 团队业绩</p>
+      <img class="brand-logo" :src="logoUrl" alt="发士莲 Fadsline" />
+      <p class="muted small">门店储值 · 预存订货 · 团队业绩</p>
     </div>
 
     <div class="card form-card">
@@ -49,6 +48,7 @@
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from 'vant';
+import logoUrl from '../assets/logo.png';
 import { useUserStore } from '../stores/user';
 
 const route = useRoute();
@@ -95,7 +95,7 @@ async function onSubmit() {
 .login-page {
   min-height: 100vh;
   padding: 56px 20px 32px;
-  background: linear-gradient(180deg, #eef4ff 0%, #f6f7f9 42%);
+  background: linear-gradient(180deg, #eaf2ea 0%, #f6f7f9 42%);
 }
 
 .brand {
@@ -103,16 +103,11 @@ async function onSubmit() {
   margin-bottom: 22px;
 }
 
-.logo {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 12px;
-  border-radius: 18px;
-  background: var(--brand);
-  color: #fff;
-  font-size: 30px;
-  line-height: 64px;
-  box-shadow: 0 8px 20px rgba(31, 111, 235, 0.28);
+.brand-logo {
+  display: block;
+  width: 200px;
+  height: auto;
+  margin: 0 auto 10px;
 }
 
 .brand h2 {

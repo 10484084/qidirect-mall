@@ -140,7 +140,7 @@ onMounted(async () => {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: #eef4ff;
+  background: #eaf2ea;
   color: var(--brand);
   font-weight: 600;
   display: flex;

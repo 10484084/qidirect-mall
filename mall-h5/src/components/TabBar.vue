@@ -1,5 +1,5 @@
 <template>
-  <van-tabbar v-model="active" route safe-area-inset-bottom active-color="#1f6feb" inactive-color="#8a9099">
+  <van-tabbar v-model="active" route safe-area-inset-bottom active-color="#326940" inactive-color="#8a9099">
     <van-tabbar-item to="/" icon="home-o">首页</van-tabbar-item>
     <van-tabbar-item to="/products" icon="apps-o">商品</van-tabbar-item>
     <van-tabbar-item to="/cart" icon="shopping-cart-o" :badge="cart.count || ''">购物车</van-tabbar-item>

@@ -73,7 +73,7 @@ function onLogout() {
   align-items: center;
   gap: 12px;
   padding: 24px 18px;
-  background: linear-gradient(150deg, #2b7cf5, #0f4fbf);
+  background: linear-gradient(150deg, #3d7a4c, #245234);
   color: #fff;
 }
 

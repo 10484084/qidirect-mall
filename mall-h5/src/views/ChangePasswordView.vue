@@ -93,7 +93,7 @@ async function onSubmit() {
 .pwd-page {
   min-height: 100vh;
   padding: 40px 8px 32px;
-  background: linear-gradient(180deg, #eef4ff 0%, #f6f7f9 42%);
+  background: linear-gradient(180deg, #eaf2ea 0%, #f6f7f9 42%);
 }
 
 .head {

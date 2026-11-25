@@ -5,7 +5,7 @@
     <div class="page-body">
       <div class="card pay-card">
         <template v-if="state === 'paying'">
-          <van-icon name="balance-pay" size="46" color="#1f6feb" />
+          <van-icon name="balance-pay" size="46" color="#326940" />
           <div class="pay-title">{{ jumped ? '等待支付结果' : '正在支付' }}</div>
           <div class="muted small">应付金额 ¥{{ fenToYuan(amount) }}</div>
           <div v-if="jumped" class="muted small mt-12">

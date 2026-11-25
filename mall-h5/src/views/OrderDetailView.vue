@@ -140,7 +140,7 @@ async function confirm() {
 
 .status-card {
   padding: 22px 18px 26px;
-  background: linear-gradient(150deg, #2b7cf5, #0f4fbf);
+  background: linear-gradient(150deg, #3d7a4c, #245234);
   color: #fff;
 }
 
