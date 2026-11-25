@@ -115,6 +115,10 @@ function stopPolling() {
   }
 }
 
+function isWechat() {
+  return /MicroMessenger/i.test(navigator.userAgent);
+}
+
 async function start() {
   try {
     const info = await payApi.authorize(payNo);
@@ -127,8 +131,9 @@ async function start() {
       poll();
       return;
     }
-    if (info.qrCode) {
-      // 微信内跳外部收银台会把 H5 顶掉，改为页内展示二维码，长按识别支付
+    // 微信内直接跳外部收银台，点「关闭」会把 H5 一起销毁，因此改在页内展示二维码，
+    // 用户长按识别（新开窗口）付款，H5 始终存活；其他环境仍走原本的链接跳转。
+    if (info.qrCode && isWechat()) {
       qrCode.value = info.qrCode;
       poll(5 * 60 * 1000);
       return;
