@@ -1,4 +1,4 @@
-import { get, post } from './request';
+import { get, post, put } from './request';
 
 export const authApi = {
   login: (data) => post('/auth/login', data)
@@ -21,6 +21,17 @@ export const storeApi = {
   unfreeze: (id, reason) => post(`/stores/${id}/unfreeze`, { reason }),
   inviteQr: (id) => get(`/stores/${id}/invite-qr`),
   events: (id, params) => get(`/stores/${id}/events`, params)
+};
+
+export const productApi = {
+  page: (params) => get('/products', params),
+  detail: (id) => get(`/products/${id}`),
+  update: (id, data) => put(`/products/${id}`, data),
+  setStatus: (id, status) => put(`/products/${id}/status`, null, { params: { status } })
+};
+
+export const categoryApi = {
+  list: () => get('/product-categories')
 };
 
 export const orderApi = {

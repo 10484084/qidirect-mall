@@ -39,6 +39,18 @@ const routes = [
     meta: { title: '门店详情' }
   },
   {
+    path: '/products',
+    name: 'products',
+    component: () => import('../views/goods/ProductListView.vue'),
+    meta: { title: '商品档案' }
+  },
+  {
+    path: '/products/:id',
+    name: 'product-detail',
+    component: () => import('../views/goods/ProductDetailView.vue'),
+    meta: { title: '商品详情' }
+  },
+  {
     path: '/withdraws',
     name: 'withdraws',
     component: () => import('../views/withdraw/WithdrawListView.vue'),

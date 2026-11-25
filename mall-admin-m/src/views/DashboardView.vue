@@ -96,6 +96,26 @@ onMounted(load);
         </div>
       </div>
 
+      <div class="section-title">快捷入口</div>
+      <div class="entry-grid">
+        <div class="entry" @click="router.push('/products')">
+          <van-icon name="gift-o" size="22" />
+          <span>商品档案</span>
+        </div>
+        <div class="entry" @click="router.push('/orders')">
+          <van-icon name="orders-o" size="22" />
+          <span>订单管理</span>
+        </div>
+        <div class="entry" @click="router.push('/stores')">
+          <van-icon name="shop-o" size="22" />
+          <span>门店管理</span>
+        </div>
+        <div class="entry" @click="router.push('/withdraws')">
+          <van-icon name="balance-o" size="22" />
+          <span>提现审核</span>
+        </div>
+      </div>
+
       <p class="tip">下拉可刷新数据 · 异常单处置请使用电脑版后台</p>
     </div>
   </van-pull-refresh>
@@ -173,6 +193,25 @@ onMounted(load);
   margin-top: 4px;
   font-size: 12px;
   color: var(--text-sub);
+}
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 12px;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 4px;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-main);
 }
 
 .grid-card {
