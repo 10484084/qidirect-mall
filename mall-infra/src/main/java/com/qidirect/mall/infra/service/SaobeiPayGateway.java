@@ -158,7 +158,7 @@ public class SaobeiPayGateway implements PaymentGateway {
         if (StrUtil.isBlank(received) || StrUtil.isBlank(properties.getAccessToken())) {
             return false;
         }
-        return received.equalsIgnoreCase(sign(params, properties.getAccessToken()));
+        return received.equalsIgnoreCase(signIncludeEmpty(params, properties.getAccessToken()));
     }
 
     /**
@@ -166,11 +166,23 @@ public class SaobeiPayGateway implements PaymentGateway {
      * 空值不参与签名（本方请求不传空值；回调报文空值由扫呗侧同规则处理）。
      */
     static String sign(Map<String, String> params, String accessToken) {
+        return sign(params, accessToken, false);
+    }
+
+    /**
+     * 应答报文验签：扫呗回调会把空值参数（如 attach=）也计入签名，
+     * 因此回调侧必须保留空值，否则与扫呗签名不一致。
+     */
+    static String signIncludeEmpty(Map<String, String> params, String accessToken) {
+        return sign(params, accessToken, true);
+    }
+
+    private static String sign(Map<String, String> params, String accessToken, boolean includeEmpty) {
         String content = params.entrySet().stream()
                 .filter(entry -> !"key_sign".equals(entry.getKey()))
-                .filter(entry -> StrUtil.isNotBlank(entry.getValue()))
+                .filter(entry -> includeEmpty || StrUtil.isNotBlank(entry.getValue()))
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .map(entry -> entry.getKey() + "=" + StrUtil.nullToEmpty(entry.getValue()))
                 .collect(Collectors.joining("&"));
         return DigestUtil.md5Hex(content + "&access_token=" + StrUtil.nullToEmpty(accessToken));
     }
