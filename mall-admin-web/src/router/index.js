@@ -25,12 +25,6 @@ export const menuRoutes = [
         name: 'store-tree',
         component: () => import('../views/store/StoreTreeView.vue'),
         meta: { title: '门店树', icon: 'Share' }
-      },
-      {
-        path: 'parent-changes',
-        name: 'store-parent-changes',
-        component: () => import('../views/store/ParentChangeView.vue'),
-        meta: { title: '改上级审批', icon: 'Switch' }
       }
     ]
   },

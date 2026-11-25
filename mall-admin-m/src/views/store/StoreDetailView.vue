@@ -226,7 +226,7 @@ onMounted(load);
         </div>
       </div>
 
-      <p class="tip">收款卡特批、改上级请使用电脑版后台</p>
+      <p class="tip">收款卡特批请使用电脑版后台</p>
     </template>
 
     <van-popup v-model:show="phoneVisible" position="bottom" round safe-area-inset-bottom>

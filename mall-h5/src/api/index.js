@@ -15,7 +15,6 @@ export const storeApi = {
   submitAuth: (data) => post('/store/auth', data),
   bindBank: (data) => put('/store/bank', data),
   inviteQr: () => get('/store/invite-qr'),
-  parentChange: (data) => post('/store/parent-change', data),
   eligibility: () => get('/store/order-eligibility')
 };
 

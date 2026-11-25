@@ -1,7 +1,6 @@
 package com.qidirect.mall.api.controller;
 
 import com.qidirect.mall.common.api.ApiResponse;
-import com.qidirect.mall.domain.dto.store.ParentChangeRequest;
 import com.qidirect.mall.domain.dto.store.StoreAuthRequest;
 import com.qidirect.mall.domain.dto.store.StoreBankRequest;
 import com.qidirect.mall.domain.dto.store.StoreProfileUpdateRequest;
@@ -53,12 +52,6 @@ public class StoreController {
     @GetMapping("/invite-qr")
     public ApiResponse<InviteQrVO> inviteQr() {
         return ApiResponse.ok(storeProfileService.inviteQr(SecurityUtils.currentStoreId()));
-    }
-
-    @PostMapping("/parent-change")
-    public ApiResponse<Void> submitParentChange(@Valid @RequestBody ParentChangeRequest request) {
-        storeProfileService.submitParentChange(SecurityUtils.currentStoreId(), request);
-        return ApiResponse.ok();
     }
 
     @GetMapping("/order-eligibility")

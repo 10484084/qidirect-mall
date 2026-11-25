@@ -19,13 +19,7 @@ export const storeApi = {
   unfreeze: (id, reason) => post(`/stores/${id}/unfreeze`, { reason }),
   inviteQr: (id) => get(`/stores/${id}/invite-qr`),
   overrideBank: (id, data) => post(`/stores/${id}/bank`, data),
-  changeParent: (id, data) => post(`/stores/${id}/parent`, data),
   events: (id, params) => get(`/stores/${id}/events`, params)
-};
-
-export const parentChangeApi = {
-  list: (status) => get('/parent-changes', status === '' || status === undefined ? undefined : { status }),
-  audit: (id, data) => post(`/parent-changes/${id}/audit`, data)
 };
 
 export const levelApi = {

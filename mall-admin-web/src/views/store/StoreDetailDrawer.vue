@@ -29,9 +29,6 @@ const bankForm = reactive({
 });
 const bankFormRef = ref();
 
-const parentVisible = ref(false);
-const parentForm = reactive({ newParentId: null, reason: '' });
-const parentFormRef = ref();
 
 const phoneVisible = ref(false);
 const phoneForm = reactive({ phone: '' });
@@ -92,23 +89,6 @@ async function submitBank() {
   detail.value = await storeApi.detail(storeId.value);
 }
 
-function openParent() {
-  parentForm.newParentId = null;
-  parentForm.reason = '';
-  parentVisible.value = true;
-}
-
-async function submitParent() {
-  if (!parentFormRef.value) return;
-  const valid = await parentFormRef.value.validate().catch(() => false);
-  if (!valid) return;
-  await storeApi.changeParent(storeId.value, { ...parentForm });
-  ElMessage.success('上级已调整');
-  parentVisible.value = false;
-  detail.value = await storeApi.detail(storeId.value);
-  loadEvents(1);
-}
-
 async function submitPhone() {
   if (!/^1[3-9]\d{9}$/.test(phoneForm.phone)) {
     ElMessage.warning('请输入正确的手机号');
@@ -165,7 +145,6 @@ defineExpose({ open });
           <el-button @click="phoneVisible = true">重置手机号</el-button>
           <el-button @click="resetPwd">重置密码</el-button>
           <el-button @click="openBank">收款卡特批</el-button>
-          <el-button @click="openParent">改上级</el-button>
           <el-button :type="profile.status === 1 ? 'danger' : 'success'" plain @click="toggleFreeze">
             {{ profile.status === 1 ? '冻结门店' : '解冻门店' }}
           </el-button>
@@ -342,25 +321,6 @@ defineExpose({ open });
       <template #footer>
         <el-button @click="bankVisible = false">取消</el-button>
         <el-button type="primary" @click="submitBank">提交</el-button>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="parentVisible" title="调整上级门店" width="480px" append-to-body>
-      <el-form ref="parentFormRef" :model="parentForm" label-width="90px">
-        <el-form-item
-          label="新上级"
-          prop="newParentId"
-          :rules="[{ required: true, message: '请选择新上级门店' }]"
-        >
-          <StoreSelect v-model="parentForm.newParentId" />
-        </el-form-item>
-        <el-form-item label="调整原因">
-          <el-input v-model="parentForm.reason" type="textarea" :rows="3" maxlength="255" show-word-limit />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="parentVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitParent">确认调整</el-button>
       </template>
     </el-dialog>
 

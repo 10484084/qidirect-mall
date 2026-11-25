@@ -2,7 +2,6 @@ package com.qidirect.mall.admin.controller;
 
 import com.qidirect.mall.common.api.ApiResponse;
 import com.qidirect.mall.common.api.PageResult;
-import com.qidirect.mall.domain.dto.admin.AdminParentChangeRequest;
 import com.qidirect.mall.domain.dto.admin.AdminResetPhoneRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreCreateRequest;
 import com.qidirect.mall.domain.dto.admin.AdminStoreStatusRequest;
@@ -104,13 +103,6 @@ public class AdminStoreController {
     public ApiResponse<Void> overrideBank(@PathVariable Long id,
                                           @Valid @RequestBody BankOverrideRequest request) {
         adminStoreService.overrideBank(id, request);
-        return ApiResponse.ok();
-    }
-
-    @PostMapping("/{id}/parent")
-    public ApiResponse<Void> changeParent(@PathVariable Long id,
-                                          @Valid @RequestBody AdminParentChangeRequest request) {
-        adminStoreService.changeParentDirect(id, request);
         return ApiResponse.ok();
     }
 
