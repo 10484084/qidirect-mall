@@ -202,7 +202,7 @@ onActivated(() => {
 <template>
   <div class="page">
     <div class="sticky-bar">
-      <van-tabs v-model:active="activeTab" shrink color="#1f6feb" title-active-color="#1f6feb" @change="onTabChange">
+      <van-tabs v-model:active="activeTab" shrink color="#326940" title-active-color="#326940" @change="onTabChange">
         <van-tab v-for="t in TABS" :key="t.name" :name="t.name" :title="t.title" />
       </van-tabs>
     </div>

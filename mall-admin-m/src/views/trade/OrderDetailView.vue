@@ -278,7 +278,7 @@ onMounted(load);
   margin: 12px;
   padding: 16px 18px;
   border-radius: var(--card-radius);
-  background: linear-gradient(135deg, #1f6feb, #0f4fbf);
+  background: linear-gradient(135deg, #3d7a4c, #245234);
   color: #fff;
 }
 

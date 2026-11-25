@@ -14,7 +14,7 @@ const showTabbar = computed(() => !!route.meta.tab);
       </keep-alive>
     </router-view>
 
-    <van-tabbar v-if="showTabbar" route safe-area-inset-bottom active-color="#1f6feb" inactive-color="#8a9099">
+    <van-tabbar v-if="showTabbar" route safe-area-inset-bottom active-color="#326940" inactive-color="#8a9099">
       <van-tabbar-item replace to="/dashboard" icon="wap-home-o">工作台</van-tabbar-item>
       <van-tabbar-item replace to="/orders" icon="orders-o">订单</van-tabbar-item>
       <van-tabbar-item replace to="/stores" icon="shop-o">门店</van-tabbar-item>

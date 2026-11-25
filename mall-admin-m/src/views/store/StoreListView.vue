@@ -126,7 +126,7 @@ onActivated(() => {
         @search="onSearch"
         @clear="onSearch"
       />
-      <van-dropdown-menu active-color="#1f6feb">
+      <van-dropdown-menu active-color="#326940">
         <van-dropdown-item v-model="status" :options="statusOptions" @change="onFilterChange" />
         <van-dropdown-item v-model="levelId" :options="levelOptions" @change="onFilterChange" />
       </van-dropdown-menu>

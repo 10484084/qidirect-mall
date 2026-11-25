@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showFailToast, showSuccessToast } from 'vant';
 import { useUserStore } from '../stores/user';
+import logoUrl from '../assets/logo.png';
 import { getLastAccount } from '../utils/token';
 
 const route = useRoute();
@@ -46,7 +47,7 @@ function toDesktop() {
 <template>
   <div class="login">
     <div class="brand">
-      <div class="logo">厂</div>
+      <img class="brand-logo" :src="logoUrl" alt="发士莲 Fadsline" />
       <h1>厂家后台</h1>
       <p>移动版 · 订单 / 门店 / 提现</p>
     </div>
@@ -89,7 +90,7 @@ function toDesktop() {
 <style scoped>
 .login {
   min-height: 100vh;
-  background: linear-gradient(180deg, #eaf1ff 0%, #f4f6f9 42%);
+  background: linear-gradient(180deg, #e7f0e8 0%, #f5f7f4 42%);
   padding: 0 0 24px;
 }
 
@@ -98,17 +99,11 @@ function toDesktop() {
   text-align: center;
 }
 
-.logo {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 14px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff;
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 60px;
-  box-shadow: 0 8px 20px rgba(31, 111, 235, 0.28);
+.brand-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+  margin: 0 auto 10px;
 }
 
 .brand h1 {
