@@ -48,6 +48,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 
 /**
@@ -62,6 +63,10 @@ public class PurchaseService {
     private static final int STATUS_PENDING = 0;
     private static final int STATUS_CANCELED = 2;
     private static final int STATUS_ABNORMAL = 3;
+    /** 支付单状态：支付中（与订单状态含义不同） */
+    private static final int PAY_STATUS_PAYING = 1;
+    /** 支付单状态：已关闭 */
+    private static final int PAY_STATUS_CLOSED = 4;
     private static final int CHANNEL_JSAPI = 1;
     private static final int CHANNEL_OFFLINE = 3;
     private static final int SIGN_ONLINE = 1;
@@ -377,6 +382,8 @@ public class PurchaseService {
     }
 
     private void ensureNoActiveOrder(Long storeId, String action) {
+        // 上次未支付就退出的挂单会卡住本次下单，先把「从未真正发起支付」的单作废
+        cancelNeverPaid(storeId, action);
         Long count;
         if (WalletBizType.RECHARGE.name().equals(action)) {
             count = rechargeOrderMapper.selectCount(Wrappers.<RechargeOrder>lambdaQuery()
@@ -390,6 +397,57 @@ public class PurchaseService {
         if (count != null && count > 0) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
                     "存在未完成的同类型单据，请先处理后再下单");
+        }
+    }
+
+    /**
+     * 作废从未真正支付的挂单：payment 从未进入支付中，或虽进入但扫呗侧没有交易号（未扫码）。
+     * 已有交易号说明用户可能正在付款，保留不动作，交由超时关单或回调处理。
+     */
+    private void cancelNeverPaid(Long storeId, String action) {
+        boolean recharge = WalletBizType.RECHARGE.name().equals(action);
+        List<Long> bizIds = recharge
+                ? rechargeOrderMapper.selectList(Wrappers.<RechargeOrder>lambdaQuery()
+                        .eq(RechargeOrder::getStoreId, storeId)
+                        .in(RechargeOrder::getStatus, STATUS_PENDING, STATUS_ABNORMAL))
+                    .stream().map(RechargeOrder::getId).toList()
+                : joinOrderMapper.selectList(Wrappers.<JoinOrder>lambdaQuery()
+                        .eq(JoinOrder::getStoreId, storeId)
+                        .in(JoinOrder::getStatus, STATUS_PENDING, STATUS_ABNORMAL))
+                    .stream().map(JoinOrder::getId).toList();
+        for (Long bizId : bizIds) {
+            Payment payment = paymentMapper.selectOne(Wrappers.<Payment>lambdaQuery()
+                    .eq(Payment::getBizId, bizId)
+                    .in(Payment::getBizType, "JOIN", "UPGRADE", "RECHARGE")
+                    .orderByDesc(Payment::getId)
+                    .last("LIMIT 1"));
+            if (payment != null && Objects.equals(payment.getStatus(), 2)) {
+                continue;
+            }
+            boolean mayBePaying = payment != null
+                    && Objects.equals(payment.getStatus(), PAY_STATUS_PAYING)
+                    && StrUtil.isNotBlank(payment.getOutTradeNo());
+            if (mayBePaying) {
+                continue;
+            }
+            if (payment != null) {
+                paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
+                        .eq(Payment::getId, payment.getId())
+                        .in(Payment::getStatus, 0, PAY_STATUS_PAYING)
+                        .set(Payment::getStatus, PAY_STATUS_CLOSED));
+            }
+            if (recharge) {
+                rechargeOrderMapper.update(null, Wrappers.<RechargeOrder>lambdaUpdate()
+                        .eq(RechargeOrder::getId, bizId)
+                        .in(RechargeOrder::getStatus, STATUS_PENDING, STATUS_ABNORMAL)
+                        .set(RechargeOrder::getStatus, STATUS_CANCELED));
+            } else {
+                joinOrderMapper.update(null, Wrappers.<JoinOrder>lambdaUpdate()
+                        .eq(JoinOrder::getId, bizId)
+                        .in(JoinOrder::getStatus, STATUS_PENDING, STATUS_ABNORMAL)
+                        .set(JoinOrder::getStatus, STATUS_CANCELED));
+            }
+            log.info("自动作废未支付挂单：storeId={} action={} bizId={}", storeId, action, bizId);
         }
     }
 
