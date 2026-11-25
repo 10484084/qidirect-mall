@@ -616,11 +616,11 @@ onMounted(async () => {
           <el-table-column label="规格名称" min-width="170" align="center" header-align="center">
             <template #default="{ row }">
               <div v-if="row.isBase" class="unit-cell">
+                <el-tag size="small" type="success" class="unit-tag">主单位</el-tag>
                 <span class="unit-name">{{ form.unit || '未填写' }}</span>
-                <el-tag size="small" type="success">主单位</el-tag>
               </div>
               <div v-else class="unit-cell">
-                <el-tag size="small" type="info">辅单位</el-tag>
+                <el-tag size="small" type="info" class="unit-tag">辅单位</el-tag>
                 <el-input v-model="row.specName" class="unit-name-input" placeholder="如 箱 / 件" />
               </div>
             </template>
@@ -834,9 +834,33 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
 .unit-name {
   font-size: 13px;
   color: #303133;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
 }
 
 .unit-name {
@@ -909,9 +933,33 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
 .unit-name {
   font-size: 13px;
   color: #303133;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
 }
 
 .unit-name {
@@ -1397,9 +1445,33 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
 .unit-name {
   font-size: 13px;
   color: #303133;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
 }
 
 .unit-name {
@@ -1472,9 +1544,33 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
 .unit-name {
   font-size: 13px;
   color: #303133;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.unit-tag {
+  width: 52px;
+  justify-content: center;
+  margin-right: 6px;
 }
 
 .unit-name {
