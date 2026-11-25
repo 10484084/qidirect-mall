@@ -327,11 +327,11 @@ async function submit() {
     recommend: form.recommend,
     status: form.status,
     sort: form.sort,
-    skus: form.skus.map((s) => ({
+    skus: form.skus.map((s, index) => ({
       id: s.id,
       specName: s.isBase ? unit : s.specName.trim(),
       factor: s.isBase ? 1 : Number(s.factor) || 1,
-      sort: s.sort || 1,
+      sort: index + 1,
       prices: sortedLevels.value.map((l) => ({
         levelId: l.id,
         price: yuan2fen(s.priceYuan[l.id] || 0)
@@ -631,11 +631,6 @@ onMounted(async () => {
               <el-input v-else v-model="row.factor" class="factor-input" placeholder="2" />
             </template>
           </el-table-column>
-          <el-table-column label="排序" width="80" align="center" header-align="center">
-            <template #default="{ row }">
-              <el-input v-model="row.sort" class="sort-input" placeholder="1" />
-            </template>
-          </el-table-column>
           <el-table-column v-for="l in sortedLevels" :key="l.id" :label="l.name" width="140">
             <template #default="{ row }">
               <el-input
@@ -889,10 +884,6 @@ onMounted(async () => {
   width: 90px;
 }
 
-.sort-input {
-  width: 60px;
-}
-
 .gift-box__head {
   display: flex;
   align-items: center;
@@ -986,10 +977,6 @@ onMounted(async () => {
 
 .factor-input {
   width: 90px;
-}
-
-.sort-input {
-  width: 60px;
 }
 
 .gift-box__title {
@@ -1500,10 +1487,6 @@ onMounted(async () => {
   width: 90px;
 }
 
-.sort-input {
-  width: 60px;
-}
-
 .gift-box__head {
   display: flex;
   align-items: center;
@@ -1597,10 +1580,6 @@ onMounted(async () => {
 
 .factor-input {
   width: 90px;
-}
-
-.sort-input {
-  width: 60px;
 }
 
 .gift-box__title {
