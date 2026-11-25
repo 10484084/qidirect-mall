@@ -63,9 +63,13 @@ public class StoreAuthService {
         store.setName("");
         store.setPhone(phone);
         store.setUsername(phone);
-        // 与后台建店一致：统一初始密码 admin，登录后强制修改
-        store.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
-        store.setPwdNeedChange(1);
+        // 注册时由门店自行设置密码，无需强制改密
+        String rawPassword = request.password().trim();
+        if (DEFAULT_PASSWORD.equalsIgnoreCase(rawPassword)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "密码过于简单，请更换");
+        }
+        store.setPassword(passwordEncoder.encode(rawPassword));
+        store.setPwdNeedChange(0);
         store.setNickname(StrUtil.isBlank(request.nickname())
                 ? "门店" + phone.substring(phone.length() - 4)
                 : request.nickname().trim());

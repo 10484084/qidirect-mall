@@ -25,6 +25,22 @@
             :rules="[{ required: true, message: '请输入手机号' }]"
           />
           <van-field
+            v-model="form.password"
+            type="password"
+            label="设置密码"
+            maxlength="32"
+            placeholder="6-32 位字母数字"
+            :rules="[{ required: true, message: '请设置登录密码' }]"
+          />
+          <van-field
+            v-model="form.confirmPassword"
+            type="password"
+            label="确认密码"
+            maxlength="32"
+            placeholder="再次输入密码"
+            :rules="[{ required: true, message: '请再次输入密码' }]"
+          />
+          <van-field
             v-model="form.code"
             label="验证码"
             type="digit"
@@ -75,7 +91,7 @@ const router = useRouter();
 const user = useUserStore();
 
 const inviteCode = ref(typeof route.query.inviteCode === 'string' ? route.query.inviteCode.toUpperCase() : '');
-const form = reactive({ phone: '', code: '' });
+const form = reactive({ phone: '', password: '', confirmPassword: '', code: '' });
 const sending = ref(false);
 const submitting = ref(false);
 const countdown = ref(0);
@@ -118,18 +134,23 @@ async function onSubmit() {
     showToast('请输入正确的手机号');
     return;
   }
+  if (form.password.length < 6) {
+    showToast('密码至少 6 位');
+    return;
+  }
+  if (form.password !== form.confirmPassword) {
+    showToast('两次输入的密码不一致');
+    return;
+  }
   submitting.value = true;
   try {
-    const data = await user.register({
+    await user.register({
       phone,
+      password: form.password,
       code: form.code.trim(),
       inviteCode: inviteCode.value || undefined
     });
     showToast('注册成功');
-    if (data && data.needChangePwd) {
-      router.replace('/change-password');
-      return;
-    }
     router.replace('/');
   } catch (e) {
     // 错误已由拦截器提示

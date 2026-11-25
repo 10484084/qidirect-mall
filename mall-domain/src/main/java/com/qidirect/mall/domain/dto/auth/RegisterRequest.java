@@ -12,6 +12,10 @@ public record RegisterRequest(
         @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
         String phone,
 
+        @NotBlank(message = "密码不能为空")
+        @Size(min = 6, max = 32, message = "密码长度需为 6-32 位")
+        String password,
+
         @NotBlank(message = "验证码不能为空")
         @Pattern(regexp = "^\\d{6}$", message = "验证码为 6 位数字")
         String code,
