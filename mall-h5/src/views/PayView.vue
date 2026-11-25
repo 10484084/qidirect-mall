@@ -5,13 +5,21 @@
     <div class="page-body">
       <div class="card pay-card">
         <template v-if="state === 'paying'">
-          <van-icon name="balance-pay" size="46" color="#326940" />
-          <div class="pay-title">{{ jumped ? '等待支付结果' : '正在支付' }}</div>
-          <div class="muted small">应付金额 ¥{{ fenToYuan(amount) }}</div>
-          <div v-if="jumped" class="muted small mt-12">
-            如浏览器仍停留在收银台，请点击左上角「返回」回到本页，支付结果将自动确认
+          <template v-if="qrCode">
+            <div class="pay-title">扫码支付</div>
+            <div class="pay-amount">¥{{ fenToYuan(amount) }}</div>
+            <img :src="qrCode" alt="支付二维码" class="qr-img" />
+            <div class="muted small qr-tip">长按二维码识别，或截图后用微信/支付宝扫码支付</div>
+          </template>
+          <template v-else>
+            <van-icon name="balance-pay" size="46" color="#326940" />
+            <div class="pay-title">{{ jumped ? '等待支付结果' : '正在支付' }}</div>
+            <div class="muted small">应付金额 ¥{{ fenToYuan(amount) }}</div>
+          </template>
+          <div class="pay-wait">
+            <van-loading size="14" />
+            <span>支付完成后自动返回</span>
           </div>
-          <van-loading v-else class="mt-12" size="20">等待支付结果...</van-loading>
         </template>
 
         <template v-else-if="state === 'success'">
@@ -62,6 +70,7 @@ const payNo = route.params.payNo;
 const orderId = route.query.orderId ? Number(route.query.orderId) : null;
 const amount = Number(route.query.amount || 0);
 const state = ref('paying');
+const qrCode = ref('');
 const message = ref('支付超时，请重新发起支付');
 const jumped = ref(false);
 let timer = null;
@@ -116,6 +125,12 @@ async function start() {
     if (info.payParams && info.payParams.package) {
       invokeWeixinBridge(info.payParams);
       poll();
+      return;
+    }
+    if (info.qrCode) {
+      // 微信内跳外部收银台会把 H5 顶掉，改为页内展示二维码，长按识别支付
+      qrCode.value = info.qrCode;
+      poll(5 * 60 * 1000);
       return;
     }
     if (info.payUrl) {
@@ -195,6 +210,40 @@ function retry() {
 .pay-card {
   text-align: center;
   padding: 36px 20px;
+}
+
+.pay-wait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.pay-wait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.qr-img {
+  width: 200px;
+  height: 200px;
+  margin: 10px auto 6px;
+  display: block;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.qr-tip {
+  line-height: 1.5;
+  padding: 0 8px;
 }
 
 .pay-amount {

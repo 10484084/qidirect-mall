@@ -1,6 +1,8 @@
 package com.qidirect.mall.infra.service;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.qrcode.QrCodeUtil;
+import cn.hutool.extra.qrcode.QrConfig;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.qidirect.mall.common.exception.BizException;
 import com.qidirect.mall.common.exception.ErrorCode;
@@ -55,11 +57,11 @@ public class PaymentService {
     public PayPrepayVO prepayInfo(Long storeId, String payNo) {
         Payment payment = requireOwned(storeId, payNo);
         if (Objects.equals(payment.getStatus(), STATUS_SUCCESS)) {
-            return new PayPrepayVO(payNo, payment.getStatus(), true, null, null, Map.of());
+            return new PayPrepayVO(payNo, payment.getStatus(), true, null, null, Map.of(), null);
         }
         assertPayable(payment);
         if (isMock()) {
-            return new PayPrepayVO(payNo, payment.getStatus(), false, null, mockPayUrl(payNo), Map.of());
+            return new PayPrepayVO(payNo, payment.getStatus(), false, null, mockPayUrl(payNo), Map.of(), null);
         }
         String cashierUrl = paymentGateway.cashierUrl(payment);
         transactionTemplate.executeWithoutResult(status -> {
@@ -77,7 +79,29 @@ public class PaymentService {
                     .set(Payment::getStatus, STATUS_PAYING)
                     .set(Payment::getChannel, CHANNEL_QR));
         });
-        return new PayPrepayVO(payNo, STATUS_PAYING, false, null, cashierUrl, Map.of());
+        return new PayPrepayVO(payNo, STATUS_PAYING, false, null, cashierUrl, Map.of(), qrDataUri(cashierUrl));
+    }
+
+    /**
+     * 把收银台链接转成二维码图片（data URI）。
+     * 微信内直接跳转外部收银台会把 H5 页面顶掉，付完无法回到商城；
+     * 页面内长按识别二维码支付，H5 始终保持在前台，轮询即可捕捉到支付结果。
+     */
+    private String qrDataUri(String content) {
+        if (StrUtil.isBlank(content)) {
+            return null;
+        }
+        try {
+            QrConfig config = new QrConfig(420, 420);
+            config.setMargin(1);
+            var image = QrCodeUtil.generate(content, config);
+            var out = new java.io.ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(image, "png", out);
+            return "data:image/png;base64," + java.util.Base64.getEncoder().encodeToString(out.toByteArray());
+        } catch (Exception e) {
+            log.warn("收银台二维码生成失败：payUrl={} error={}", content, e.toString());
+            return null;
+        }
     }
 
     /**
@@ -86,11 +110,11 @@ public class PaymentService {
     public PayPrepayVO jsapi(Long storeId, String payNo, String code) {
         Payment payment = requireOwned(storeId, payNo);
         if (Objects.equals(payment.getStatus(), STATUS_SUCCESS)) {
-            return new PayPrepayVO(payNo, payment.getStatus(), true, null, null, Map.of());
+            return new PayPrepayVO(payNo, payment.getStatus(), true, null, null, Map.of(), null);
         }
         assertPayable(payment);
         if (isMock()) {
-            return new PayPrepayVO(payNo, payment.getStatus(), false, null, mockPayUrl(payNo), Map.of());
+            return new PayPrepayVO(payNo, payment.getStatus(), false, null, mockPayUrl(payNo), Map.of(), null);
         }
         String openId = wechatAuthService.exchangeOpenId(code);
         PaymentGateway.JsapiResult result = paymentGateway.jsapi(payment, openId);
@@ -109,7 +133,9 @@ public class PaymentService {
                     .set(StrUtil.isNotBlank(result.outTradeNo()),
                             Payment::getOutTradeNo, result.outTradeNo()));
         });
-        return new PayPrepayVO(payNo, STATUS_PAYING, false, null, result.payUrl(), result.payParams());
+        boolean hasJsapiParams = result.payParams() != null && !result.payParams().isEmpty();
+        return new PayPrepayVO(payNo, STATUS_PAYING, false, null, result.payUrl(), result.payParams(),
+                hasJsapiParams ? null : qrDataUri(result.payUrl()));
     }
 
     public PaymentStatusVO status(Long storeId, String payNo) {

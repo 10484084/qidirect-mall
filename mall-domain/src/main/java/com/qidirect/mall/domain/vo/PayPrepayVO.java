@@ -11,5 +11,7 @@ public record PayPrepayVO(
         boolean paid,
         String authUrl,
         String payUrl,
-        Map<String, String> payParams) {
+        Map<String, String> payParams,
+        /** 聚合码收银台链接对应的二维码（data:image/png;base64），供页面内展示，避免跳走 */
+        String qrCode) {
 }
