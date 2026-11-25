@@ -1,10 +1,6 @@
 <template>
   <div class="page with-tab">
     <div class="header">
-      <div class="avatar">
-        <img v-if="profile && profile.avatar" :src="profile.avatar" alt="avatar" />
-        <span v-else>{{ shortName }}</span>
-      </div>
       <div class="info">
         <div class="name">{{ profile ? (profile.name || profile.nickname || profile.phone) : '门店用户' }}</div>
         <div class="muted small">{{ profile ? profile.phone : '' }}</div>
@@ -47,10 +43,6 @@ const router = useRouter();
 const user = useUserStore();
 const cart = useCartStore();
 const profile = computed(() => user.profile);
-const shortName = computed(() => {
-  const name = profile.value ? (profile.value.name || profile.value.nickname || '') : '';
-  return name ? name.slice(0, 1) : '店';
-});
 
 onMounted(async () => {
   try {
@@ -75,25 +67,6 @@ function onLogout() {
   padding: 24px 18px;
   background: linear-gradient(150deg, #3d7a4c, #245234);
   color: #fff;
-}
-
-.avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .info {

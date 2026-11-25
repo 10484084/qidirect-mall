@@ -3,9 +3,12 @@ package com.qidirect.mall.domain.dto.store;
 import jakarta.validation.constraints.Size;
 
 /**
- * 门店资料修改（昵称、头像）。
+ * 门店资料修改：门店名称、昵称、头像。
  */
 public record StoreProfileUpdateRequest(
+        @Size(max = 64, message = "门店名称不能超过 64 位")
+        String name,
+
         @Size(max = 64, message = "昵称长度不能超过 64 位")
         String nickname,
 

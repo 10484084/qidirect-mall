@@ -83,6 +83,13 @@ public class StoreProfileService {
         storeGuard.assertNotFrozen(store);
         Store patch = new Store();
         patch.setId(storeId);
+        if (request.name() != null) {
+            String name = request.name().trim();
+            if (name.isEmpty()) {
+                throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "门店名称不能为空");
+            }
+            patch.setName(name);
+        }
         if (request.nickname() != null) {
             patch.setNickname(request.nickname().trim());
         }

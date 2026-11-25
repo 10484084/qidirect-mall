@@ -4,10 +4,13 @@
 
     <div class="page-body">
       <div v-if="profile" class="card">
-        <div class="card-title">基本信息</div>
+        <div class="card-title card-title--flex">
+          <span>基本信息</span>
+          <span class="title-action" @click="openName">修改资料</span>
+        </div>
         <div class="kv"><span class="muted">手机号</span><span>{{ profile.phone }}</span></div>
         <div class="kv"><span class="muted">门店名称</span><span>{{ profile.name || '-' }}</span></div>
-        <div class="kv"><span class="muted">当前档位</span><span>{{ profile.levelId > 0 ? profile.levelName : '未加盟' }}</span></div>
+        <div class="kv"><span class="muted">当前档位</span><span>{{ profile.levelId > 0 ? profile.levelName : '未储值' }}</span></div>
         <div class="kv"><span class="muted">上级门店</span><span>{{ profile.parentName || '-' }}</span></div>
         <div class="kv"><span class="muted">邀请码</span><span>{{ profile.inviteCode || '-' }}</span></div>
         <div class="kv"><span class="muted">加盟时间</span><span>{{ formatTime(profile.joinTime) || '-' }}</span></div>
@@ -18,11 +21,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">
-          实名认证
-          <van-tag v-if="profile && profile.authStatus === 1" type="success">已认证</van-tag>
-          <van-tag v-else type="warning">未认证</van-tag>
-        </div>
+        <div class="card-title">实名认证</div>
         <template v-if="profile && profile.authStatus === 1">
           <div class="kv"><span class="muted">姓名</span><span>{{ profile.realName }}</span></div>
           <div class="kv"><span class="muted">身份证号</span><span>{{ profile.idCardMasked }}</span></div>
@@ -38,10 +37,9 @@
       </div>
 
       <div class="card">
-        <div class="card-title">
-          收款卡
-          <van-tag v-if="hasBank" type="success">已绑定</van-tag>
-          <van-tag v-else type="warning">未绑定</van-tag>
+        <div class="card-title card-title--flex">
+          <span>收款卡</span>
+          <span class="title-action" @click="openBank">{{ hasBank ? '修改结算卡' : '绑定结算卡' }}</span>
         </div>
         <template v-if="hasBank">
           <div class="kv"><span class="muted">持卡人</span><span>{{ profile.bankHolder }}</span></div>
@@ -50,19 +48,36 @@
         </template>
         <p v-else class="muted small">尚未绑定收款卡，提现前请先绑定。</p>
 
-        <div class="form-btn">
-          <van-button size="small" type="primary" round @click="openBank">
-            {{ hasBank ? '更换银行卡' : '绑定银行卡' }}
-          </van-button>
-        </div>
         <p class="muted small">持卡人须与实名姓名一致，不一致请联系厂家后台特批。</p>
       </div>
 
     </div>
 
+    <van-popup v-model:show="nameVisible" position="bottom" round safe-area-inset-bottom>
+      <div class="bank-sheet">
+        <div class="bank-sheet__title">修改门店名称</div>
+        <p class="muted small bank-sheet__tip">门店名称会显示在首页、订单与团队列表中。</p>
+        <van-form @submit="submitName">
+          <van-field
+            v-model="nameForm.name"
+            label="门店名称"
+            maxlength="64"
+            placeholder="请输入门店名称"
+            :rules="[{ required: true, message: '请输入门店名称' }]"
+          />
+          <div class="sheet-actions">
+            <van-button plain block round @click="nameVisible = false">取消</van-button>
+            <van-button type="primary" block round native-type="submit" :loading="savingName">
+              确认保存
+            </van-button>
+          </div>
+        </van-form>
+      </div>
+    </van-popup>
+
     <van-popup v-model:show="bankVisible" position="bottom" round safe-area-inset-bottom>
       <div class="bank-sheet">
-        <div class="bank-sheet__title">{{ hasBank ? '更换收款卡' : '绑定收款卡' }}</div>
+        <div class="bank-sheet__title">{{ hasBank ? '修改结算卡' : '绑定结算卡' }}</div>
         <p class="muted small bank-sheet__tip">持卡人须与实名姓名一致，卡号请仔细核对。</p>
         <van-form @submit="submitBank">
           <van-field
@@ -112,9 +127,35 @@ const user = useUserStore();
 const profile = computed(() => user.profile);
 const hasBank = computed(() => Boolean(profile.value && profile.value.bankAccountMasked));
 
+const nameForm = reactive({ name: '' });
+const nameVisible = ref(false);
+const savingName = ref(false);
+
 const bankForm = reactive({ bankHolder: '', bankName: '', bankAccount: '' });
 const savingBank = ref(false);
 const bankVisible = ref(false);
+
+function openName() {
+  nameForm.name = profile.value.name || '';
+  nameVisible.value = true;
+}
+
+async function submitName() {
+  const name = nameForm.name.trim();
+  if (!name) {
+    showToast('请输入门店名称');
+    return;
+  }
+  savingName.value = true;
+  try {
+    await storeApi.updateProfile({ name });
+    await user.loadProfile();
+    nameVisible.value = false;
+    showToast('门店名称已更新');
+  } finally {
+    savingName.value = false;
+  }
+}
 
 function openBank() {
   bankForm.bankHolder = profile.value.bankHolder || profile.value.realName || '';
@@ -168,6 +209,18 @@ async function submitBank() {
 .kv span:first-child {
   width: 76px;
   flex-shrink: 0;
+}
+
+.card-title--flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title-action {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--brand);
 }
 
 .form-btn {
