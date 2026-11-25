@@ -76,6 +76,7 @@ const jumped = ref(false);
 let timer = null;
 let deadline = 0;
 const jumpFlag = `payJump:${payNo}`;
+const PENDING_PAY_KEY = 'pending_pay';
 
 onMounted(() => {
   if (!assertPayAllowed()) {
@@ -115,10 +116,6 @@ function stopPolling() {
   }
 }
 
-function isWechat() {
-  return /MicroMessenger/i.test(navigator.userAgent);
-}
-
 async function start() {
   try {
     const info = await payApi.authorize(payNo);
@@ -131,12 +128,15 @@ async function start() {
       poll();
       return;
     }
-    // 微信内直接跳外部收银台，点「关闭」会把 H5 一起销毁，因此改在页内展示二维码，
-    // 用户长按识别（新开窗口）付款，H5 始终存活；其他环境仍走原本的链接跳转。
-    if (info.qrCode && isWechat()) {
-      qrCode.value = info.qrCode;
-      poll(5 * 60 * 1000);
-      return;
+    // 走链接跳转收银台：微信内没有返回按钮，跳走大概率回不来，
+    // 因此跳转前把待确认的支付单记到 localStorage，用户下次打开商城时自动补跳结果。
+    if (info.payUrl && !mockPayUrl(info.payUrl)) {
+      localStorage.setItem(PENDING_PAY_KEY, JSON.stringify({
+        payNo,
+        orderId,
+        amount,
+        at: Date.now()
+      }));
     }
     if (info.payUrl) {
       if (mockPayUrl(info.payUrl)) {
@@ -189,6 +189,7 @@ function success() {
   stopPolling();
   sessionStorage.removeItem(jumpFlag);
   state.value = 'success';
+  localStorage.removeItem(PENDING_PAY_KEY);
   // 支付成功后自动回到商城，无需用户再点按钮
   setTimeout(() => {
     if (state.value === 'success') goTarget();
