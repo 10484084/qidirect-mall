@@ -49,18 +49,6 @@ export const menuRoutes = [
         name: 'products',
         component: () => import('../views/goods/ProductView.vue'),
         meta: { title: '商品档案', icon: 'Present' }
-      },
-      {
-        path: 'gift-rules',
-        name: 'gift-rules',
-        component: () => import('../views/goods/GiftRuleView.vue'),
-        meta: { title: '买赠规则', icon: 'Box' }
-      },
-      {
-        path: 'agreements',
-        name: 'agreements',
-        component: () => import('../views/goods/AgreementView.vue'),
-        meta: { title: '协议管理', icon: 'Document' }
       }
     ]
   },

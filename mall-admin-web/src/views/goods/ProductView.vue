@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import ImageUploader from '../../components/ImageUploader.vue';
-import { categoryApi, levelApi, productApi } from '../../api';
+import { categoryApi, giftRuleApi, levelApi, productApi } from '../../api';
 import { fen2yuan, yuan2fen } from '../../utils/format';
 
 const loading = ref(false);
@@ -33,6 +33,14 @@ const form = reactive({
   skus: []
 });
 
+const giftRule = reactive({ id: null, specName: '', thresholdQty: 1, giftQty: 1, timeRange: [] });
+
+// 赠品规格下拉：取当前表单的规格名称（新建时还没 id，用名称映射到保存后的 sku）
+const specOptions = computed(() => form.skus.map((sku) => ({
+  label: sku.isBase ? (form.unit || '主单位') : (sku.specName || '未命名规格'),
+  value: sku.isBase ? '__base__' : sku.specName
+})));
+
 const detailVisible = ref(false);
 const detailRow = ref(null);
 
@@ -46,6 +54,13 @@ function emptySku(isBase = false) {
     sort: form.skus.length + 1,
     priceYuan: Object.fromEntries(sortedLevels.value.map((l) => [l.id, 0]))
   };
+}
+
+function onPriceInput(row, levelId, value) {
+  const cleaned = String(value ?? '')
+    .replace(/[^\d.]/g, '')
+    .replace(/^(\d*\.\d{2}).*$/, '$1');
+  row.priceYuan[levelId] = cleaned;
 }
 
 async function load() {
@@ -93,9 +108,30 @@ async function openCreate() {
     sort: 0,
     skus: []
   });
+  Object.assign(giftRule, { id: null, specName: '', thresholdQty: 1, giftQty: 1, timeRange: [] });
   dialogVisible.value = true;
   await ensureLevels();
   form.skus = [emptySku(true)];
+}
+
+async function loadGiftRule(productId) {
+  Object.assign(giftRule, { id: null, specName: '', thresholdQty: 1, giftQty: 1, timeRange: [] });
+  try {
+    const rules = (await giftRuleApi.list(productId)) || [];
+    const hit = rules.find((r) => r.enabled === 1) || rules[0];
+    if (hit) {
+      giftRule.id = hit.id;
+      giftRule.thresholdQty = hit.thresholdQty;
+      giftRule.giftQty = hit.giftQty;
+      giftRule.timeRange = hit.startTime && hit.endTime ? [hit.startTime, hit.endTime] : [];
+      // 用 skuId 反查规格名称，保存时再映射回 id
+      const detailSkus = (form.skus || []);
+      const matched = detailSkus.find((sku) => sku.id === hit.giftSkuId);
+      giftRule.specName = matched ? (matched.isBase ? '__base__' : matched.specName) : '';
+    }
+  } catch (e) {
+    // 规则读取失败不影响商品编辑
+  }
 }
 
 async function openEdit(row) {
@@ -134,6 +170,7 @@ async function openEdit(row) {
     form.skus.forEach((sku, i) => { sku.isBase = i === 0; });
     form.skus[0].factor = 1;
   }
+  await loadGiftRule(detail.id);
   dialogVisible.value = true;
 }
 
@@ -197,18 +234,64 @@ async function submit() {
       }))
     }))
   };
+  if (form.v3GiftEnabled === 1) {
+    if (!giftRule.specName) {
+      ElMessage.warning('请选择买赠的赠品规格');
+      return;
+    }
+    const threshold = Number(giftRule.thresholdQty);
+    const giftQty = Number(giftRule.giftQty);
+    if (!threshold || threshold < 1 || !giftQty || giftQty < 1) {
+      ElMessage.warning('买赠数量需为大于 0 的整数');
+      return;
+    }
+  }
   saving.value = true;
   try {
-    if (editing.value) {
-      await productApi.update(editing.value.id, payload);
-    } else {
-      await productApi.create(payload);
-    }
+    const saved = editing.value
+      ? await productApi.update(editing.value.id, payload)
+      : await productApi.create(payload);
+    await saveGiftRule(saved);
     ElMessage.success('已保存');
     dialogVisible.value = false;
     load();
   } finally {
     saving.value = false;
+  }
+}
+
+/**
+ * 商品保存后同步买赠规则：表单里选的是规格名称，需要映射成保存后的 skuId。
+ * 关闭买赠时停用已有规则，不删除历史配置。
+ */
+async function saveGiftRule(saved) {
+  const skus = (saved && saved.skus) || [];
+  if (form.v3GiftEnabled !== 1) {
+    if (giftRule.id) {
+      await giftRuleApi.setEnabled(giftRule.id, false).catch(() => {});
+    }
+    return;
+  }
+  const target = giftRule.specName === '__base__'
+    ? skus[0]
+    : skus.find((s) => s.specName === giftRule.specName);
+  if (!target || !target.id) {
+    ElMessage.warning('赠品规格保存失败，请重新选择规格后保存');
+    return;
+  }
+  const rulePayload = {
+    productId: saved.id,
+    giftSkuId: target.id,
+    thresholdQty: Number(giftRule.thresholdQty) || 1,
+    giftQty: Number(giftRule.giftQty) || 1,
+    enabled: 1,
+    startTime: giftRule.timeRange && giftRule.timeRange[0] ? giftRule.timeRange[0] : null,
+    endTime: giftRule.timeRange && giftRule.timeRange[1] ? giftRule.timeRange[1] : null
+  };
+  if (giftRule.id) {
+    await giftRuleApi.update(giftRule.id, rulePayload);
+  } else {
+    await giftRuleApi.create(rulePayload);
   }
 }
 
@@ -327,15 +410,15 @@ onMounted(async () => {
       <el-form :model="form" label-width="110px">
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="分类" required>
-              <el-select v-model="form.categoryId" placeholder="请选择分类" style="width: 100%">
-                <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
-              </el-select>
+            <el-form-item label="商品名称" required>
+              <el-input v-model="form.name" maxlength="64" placeholder="请输入商品名称" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="商品名称" required>
-              <el-input v-model="form.name" maxlength="64" />
+            <el-form-item label="商品分组" required>
+              <el-select v-model="form.categoryId" placeholder="请选择商品分组" style="width: 100%">
+                <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -344,52 +427,83 @@ onMounted(async () => {
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="排序">
-              <el-input-number v-model="form.sort" :min="0" style="width: 160px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="推荐">
+            <el-form-item label="是否推荐">
               <el-switch v-model="form.recommend" :active-value="1" :inactive-value="0" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="上架状态">
-              <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="上架" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="最高档买赠">
+            <el-form-item label="是否买赠">
               <el-switch v-model="form.v3GiftEnabled" :active-value="1" :inactive-value="0" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="封面图">
-              <ImageUploader v-model="form.cover" :limit="1" mode="single" tip="建议 800x800，仅支持 jpg/png/webp" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="轮播图">
-              <ImageUploader v-model="form.images" :limit="6" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="商品描述">
-              <el-input v-model="form.description" type="textarea" :rows="3" maxlength="2000" show-word-limit />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-divider content-position="left">单位与档位价格（元）</el-divider>
+        <el-card v-if="form.v3GiftEnabled === 1" shadow="never" class="gift-box">
+          <div class="gift-box__title">买赠规则</div>
+          <el-row :gutter="16">
+            <el-col :span="8">
+              <el-form-item label="赠品规格">
+                <el-select v-model="giftRule.specName" placeholder="请选择赠品规格" style="width: 100%">
+                  <el-option
+                    v-for="opt in specOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="购买数量">
+                <el-input v-model="giftRule.thresholdQty" placeholder="满几个主单位" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="赠送数量">
+                <el-input v-model="giftRule.giftQty" placeholder="赠几个" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="20">
+              <el-form-item label="活动时间">
+                <el-date-picker
+                  v-model="giftRule.timeRange"
+                  type="datetimerange"
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <p class="gift-box__tip">购买满「购买数量」个主单位，自动赠送「赠送数量」个所选规格；活动时间留空表示长期有效。</p>
+        </el-card>
+
+        <div class="media-row">
+          <div class="media-item">
+            <div class="media-label">封面图</div>
+            <ImageUploader v-model="form.cover" :limit="1" mode="single" tip="建议 800x800，jpg/png/webp" />
+          </div>
+          <div class="media-item">
+            <div class="media-label">轮播图</div>
+            <ImageUploader v-model="form.images" :limit="6" tip="最多 6 张，首张为列表主图" />
+          </div>
+        </div>
+
+        <el-form-item label="商品描述">
+          <el-input v-model="form.description" type="textarea" :rows="3" maxlength="2000" show-word-limit />
+        </el-form-item>
+
+        <el-divider content-position="left">多规格与档位价格（元）</el-divider>
         <el-alert
           type="info"
           :closable="false"
           show-icon
           class="mb8"
-          title="先填主单位，再加包装单位：1 个包装单位 = N 个主单位（如 1 箱 = 12 瓶），价格按各自单位分别设置。"
+          title="先填主单位，再添加多规格：1 个规格 = N 个主单位（如 1 箱 = 12 瓶），价格按各自单位分别填写。"
         />
         <el-table :data="form.skus" border size="small">
-          <el-table-column label="单位名称" min-width="160">
+          <el-table-column label="规格名称" min-width="160">
             <template #default="{ row }">
               <div v-if="row.isBase" class="base-unit">
                 <el-tag size="small" type="success">主单位</el-tag>
@@ -398,9 +512,9 @@ onMounted(async () => {
               <el-input v-else v-model="row.specName" placeholder="如 箱 / 件" />
             </template>
           </el-table-column>
-          <el-table-column label="含主单位数" width="140">
+          <el-table-column label="换算关系" width="150">
             <template #default="{ row }">
-              <span v-if="row.isBase">1</span>
+              <span v-if="row.isBase">1 {{ form.unit || '主单位' }}</span>
               <el-input-number
                 v-else
                 v-model="row.factor"
@@ -415,33 +529,39 @@ onMounted(async () => {
               <el-input-number v-model="row.sort" :min="1" size="small" style="width: 70px" />
             </template>
           </el-table-column>
-          <el-table-column v-for="l in sortedLevels" :key="l.id" :label="l.name" width="130">
+          <el-table-column v-for="l in sortedLevels" :key="l.id" :label="l.name" width="140">
             <template #default="{ row }">
-              <el-input-number
-                v-model="row.priceYuan[l.id]"
-                :min="0"
-                :precision="2"
-                :step="10"
-                size="small"
-                style="width: 110px"
-              />
+              <el-input
+                :model-value="row.priceYuan[l.id]"
+                class="price-input"
+                placeholder="0.00"
+                @update:model-value="(v) => onPriceInput(row, l.id, v)"
+              >
+                <template #prefix>¥</template>
+              </el-input>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80">
             <template #default="{ row, $index }">
-              <el-button
-                v-if="!row.isBase"
-                link
-                type="danger"
-                @click="removeSku($index)"
-              >
-                删除
-              </el-button>
+              <el-button v-if="!row.isBase" link type="danger" @click="removeSku($index)">删除</el-button>
               <span v-else class="text-muted">—</span>
             </template>
           </el-table-column>
         </el-table>
-        <el-button class="mt8" plain @click="addSku">添加包装单位</el-button>
+        <el-button class="mt8" plain @click="addSku">添加多规格</el-button>
+
+        <el-row :gutter="16" class="extra-row">
+          <el-col :span="12">
+            <el-form-item label="排序">
+              <el-input v-model="form.sort" placeholder="数字越小越靠前" style="width: 160px" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="上架状态">
+              <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="上架" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
 
       <template #footer>
@@ -472,3 +592,133 @@ onMounted(async () => {
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+.gift-box {
+  margin: 0 0 16px;
+  background: #f7faf7;
+  border: 1px solid #e4eee4;
+}
+
+.gift-box__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #326940;
+  margin-bottom: 12px;
+}
+
+.gift-box__tip {
+  margin: 0;
+  font-size: 12px;
+  color: #8a9099;
+}
+
+.price-input {
+  width: 118px;
+}
+
+.media-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding-left: 110px;
+}
+
+.media-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-label {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.media-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding-left: 110px;
+}
+
+.media-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-label {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.extra-row {
+  margin-top: 16px;
+}
+</style>
+
+<style scoped>
+.gift-box {
+  margin: 0 0 16px;
+  background: #f7faf7;
+  border: 1px solid #e4eee4;
+}
+
+.gift-box__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #326940;
+  margin-bottom: 12px;
+}
+
+.gift-box__tip {
+  margin: 0;
+  font-size: 12px;
+  color: #8a9099;
+}
+
+.price-input {
+  width: 118px;
+}
+
+.media-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding-left: 110px;
+}
+
+.media-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-label {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.media-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding-left: 110px;
+}
+
+.media-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-label {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.extra-row {
+  margin-top: 16px;
+}
+</style>
