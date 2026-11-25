@@ -625,6 +625,7 @@ onMounted(async () => {
           <el-table-column label="规格名称" min-width="170" align="center" header-align="center">
             <template #default="{ row }">
               <div v-if="row.isBase" class="unit-cell">
+                <span class="unit-name">{{ form.unit || '未填写' }}</span>
                 <el-tag size="small" type="success">主单位</el-tag>
               </div>
               <div v-else class="unit-cell">
@@ -635,7 +636,7 @@ onMounted(async () => {
           </el-table-column>
           <el-table-column label="换算关系" width="140" align="center" header-align="center">
             <template #default="{ row }">
-              <span v-if="row.isBase" class="center-text">1 {{ form.unit || '主单位' }}</span>
+              <span v-if="row.isBase" class="center-text">1</span>
               <el-input v-else v-model="row.factor" class="factor-input" placeholder="2" />
             </template>
           </el-table-column>
@@ -842,6 +843,16 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
 .unit-cell {
   display: flex;
   align-items: center;
@@ -905,6 +916,16 @@ onMounted(async () => {
   font-size: 13px;
   color: #a8abb2;
   padding: 6px 0;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
 }
 
 .unit-cell {
@@ -1405,6 +1426,16 @@ onMounted(async () => {
   padding: 6px 0;
 }
 
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
 .unit-cell {
   display: flex;
   align-items: center;
@@ -1468,6 +1499,16 @@ onMounted(async () => {
   font-size: 13px;
   color: #a8abb2;
   padding: 6px 0;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
+}
+
+.unit-name {
+  font-size: 13px;
+  color: #303133;
 }
 
 .unit-cell {

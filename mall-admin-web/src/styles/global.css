@@ -118,3 +118,27 @@ a {
   border: 1px solid #ebeef5;
   cursor: pointer;
 }
+
+/* 输入框与选择框文字统一居中（表格内、弹窗内） */
+.el-table .el-input__inner,
+.el-table .el-input__prefix {
+  text-align: center;
+}
+
+.el-dialog .el-form-item .el-input__inner,
+.el-dialog .el-form-item .el-select__placeholder,
+.el-dialog .el-form-item .el-select__selected-item {
+  text-align: center;
+}
+
+/* 输入框与选择框文字统一居中（表格内、弹窗内） */
+.el-table .el-input__inner,
+.el-table .el-input__prefix {
+  text-align: center;
+}
+
+.el-dialog .el-form-item .el-input__inner,
+.el-dialog .el-form-item .el-select__placeholder,
+.el-dialog .el-form-item .el-select__selected-item {
+  text-align: center;
+}

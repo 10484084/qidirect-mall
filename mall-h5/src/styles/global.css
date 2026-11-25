@@ -193,3 +193,81 @@ a {
 .van-nav-bar__title {
   font-weight: 600;
 }
+
+/* 输入框、选择框内的文字统一居中：标签固定宽度靠左，输入区文字居中 */
+.van-field__label {
+  width: 5.5em !important;
+  flex-shrink: 0;
+}
+
+.van-field__value,
+.van-field__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.van-field__control,
+.van-field__control::placeholder,
+.van-field input,
+.van-field textarea {
+  text-align: center;
+}
+
+.van-field--error .van-field__control {
+  text-align: center;
+}
+
+/* 选择器（单列/多列）选中项居中 */
+.van-picker-column__item {
+  text-align: center;
+}
+
+/* 搜索框保持左对齐，居中会破坏输入体验 */
+.van-search .van-field__control,
+.van-search .van-field__control::placeholder {
+  text-align: left;
+}
+
+/* 验证码等带按钮的输入框仍居中，但按钮不参与居中 */
+.van-field__button {
+  text-align: right;
+}
+
+/* 输入框、选择框内的文字统一居中：标签固定宽度靠左，输入区文字居中 */
+.van-field__label {
+  width: 5.5em !important;
+  flex-shrink: 0;
+}
+
+.van-field__value,
+.van-field__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.van-field__control,
+.van-field__control::placeholder,
+.van-field input,
+.van-field textarea {
+  text-align: center;
+}
+
+.van-field--error .van-field__control {
+  text-align: center;
+}
+
+/* 选择器（单列/多列）选中项居中 */
+.van-picker-column__item {
+  text-align: center;
+}
+
+/* 搜索框保持左对齐，居中会破坏输入体验 */
+.van-search .van-field__control,
+.van-search .van-field__control::placeholder {
+  text-align: left;
+}
+
+/* 验证码等带按钮的输入框仍居中，但按钮不参与居中 */
+.van-field__button {
+  text-align: right;
+}
