@@ -53,7 +53,7 @@ public class AliSmsGateway implements SmsGateway {
             if (!"OK".equalsIgnoreCase(code)) {
                 String message = response.getBody() == null ? "无响应" : response.getBody().getMessage();
                 log.error("[AliSms] 发送失败 phone={} template={} code={} msg={}", phone, templateCode, code, message);
-                throw new BizException(ErrorCode.SMS_SEND_FAILED.getCode(), "短信发送失败，请稍后重试");
+                throw new BizException(ErrorCode.SMS_SEND_FAILED.getCode(), friendlyMessage(code));
             }
             log.info("[AliSms] 发送成功 phone={} template={} bizId={}", phone, templateCode,
                     response.getBody().getBizId());
@@ -63,5 +63,25 @@ public class AliSmsGateway implements SmsGateway {
             log.error("[AliSms] 调用异常 phone={} template={} err={}", phone, templateCode, e.getMessage());
             throw new BizException(ErrorCode.SMS_SEND_FAILED.getCode(), "短信发送失败，请稍后重试");
         }
+    }
+
+    /**
+     * 把阿里云错误码转成使用者能看懂的提示，原始错误码只留在日志里。
+     */
+    private String friendlyMessage(String code) {
+        if (code == null) {
+            return "短信发送失败，请稍后重试";
+        }
+        return switch (code) {
+            case "isv.AMOUNT_NOT_ENOUGH" -> "短信服务余额不足，请联系管理员充值";
+            case "isv.BUSINESS_LIMIT_CONTROL" -> "该手机号发送过于频繁，请稍后再试";
+            case "isv.MOBILE_NUMBER_ILLEGAL", "isv.MOBILE_COUNT_OVER_LIMIT" -> "手机号不正确，请检查后重试";
+            case "isv.SMS_SIGNATURE_ILLEGAL", "isv.SIGN_NOT_QUALIFIED", "isv.SIGN_NOT_SAME" ->
+                    "短信签名不可用，请联系管理员";
+            case "isv.SMS_TEMPLATE_ILLEGAL", "isv.TEMPLATE_MISSING_PARAMETERS" ->
+                    "短信模板不可用，请联系管理员";
+            case "isv.DAY_LIMIT_CONTROL" -> "今日短信发送量已达上限，请明天再试";
+            default -> "短信发送失败，请稍后重试";
+        };
     }
 }
