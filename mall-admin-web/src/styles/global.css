@@ -142,3 +142,15 @@ a {
 .el-dialog .el-form-item .el-select__selected-item {
   text-align: center;
 }
+
+
+/* 商品档案：表格内所有文字（含表头）居中 */
+.center-table .el-table__header th .cell,
+.center-table .el-table th.el-table__cell > .cell,
+.center-table td.el-table__cell > .cell {
+  text-align: center;
+}
+
+.center-table .el-table__empty-text {
+  text-align: center;
+}

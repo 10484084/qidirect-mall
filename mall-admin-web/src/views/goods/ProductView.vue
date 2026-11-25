@@ -489,7 +489,7 @@ onMounted(async () => {
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="rows" border stripe>
+      <el-table v-loading="loading" :data="rows" border stripe class="center-table">
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column label="封面" width="80">
           <template #default="{ row }">
@@ -621,7 +621,7 @@ onMounted(async () => {
           class="mb8"
           title="先填主单位，再添加多规格：1 个规格 = N 个主单位（如 1 箱 = 12 瓶），价格按各自单位分别填写。"
         />
-        <el-table :data="form.skus" border size="small">
+        <el-table :data="form.skus" border size="small" class="center-table">
           <el-table-column label="规格名称" min-width="170" align="center" header-align="center">
             <template #default="{ row }">
               <div v-if="row.isBase" class="unit-cell">
@@ -784,7 +784,7 @@ onMounted(async () => {
           <el-descriptions-item label="最高档买赠">{{ detailRow.v3GiftEnabled ? '开启' : '关闭' }}</el-descriptions-item>
           <el-descriptions-item label="描述" :span="2">{{ detailRow.description || '-' }}</el-descriptions-item>
         </el-descriptions>
-        <el-table :data="detailRow.skus || []" border size="small" class="mt16">
+        <el-table :data="detailRow.skus || []" border size="small" class="mt16 center-table">
           <el-table-column prop="specName" label="规格" min-width="120" />
           <el-table-column prop="factor" label="系数" width="70" />
           <el-table-column v-for="l in sortedLevels" :key="l.id" :label="l.name" width="110">
