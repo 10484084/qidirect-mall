@@ -46,7 +46,6 @@ async function onCommand(cmd) {
     <el-aside :width="collapsed ? '64px' : '220px'" class="aside">
       <div class="logo">
         <img :src="logoWhite" alt="发士莲" class="logo-img" />
-        <span v-if="!collapsed" class="logo-text">门店后台</span>
       </div>
       <el-menu
         :default-active="activeMenu"
@@ -133,18 +132,12 @@ async function onCommand(cmd) {
 }
 
 .logo-img {
-  height: 22px;
+  height: 24px;
   width: auto;
+  max-width: 100%;
   flex-shrink: 0;
 }
 
-.logo-text {
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
 
 /* 选中项用品牌辅绿点缀 */
 .aside :deep(.el-menu-item.is-active) {
