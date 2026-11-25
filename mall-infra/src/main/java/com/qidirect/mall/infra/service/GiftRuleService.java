@@ -106,17 +106,28 @@ public class GiftRuleService {
             if (product == null || !Objects.equals(product.getV3GiftEnabled(), 1)) {
                 continue;
             }
-            GiftRule rule = activeRule(product.getId(), now);
-            if (rule == null) {
+            List<GiftRule> rules = activeRules(product.getId(), now);
+            if (rules.isEmpty()) {
                 continue;
             }
-            int giftQty = (bottles / rule.getThresholdQty()) * rule.getGiftQty();
-            if (giftQty <= 0) {
+            // 多条阶梯规则：取「已达成门槛中最高的一档」执行，符合阶梯买赠的常规语义
+            GiftRule best = null;
+            for (GiftRule rule : rules) {
+                if (bottles >= rule.getThresholdQty()
+                        && (best == null || rule.getThresholdQty() > best.getThresholdQty())) {
+                    best = rule;
+                }
+            }
+            if (best == null) {
                 continue;
             }
-            ProductSku giftSku = productSkuMapper.selectById(rule.getGiftSkuId());
-            rewards.add(new GiftRewardVO(product.getId(), rule.getGiftSkuId(),
-                    giftSku == null ? "瓶" : giftSku.getSpecName(), giftQty, 0L));
+            int bestQty = (bottles / best.getThresholdQty()) * best.getGiftQty();
+            if (bestQty <= 0) {
+                continue;
+            }
+            ProductSku giftSku = productSkuMapper.selectById(best.getGiftSkuId());
+            rewards.add(new GiftRewardVO(product.getId(), best.getGiftSkuId(),
+                    giftSku == null ? "瓶" : giftSku.getSpecName(), bestQty, 0L));
         }
         return rewards;
     }
@@ -138,7 +149,6 @@ public class GiftRuleService {
         int enabled = request.enabled() != null && request.enabled() == 1 ? 1 : 0;
         if (enabled == 1) {
             assertNotFuture(request.startTime());
-            disableOthers(product.getId(), id);
         }
 
         GiftRule rule = id == null ? new GiftRule() : requireRule(id);
@@ -175,21 +185,23 @@ public class GiftRuleService {
                 .set(GiftRule::getEnabled, 0));
     }
 
+    /**
+     * 商品当前生效的买赠规则（可配置多条阶梯规则）。
+     */
+    private List<GiftRule> activeRules(Long productId, LocalDateTime now) {
+        return giftRuleMapper.selectList(Wrappers.<GiftRule>lambdaQuery()
+                        .eq(GiftRule::getProductId, productId)
+                        .eq(GiftRule::getEnabled, 1)
+                        .orderByAsc(GiftRule::getThresholdQty))
+                .stream()
+                .filter(rule -> rule.getStartTime() == null || !now.isBefore(rule.getStartTime()))
+                .filter(rule -> rule.getEndTime() == null || !now.isAfter(rule.getEndTime()))
+                .toList();
+    }
+
     private GiftRule activeRule(Long productId, LocalDateTime now) {
-        GiftRule rule = giftRuleMapper.selectOne(Wrappers.<GiftRule>lambdaQuery()
-                .eq(GiftRule::getProductId, productId)
-                .eq(GiftRule::getEnabled, 1)
-                .last("limit 1"));
-        if (rule == null) {
-            return null;
-        }
-        if (rule.getStartTime() != null && now.isBefore(rule.getStartTime())) {
-            return null;
-        }
-        if (rule.getEndTime() != null && now.isAfter(rule.getEndTime())) {
-            return null;
-        }
-        return rule;
+        List<GiftRule> rules = activeRules(productId, now);
+        return rules.isEmpty() ? null : rules.get(0);
     }
 
     private boolean giftAllowed(Store store) {
