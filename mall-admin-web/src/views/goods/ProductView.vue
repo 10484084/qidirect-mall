@@ -13,11 +13,6 @@ const levels = ref([]);
 
 const query = reactive({ keyword: '', categoryId: null, status: null, page: 1, size: 20 });
 
-const statusOptions = [
-  { label: '全部', value: null },
-  { label: '上架', value: 1 },
-  { label: '下架', value: 0 }
-];
 
 // 排序弹窗：左分类、右该分类商品，均可拖拽
 const sortVisible = ref(false);
@@ -418,11 +413,11 @@ async function saveGiftRule(saved) {
   removedGiftRuleIds.value = [];
 }
 
-async function toggleStatus(row) {
-  const next = row.status === 1 ? 0 : 1;
+async function toggleStatus(row, value) {
+  const next = value ? 1 : 0;
+  row.status = next;
   await productApi.setStatus(row.id, next);
   ElMessage.success(next === 1 ? '已上架' : '已下架');
-  load();
 }
 
 async function onRemove(row) {
@@ -472,16 +467,11 @@ onMounted(async () => {
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="是否上架">
-          <div class="status-switch">
-            <el-button
-              v-for="opt in statusOptions"
-              :key="String(opt.value)"
-              size="small"
-              :type="query.status === opt.value ? 'primary' : ''"
-              @click="query.status = opt.value; search()"
-            >{{ opt.label }}</el-button>
-          </div>
+        <el-form-item label="状态">
+          <el-select v-model="query.status" clearable placeholder="全部" style="width: 130px">
+            <el-option label="上架商品" :value="1" />
+            <el-option label="下架商品" :value="0" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="search">查询</el-button>
@@ -507,20 +497,21 @@ onMounted(async () => {
             <el-tag v-if="row.v3GiftEnabled" type="success" size="small">最高档买赠</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="90">
+        <el-table-column label="状态" width="110" align="center" header-align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-              {{ row.status === 1 ? '上架' : '下架' }}
-            </el-tag>
+            <el-switch
+              :model-value="row.status === 1"
+              inline-prompt
+              active-text="上架"
+              inactive-text="下架"
+              @change="(val) => toggleStatus(row, val)"
+            />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="showDetail(row)">查看</el-button>
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button link :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">
-              {{ row.status === 1 ? '下架' : '上架' }}
-            </el-button>
             <el-button link type="danger" @click="onRemove(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -970,11 +961,6 @@ onMounted(async () => {
   width: 118px;
 }
 
-.status-switch {
-  display: flex;
-  gap: 6px;
-}
-
 .sort-wrap {
   display: flex;
   gap: 16px;
@@ -1060,11 +1046,6 @@ onMounted(async () => {
   text-align: center;
   color: #a8abb2;
   font-size: 13px;
-}
-
-.status-switch {
-  display: flex;
-  gap: 6px;
 }
 
 .sort-wrap {
@@ -1172,11 +1153,6 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
-.status-switch {
-  display: flex;
-  gap: 6px;
-}
-
 .sort-wrap {
   display: flex;
   gap: 16px;
@@ -1262,11 +1238,6 @@ onMounted(async () => {
   text-align: center;
   color: #a8abb2;
   font-size: 13px;
-}
-
-.status-switch {
-  display: flex;
-  gap: 6px;
 }
 
 .sort-wrap {
@@ -1553,11 +1524,6 @@ onMounted(async () => {
   width: 118px;
 }
 
-.status-switch {
-  display: flex;
-  gap: 6px;
-}
-
 .sort-wrap {
   display: flex;
   gap: 16px;
@@ -1643,11 +1609,6 @@ onMounted(async () => {
   text-align: center;
   color: #a8abb2;
   font-size: 13px;
-}
-
-.status-switch {
-  display: flex;
-  gap: 6px;
 }
 
 .sort-wrap {
@@ -1755,11 +1716,6 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
-.status-switch {
-  display: flex;
-  gap: 6px;
-}
-
 .sort-wrap {
   display: flex;
   gap: 16px;
@@ -1845,11 +1801,6 @@ onMounted(async () => {
   text-align: center;
   color: #a8abb2;
   font-size: 13px;
-}
-
-.status-switch {
-  display: flex;
-  gap: 6px;
 }
 
 .sort-wrap {
