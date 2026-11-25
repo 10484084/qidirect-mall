@@ -17,7 +17,8 @@
         <template v-else-if="state === 'success'">
           <van-icon name="checked" size="52" color="#07c160" />
           <div class="pay-title">支付成功</div>
-          <div class="muted small">业务已生效，可在记录中查看明细</div>
+          <div class="pay-amount">¥{{ fenToYuan(amount) }}</div>
+          <div class="muted small">储值已到账，正在跳转…</div>
         </template>
 
         <template v-else>
@@ -35,7 +36,7 @@
           round
           @click="goTarget"
         >
-          {{ orderId ? '查看订单' : '查看记录' }}
+          {{ orderId ? '查看订单' : '查看钱包' }}
         </van-button>
         <van-button v-else-if="state === 'fail'" type="primary" block round @click="retry">
           重新支付
@@ -168,11 +169,15 @@ function success() {
   stopPolling();
   sessionStorage.removeItem(jumpFlag);
   state.value = 'success';
+  // 支付成功后自动回到商城，无需用户再点按钮
+  setTimeout(() => {
+    if (state.value === 'success') goTarget();
+  }, 1800);
 }
 
 function goTarget() {
   if (orderId) router.replace(`/orders/${orderId}`);
-  else router.replace('/timeline');
+  else router.replace('/wallet');
 }
 
 function retry() {
@@ -190,6 +195,13 @@ function retry() {
 .pay-card {
   text-align: center;
   padding: 36px 20px;
+}
+
+.pay-amount {
+  margin: 4px 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #326940;
 }
 
 .pay-title {
