@@ -174,8 +174,7 @@ export const menuRoutes = [
         path: 'sms-templates',
         name: 'sms-templates',
         component: () => import('../views/system/SmsTemplateView.vue'),
-        // 短信通道未开通，模块暂时隐藏；恢复时去掉 hidden 即可
-        meta: { title: '短信模板', icon: 'ChatDotSquare', hidden: true }
+        meta: { title: '短信模板', icon: 'ChatDotSquare' }
       },
       {
         path: 'admin-users',
