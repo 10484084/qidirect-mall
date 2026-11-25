@@ -22,10 +22,13 @@ public class GiftRule {
 
     private Long productId;
 
+    /** 门槛单位规格；0 表示主单位 */
+    private Long thresholdSkuId;
+
     /** 赠品落在最小规格（瓶）的 sku */
     private Long giftSkuId;
 
-    /** 门槛（按瓶折算） */
+    /** 门槛数量（按 thresholdSkuId 计数，折算主单位后参与计算） */
     private Integer thresholdQty;
 
     /** 赠送瓶数 */

@@ -58,7 +58,7 @@ function emptySku(isBase = false) {
 }
 
 function emptyGiftRule() {
-  return { id: null, thresholdQty: 1, giftQty: 1, specName: '' };
+  return { id: null, thresholdQty: 1, thresholdSpecName: '__base__', giftQty: 1, specName: '__base__' };
 }
 
 function addGiftRule() {
@@ -142,11 +142,15 @@ async function loadGiftRule(productId) {
       .filter((r) => r.enabled === 1)
       .map((r) => {
         const matched = skus.find((sku) => sku.id === r.giftSkuId);
+        const thresholdSku = (!r.thresholdSkuId || r.thresholdSkuId === 0)
+          ? skus[0]
+          : skus.find((sku) => sku.id === r.thresholdSkuId);
         return {
           id: r.id,
           thresholdQty: r.thresholdQty,
+          thresholdSpecName: thresholdSku ? (thresholdSku.isBase ? '__base__' : thresholdSku.specName) : '__base__',
           giftQty: r.giftQty,
-          specName: matched ? (matched.isBase ? '__base__' : matched.specName) : ''
+          specName: matched ? (matched.isBase ? '__base__' : matched.specName) : '__base__'
         };
       });
   } catch (e) {
@@ -261,8 +265,8 @@ async function submit() {
     }
     for (let i = 0; i < giftRules.value.length; i += 1) {
       const r = giftRules.value[i];
-      if (!r.specName) {
-        ElMessage.warning(`第 ${i + 1} 条买赠规则未选择赠送规格`);
+      if (!r.thresholdSpecName || !r.specName) {
+        ElMessage.warning(`第 ${i + 1} 条买赠规则未选择规格`);
         return;
       }
       const threshold = Number(r.thresholdQty);
@@ -306,12 +310,16 @@ async function saveGiftRule(saved) {
     const target = rule.specName === '__base__'
       ? skus[0]
       : skus.find((sku) => sku.specName === rule.specName);
-    if (!target || !target.id) {
-      ElMessage.warning('赠品规格保存失败，请重新选择规格后保存');
+    const thresholdTarget = rule.thresholdSpecName === '__base__'
+      ? skus[0]
+      : skus.find((sku) => sku.specName === rule.thresholdSpecName);
+    if (!target || !target.id || !thresholdTarget || !thresholdTarget.id) {
+      ElMessage.warning('买赠规格保存失败，请重新选择规格后保存');
       return;
     }
     const payload = {
       productId: saved.id,
+      thresholdSkuId: thresholdTarget.id,
       giftSkuId: target.id,
       thresholdQty: Number(rule.thresholdQty) || 1,
       giftQty: Number(rule.giftQty) || 1,
@@ -476,21 +484,18 @@ onMounted(async () => {
           <div v-for="(rule, idx) in giftRules" :key="idx" class="gift-row">
             <span class="gift-row__label">买</span>
             <el-input v-model="rule.thresholdQty" class="gift-qty" placeholder="数量" />
-            <span class="gift-row__unit">{{ form.unit || '主单位' }}</span>
+            <el-select v-model="rule.thresholdSpecName" class="gift-spec" placeholder="规格">
+              <el-option v-for="opt in specOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
             <span class="gift-row__label">送</span>
             <el-input v-model="rule.giftQty" class="gift-qty" placeholder="数量" />
-            <el-select v-model="rule.specName" class="gift-spec" placeholder="赠送规格">
-              <el-option
-                v-for="opt in specOptions"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
+            <el-select v-model="rule.specName" class="gift-spec" placeholder="规格">
+              <el-option v-for="opt in specOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
             <el-button link type="danger" @click="removeGiftRule(idx)">删除</el-button>
           </div>
           <div v-if="!giftRules.length" class="gift-box__empty">尚未添加规则，点击右上角「+ 新增规则」</div>
-          <p class="gift-box__tip">按主单位累计购买数量，达到门槛后赠送所选规格；配置多条时按赠送数量最多的一档执行。</p>
+          <p class="gift-box__tip">门槛规格会按换算关系折算成主单位后与购买量比较；配置多条时，按已达成的最高门槛执行。例：买 2 箱（20 瓶）送 1 瓶。</p>
         </el-card>
 
         <div class="media-row">

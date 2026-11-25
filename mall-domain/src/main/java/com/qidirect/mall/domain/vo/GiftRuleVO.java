@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 public record GiftRuleVO(
         Long id,
         Long productId,
+        Long thresholdSkuId,
+        String thresholdSkuName,
         Long giftSkuId,
         String giftSkuName,
         Integer thresholdQty,

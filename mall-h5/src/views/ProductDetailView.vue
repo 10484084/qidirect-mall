@@ -51,7 +51,7 @@
           </div>
         </div>
         <div v-else-if="product.v3GiftEnabled === 1 && product.giftRule" class="muted small mt-8">
-          买赠规则：每满 {{ product.giftRule.thresholdQty }} 瓶送 {{ product.giftRule.giftQty }} 瓶
+          买赠规则：买 {{ product.giftRule.thresholdQty }} {{ product.giftRule.thresholdSkuName || '瓶' }} 送 {{ product.giftRule.giftQty }} {{ product.giftRule.giftSkuName || '瓶' }}
         </div>
       </div>
 

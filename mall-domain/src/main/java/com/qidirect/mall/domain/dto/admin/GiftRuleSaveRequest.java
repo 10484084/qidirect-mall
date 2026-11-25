@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
  */
 public record GiftRuleSaveRequest(
         @NotNull Long productId,
+        /** 门槛单位规格；为空或 0 表示主单位 */
+        Long thresholdSkuId,
         @NotNull Long giftSkuId,
         @NotNull @Min(1) Integer thresholdQty,
         @NotNull @Min(1) Integer giftQty,

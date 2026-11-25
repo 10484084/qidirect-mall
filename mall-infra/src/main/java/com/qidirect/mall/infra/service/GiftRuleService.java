@@ -110,18 +110,20 @@ public class GiftRuleService {
             if (rules.isEmpty()) {
                 continue;
             }
-            // 多条阶梯规则：取「已达成门槛中最高的一档」执行，符合阶梯买赠的常规语义
+            // 多条阶梯规则：门槛按规格折算成主单位后比较，取「已达成门槛中最高的一档」
             GiftRule best = null;
+            int bestThresholdBottles = 0;
             for (GiftRule rule : rules) {
-                if (bottles >= rule.getThresholdQty()
-                        && (best == null || rule.getThresholdQty() > best.getThresholdQty())) {
+                int thresholdBottles = rule.getThresholdQty() * thresholdFactor(rule);
+                if (bottles >= thresholdBottles && thresholdBottles > bestThresholdBottles) {
                     best = rule;
+                    bestThresholdBottles = thresholdBottles;
                 }
             }
             if (best == null) {
                 continue;
             }
-            int bestQty = (bottles / best.getThresholdQty()) * best.getGiftQty();
+            int bestQty = (bottles / bestThresholdBottles) * best.getGiftQty();
             if (bestQty <= 0) {
                 continue;
             }
@@ -145,6 +147,13 @@ public class GiftRuleService {
         if (giftSku == null || !Objects.equals(giftSku.getProductId(), product.getId())) {
             throw new BizException(ErrorCode.GIFT_RULE_INVALID.getCode(), "赠品规格必须属于该商品");
         }
+        Long thresholdSkuId = request.thresholdSkuId() == null ? 0L : request.thresholdSkuId();
+        if (thresholdSkuId != 0) {
+            ProductSku thresholdSku = productSkuMapper.selectById(thresholdSkuId);
+            if (thresholdSku == null || !Objects.equals(thresholdSku.getProductId(), product.getId())) {
+                throw new BizException(ErrorCode.GIFT_RULE_INVALID.getCode(), "门槛规格必须属于该商品");
+            }
+        }
 
         int enabled = request.enabled() != null && request.enabled() == 1 ? 1 : 0;
         if (enabled == 1) {
@@ -153,6 +162,7 @@ public class GiftRuleService {
 
         GiftRule rule = id == null ? new GiftRule() : requireRule(id);
         rule.setProductId(product.getId());
+        rule.setThresholdSkuId(thresholdSkuId);
         rule.setGiftSkuId(request.giftSkuId());
         rule.setThresholdQty(request.thresholdQty());
         rule.setGiftQty(request.giftQty());
@@ -222,8 +232,24 @@ public class GiftRuleService {
 
     private GiftRuleVO toVO(GiftRule rule) {
         ProductSku giftSku = productSkuMapper.selectById(rule.getGiftSkuId());
-        return new GiftRuleVO(rule.getId(), rule.getProductId(), rule.getGiftSkuId(),
+        ProductSku thresholdSku = rule.getThresholdSkuId() == null || rule.getThresholdSkuId() == 0
+                ? null : productSkuMapper.selectById(rule.getThresholdSkuId());
+        return new GiftRuleVO(rule.getId(), rule.getProductId(),
+                rule.getThresholdSkuId() == null ? 0L : rule.getThresholdSkuId(),
+                thresholdSku == null ? StrUtil.EMPTY : thresholdSku.getSpecName(),
+                rule.getGiftSkuId(),
                 giftSku == null ? StrUtil.EMPTY : giftSku.getSpecName(), rule.getThresholdQty(),
                 rule.getGiftQty(), rule.getEnabled(), rule.getStartTime(), rule.getEndTime());
+    }
+
+    /**
+     * 门槛规格折算主单位的系数；0 或不存在一律按 1（主单位）处理。
+     */
+    private int thresholdFactor(GiftRule rule) {
+        if (rule.getThresholdSkuId() == null || rule.getThresholdSkuId() == 0) {
+            return 1;
+        }
+        ProductSku sku = productSkuMapper.selectById(rule.getThresholdSkuId());
+        return sku == null || sku.getFactor() == null || sku.getFactor() < 1 ? 1 : sku.getFactor();
     }
 }
