@@ -14,3 +14,4 @@ frontend-dist/
 backups/
 node_modules/
 dist/
+vite.config.js.timestamp-*
