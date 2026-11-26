@@ -36,13 +36,15 @@ export const productApi = {
   detail: (id) => get(`/products/${id}`),
   update: (id, data) => put(`/products/${id}`, data),
   setStatus: (id, status) => put(`/products/${id}/status`, null, { params: { status } }),
-  create: (data) => post('/products', data)
+  create: (data) => post('/products', data),
+  sort: (ids) => put('/products/sort', { ids })
 };
 
 export { uploadFile };
 
 export const categoryApi = {
-  list: () => get('/product-categories')
+  list: () => get('/product-categories'),
+  sort: (ids) => put('/product-categories/sort', { ids })
 };
 
 export const orderApi = {
