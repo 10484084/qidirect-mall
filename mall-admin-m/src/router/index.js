@@ -18,7 +18,7 @@ const routes = [
     path: '/orders',
     name: 'orders',
     component: () => import('../views/trade/OrderListView.vue'),
-    meta: { title: '订单管理' }
+    meta: { title: '订单', tab: 'orders' }
   },
   {
     path: '/orders/:id',

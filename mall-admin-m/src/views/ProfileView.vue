@@ -65,7 +65,6 @@ async function clearCache() {
     </div>
 
     <van-cell-group inset class="group">
-      <van-cell title="订单管理" label="查看订单、处理发货" is-link to="/orders" />
       <van-cell title="提现审核" label="处理门店提现申请" is-link to="/withdraws" />
     </van-cell-group>
 

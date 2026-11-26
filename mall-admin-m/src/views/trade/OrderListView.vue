@@ -108,7 +108,6 @@ onActivated(() => {
 
 <template>
   <div class="page">
-    <van-nav-bar title="订单管理" left-arrow @click-left="$router.back()" />
     <div class="sticky-bar">
       <van-search
         v-model="searchText"
