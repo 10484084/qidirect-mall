@@ -13,7 +13,13 @@
         </el-table-column>
         <el-table-column label="权限点" min-width="360">
           <template #default="{ row }">
-            <el-tag v-for="perm in row.perms || []" :key="perm" size="small" class="mr4">{{ perm }}</el-tag>
+            <el-tag
+              v-for="perm in row.perms || []"
+              :key="perm"
+              size="small"
+              class="mr4"
+              :type="perm === '*' ? 'success' : ''"
+            >{{ permLabel(perm) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100" fixed="right">
@@ -29,19 +35,32 @@
         <el-form-item label="角色名称" required>
           <el-input v-model="form.name" maxlength="32" />
         </el-form-item>
-        <el-form-item label="权限点" required>
-          <el-input
-            v-model="form.permsText"
-            type="textarea"
-            :rows="5"
-            placeholder="每行一个权限点，可手动输入；* 表示全部权限"
-          />
+        <el-form-item label="全部权限">
+          <el-checkbox v-model="allPerm" :indeterminate="indeterminate">超级管理员（拥有全部权限）</el-checkbox>
         </el-form-item>
-        <el-form-item label="常用权限">
-          <el-checkbox-group v-model="picked">
-            <el-checkbox v-for="perm in COMMON_PERMS" :key="perm" :value="perm" :label="perm" />
-          </el-checkbox-group>
-        </el-form-item>
+        <template v-if="!allPerm">
+          <el-form-item v-for="g in PERM_GROUPS" :key="g.title" :label="g.title">
+            <el-checkbox-group v-model="picked">
+              <el-checkbox
+                v-for="item in g.items"
+                :key="item.code"
+                :value="item.code"
+                :label="item.code"
+              >{{ item.label }}</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+        <el-collapse class="advanced">
+          <el-collapse-item title="高级：手动编辑原始权限码" name="raw">
+            <el-input
+              v-model="form.permsText"
+              type="textarea"
+              :rows="4"
+              placeholder="每行一个权限码，* 表示全部权限"
+            />
+            <div class="text-muted mt8">一般无需修改，上面的勾选会自动同步到这里。</div>
+          </el-collapse-item>
+        </el-collapse>
       </el-form>
       <template #footer>
         <el-button @click="editVisible = false">取消</el-button>
@@ -52,11 +71,10 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { roleApi } from '../../api';
-
-const COMMON_PERMS = ['*', 'store:list', 'store:detail', 'store:freeze', 'order:list', 'order:ship', 'withdraw:audit', 'withdraw:export'];
+import { PERM_GROUPS, permLabel } from '../../utils/perms';
 
 const loading = ref(false);
 const saving = ref(false);
@@ -64,6 +82,38 @@ const rows = ref([]);
 const editVisible = ref(false);
 const picked = ref([]);
 const form = reactive({ id: null, name: '', permsText: '' });
+const allPerm = ref(false);
+const indeterminate = computed(() => !allPerm.value && picked.value.length > 0);
+
+// 勾选变化时同步到高级文本域，保存仍统一从 picked + 文本域合并
+watch(picked, (list) => {
+  if (allPerm.value) return;
+  form.permsText = list.join('\n');
+}, { deep: true });
+
+watch(allPerm, (v) => {
+  if (v) {
+    picked.value = [];
+    form.permsText = '*';
+  } else if (form.permsText === '*') {
+    form.permsText = '';
+  }
+});
+
+// 勾选变化时同步到高级文本域，保存仍统一从 picked + 文本域合并
+watch(picked, (list) => {
+  if (allPerm.value) return;
+  form.permsText = list.join('\n');
+}, { deep: true });
+
+watch(allPerm, (v) => {
+  if (v) {
+    picked.value = [];
+    form.permsText = '*';
+  } else if (form.permsText === '*') {
+    form.permsText = '';
+  }
+});
 
 async function load() {
   loading.value = true;
@@ -77,16 +127,20 @@ async function load() {
 function openEdit(row) {
   form.id = row ? row.id : null;
   form.name = row ? row.name : '';
-  form.permsText = row && row.perms ? row.perms.join('\n') : '';
-  picked.value = row && row.perms ? [...row.perms] : [];
+  const perms = (row && row.perms) || [];
+  allPerm.value = perms.includes('*');
+  picked.value = allPerm.value ? [] : [...perms];
+  form.permsText = perms.join('\n');
   editVisible.value = true;
 }
 
 function collectPerms() {
+  if (allPerm.value) return ['*'];
   const fromText = form.permsText
     .split('\n')
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((item) => item !== '*');
   return Array.from(new Set([...fromText, ...picked.value]));
 }
 
