@@ -13,13 +13,11 @@
     </div>
     <div class="info">
       <div class="name row-2">{{ product.name }}</div>
-      <div class="muted small">{{ specText }}</div>
-      <div class="flex-between mt-8">
-        <div>
-          <span v-if="product.purchasable" class="money">{{ fenToYuan(product.minPrice) }}</span>
-          <span v-else class="muted small">当前档位暂不可购</span>
-        </div>
-        <van-tag v-if="product.v3GiftEnabled === 1" type="warning" plain>买赠</van-tag>
+      <div class="spec">{{ specText }}</div>
+      <div class="bottom">
+        <span v-if="product.purchasable" class="money price">{{ fenToYuan(product.minPrice) }}</span>
+        <span v-else class="muted small">当前档位暂不可购</span>
+        <van-tag v-if="product.v3GiftEnabled === 1" class="gift-tag" color="#fff5e6" text-color="#d97706">买赠</van-tag>
       </div>
     </div>
   </div>
@@ -48,16 +46,21 @@ const specText = computed(() => {
 <style scoped>
 .product-card {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   background: #fff;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   margin-bottom: 10px;
+  transition: transform 0.12s ease;
+}
+
+.product-card:active {
+  transform: scale(0.99);
 }
 
 .cover-box {
-  width: 88px;
-  height: 88px;
+  width: 96px;
+  height: 96px;
   flex-shrink: 0;
   border-radius: 10px;
   overflow: hidden;
@@ -84,15 +87,45 @@ const specText = computed(() => {
   min-width: 0;
 }
 
+.info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .name {
   font-size: 15px;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.4;
   color: #1f2421;
 }
 
-.money {
-  font-size: 17px;
-  font-weight: 600;
+.spec {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9aa0a8;
+}
+
+.bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  padding-top: 6px;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gift-tag {
+  margin-left: auto;
+  align-self: center;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
 }
 </style>

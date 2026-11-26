@@ -23,6 +23,7 @@
         <template v-else>
           <ProductCard v-for="item in products" :key="item.id" :product="item" />
           <div v-if="!products.length" class="text-empty">暂无商品</div>
+          <div v-else class="list-end">— 没有更多了 —</div>
         </template>
       </main>
     </div>
@@ -106,11 +107,10 @@ onMounted(async () => {
 
 /* 左侧分组 */
 .cate-side {
-  width: 92px;
+  width: 88px;
   flex-shrink: 0;
   overflow-y: auto;
-  background: #eef0f4;
-  border-right: 1px solid #e4e7ec;
+  background: #f5f6f8;
   padding-bottom: calc(66px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
 }
@@ -120,8 +120,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 52px;
-  padding: 8px 10px;
+  min-height: 50px;
+  padding: 8px 8px;
   font-size: 13px;
   line-height: 1.3;
   color: #5b6068;
@@ -133,6 +133,8 @@ onMounted(async () => {
   background: #fff;
   color: var(--brand);
   font-weight: 600;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  border-radius: 0 10px 10px 0;
 }
 
 .cate-item.active::before {
@@ -159,7 +161,8 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  padding: 10px 10px calc(70px + env(safe-area-inset-bottom));
+  background: #f7f8fa;
+  padding: 8px 10px calc(70px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
 }
 
@@ -167,5 +170,19 @@ onMounted(async () => {
   display: block;
   text-align: center;
   padding: 40px 0;
+}
+
+.list-end {
+  padding: 14px 0 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #c2c6cc;
+}
+
+.list-end {
+  padding: 14px 0 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #c2c6cc;
 }
 </style>
