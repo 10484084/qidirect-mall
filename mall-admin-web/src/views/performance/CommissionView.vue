@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="page-header">
-      <span class="page-title">提成管理</span>
+      <span class="page-title">推荐奖励</span>
       <el-button type="primary" @click="openConfig">提成比例配置</el-button>
     </div>
 

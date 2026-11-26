@@ -90,13 +90,13 @@ export const menuRoutes = [
         path: 'commission',
         name: 'commission',
         component: () => import('../views/performance/CommissionView.vue'),
-        meta: { title: '提成管理', icon: 'Money' }
+        meta: { title: '推荐奖励', icon: 'Money' }
       },
       {
         path: 'performance',
         name: 'performance',
         component: () => import('../views/performance/PerformanceView.vue'),
-        meta: { title: '业绩与月结', icon: 'DataLine' }
+        meta: { title: '团队奖励', icon: 'DataLine' }
       }
     ]
   },

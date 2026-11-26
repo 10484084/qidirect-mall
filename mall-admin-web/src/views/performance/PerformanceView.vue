@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="page-header">
-      <span class="page-title">业绩与月结</span>
+      <span class="page-title">团队奖励</span>
     </div>
 
     <el-card shadow="never">
