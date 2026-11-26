@@ -174,7 +174,14 @@ onDeactivated(closeSort);
 <template>
   <div class="page">
     <div class="top-bar">
-      <van-search v-model="keyword" placeholder="搜索商品名称" @search="search" @clear="search" />
+      <van-search
+        v-model="keyword"
+        placeholder="搜索商品名称"
+        shape="round"
+        background="#fff"
+        @search="search"
+        @clear="search"
+      />
       <van-button size="small" type="primary" class="top-btn" @click="search">搜索</van-button>
       <van-button size="small" class="top-btn" @click="openSort">排序</van-button>
     </div>
@@ -363,8 +370,8 @@ onDeactivated(closeSort);
 }
 
 .thumb {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   background: #f4f6f4;
 }
@@ -382,7 +389,8 @@ onDeactivated(closeSort);
 .name {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -390,7 +398,7 @@ onDeactivated(closeSort);
 
 .status {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .status.on {

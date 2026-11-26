@@ -149,3 +149,9 @@ body {
   color: #b7bcc4;
   font-size: 12px;
 }
+
+/* 状态 tab：6 个也要在 390px 内均分不裁切 */
+.van-tabs__nav--line .van-tab {
+  padding: 0 2px;
+  font-size: 13px;
+}

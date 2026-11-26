@@ -117,7 +117,7 @@ onActivated(() => {
         @search="onSearch"
         @clear="onClear"
       />
-      <van-tabs v-model:active="activeTab" shrink color="#326940" title-active-color="#326940" @change="onTabChange">
+      <van-tabs v-model:active="activeTab" color="#326940" title-active-color="#326940" @change="onTabChange">
         <van-tab v-for="t in TABS" :key="t.name" :name="t.name" :title="t.title" />
       </van-tabs>
     </div>
