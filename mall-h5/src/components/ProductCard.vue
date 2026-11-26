@@ -1,8 +1,15 @@
 <template>
   <div class="product-card" @click="$router.push(`/products/${product.id}`)">
     <div class="cover-box">
-      <img v-if="product.cover" :src="product.cover" :alt="product.name" />
-      <span v-else>暂无图片</span>
+      <img
+        v-if="showImg"
+        :src="product.cover"
+        alt=""
+        @error="imgFailed = true"
+      />
+      <div v-else class="cover-empty">
+        <van-icon name="photo-o" size="20" />
+      </div>
     </div>
     <div class="info">
       <div class="name row-2">{{ product.name }}</div>
@@ -19,8 +26,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { fenToYuan } from '../utils/format';
+
+const imgFailed = ref(false);
+watch(() => props.product.cover, () => { imgFailed.value = false; });
+
+const showImg = computed(() => !!props.product.cover && !imgFailed.value);
 
 const props = defineProps({
   product: { type: Object, required: true }
@@ -46,6 +58,25 @@ const specText = computed(() => {
 .cover-box {
   width: 88px;
   height: 88px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f7f5;
+}
+
+.cover-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #c8cdd4;
 }
 
 .info {
@@ -54,12 +85,14 @@ const specText = computed(() => {
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.35;
+  color: #1f2421;
 }
 
 .money {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
 }
 </style>

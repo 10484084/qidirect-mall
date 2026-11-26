@@ -45,7 +45,19 @@ function currentFiles() {
 }
 
 function onSuccess(response, uploadFile) {
-  emitList([...normalize(props.modelValue), uploadFile.url]);
+  // response 是上传接口返回的可访问地址；uploadFile.url 是本地 blob 预览地址，不能入库
+  const url = typeof response === 'string' ? response : response?.data || response?.url || '';
+  if (!url || url.startsWith('blob:')) {
+    ElMessage.error('上传返回地址异常，请重试');
+    return;
+  }
+  // 单图模式直接替换，避免旧值（如历史脏地址）排在前面被取到
+  if (props.mode === 'single') {
+    emit('update:modelValue', url);
+    ElMessage.success('上传成功');
+    return;
+  }
+  emitList([...normalize(props.modelValue), url]);
   ElMessage.success('上传成功');
 }
 
