@@ -201,6 +201,7 @@ onActivated(() => {
 
 <template>
   <div class="page">
+    <van-nav-bar title="提现审核" left-arrow @click-left="$router.back()" />
     <div class="sticky-bar">
       <van-tabs v-model:active="activeTab" shrink color="#326940" title-active-color="#326940" @change="onTabChange">
         <van-tab v-for="t in TABS" :key="t.name" :name="t.name" :title="t.title" />

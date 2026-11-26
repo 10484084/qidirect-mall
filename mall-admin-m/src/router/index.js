@@ -12,13 +12,13 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
-    meta: { title: '工作台', tab: 'dashboard' }
+    meta: { title: '数据', tab: 'dashboard' }
   },
   {
     path: '/orders',
     name: 'orders',
     component: () => import('../views/trade/OrderListView.vue'),
-    meta: { title: '订单', tab: 'orders' }
+    meta: { title: '订单管理' }
   },
   {
     path: '/orders/:id',
@@ -42,7 +42,7 @@ const routes = [
     path: '/products',
     name: 'products',
     component: () => import('../views/goods/ProductListView.vue'),
-    meta: { title: '商品档案' }
+    meta: { title: '商品', tab: 'products' }
   },
   {
     path: '/products/:id',
@@ -54,7 +54,7 @@ const routes = [
     path: '/withdraws',
     name: 'withdraws',
     component: () => import('../views/withdraw/WithdrawListView.vue'),
-    meta: { title: '提现审核', tab: 'withdraws' }
+    meta: { title: '提现审核' }
   },
   {
     path: '/profile',

@@ -20,11 +20,6 @@ async function logout() {
   router.replace('/login');
 }
 
-function toDesktop() {
-  // desktop=1 让 Nginx 不再把手机 UA 重定向回移动版
-  window.location.href = `${window.location.origin}/admin-web/?desktop=1#/dashboard`;
-}
-
 async function clearCache() {
   try {
     await showConfirmDialog({ title: '清除缓存', message: '将清除本地缓存数据（不影响登录状态），确定继续？' });
@@ -70,7 +65,11 @@ async function clearCache() {
     </div>
 
     <van-cell-group inset class="group">
-      <van-cell title="切换电脑版后台" label="表格编辑、财务对账等完整功能" is-link @click="toDesktop" />
+      <van-cell title="订单管理" label="查看订单、处理发货" is-link to="/orders" />
+      <van-cell title="提现审核" label="处理门店提现申请" is-link to="/withdraws" />
+    </van-cell-group>
+
+    <van-cell-group inset class="group">
       <van-cell title="清除本地缓存" is-link @click="clearCache" />
     </van-cell-group>
 
@@ -78,7 +77,7 @@ async function clearCache() {
       <van-cell title="退出登录" is-link class="danger-cell" @click="logout" />
     </van-cell-group>
 
-    <p class="tip">厂家后台移动版 · 订单 / 门店 / 提现</p>
+    <p class="tip">厂家后台移动版 · 数据 / 商品 / 门店</p>
   </div>
 </template>
 

@@ -105,8 +105,6 @@ onActivated(async () => {
 
 <template>
   <div class="page">
-    <van-nav-bar title="商品档案" />
-
     <van-sticky>
       <van-search
         v-model="keyword"
