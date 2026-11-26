@@ -168,13 +168,13 @@ export const menuRoutes = [
         path: 'admin-users',
         name: 'admin-users',
         component: () => import('../views/system/AdminUserView.vue'),
-        meta: { title: '管理员', perm: ['admin:manage'], icon: 'User' }
+        meta: { title: '账号管理', perm: ['admin:manage'], icon: 'User' }
       },
       {
         path: 'roles',
         name: 'roles',
         component: () => import('../views/system/RoleView.vue'),
-        meta: { title: '角色权限', perm: ['role:manage'], icon: 'Lock' }
+        meta: { title: '角色管理', perm: ['role:manage'], icon: 'Lock' }
       },
       {
         path: 'configs',

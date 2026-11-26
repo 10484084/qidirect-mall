@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="page-header">
-      <span class="page-title">角色权限</span>
+      <span class="page-title">角色管理</span>
       <el-button type="primary" @click="openEdit()">新增角色</el-button>
     </div>
 

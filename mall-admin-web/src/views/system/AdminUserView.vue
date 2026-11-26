@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="page-header">
-      <span class="page-title">管理员</span>
+      <span class="page-title">账号管理</span>
       <el-button type="primary" @click="openEdit()">新增管理员</el-button>
     </div>
 
