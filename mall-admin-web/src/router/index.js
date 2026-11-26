@@ -63,6 +63,12 @@ export const menuRoutes = [
         meta: { title: '订单与发货', icon: 'Tickets' }
       },
       {
+        path: 'cancel-audit',
+        name: 'cancel-audit',
+        component: () => import('../views/trade/CancelAuditView.vue'),
+        meta: { title: '取消申请', icon: 'RefreshLeft' }
+      },
+      {
         path: 'purchase',
         name: 'purchase',
         component: () => import('../views/trade/PurchaseView.vue'),

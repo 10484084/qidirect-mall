@@ -50,6 +50,8 @@ public class SaobeiPayGateway implements PaymentGateway {
     private static final String SERVICE_QUERY = "020";
     /** 4.8 关单，pay_ver 201（注意与其它接口不同） */
     private static final String SERVICE_CLOSE = "041";
+    /** 4.9 退款 */
+    private static final String SERVICE_REFUND = "030";
     private static final String VER_CURRENT = "202";
     private static final String VER_CLOSE = "201";
 
@@ -119,6 +121,36 @@ public class SaobeiPayGateway implements PaymentGateway {
             // 已关闭或状态已变化时不阻断，统一以随后的 4.5 查单结果为准
             log.warn("扫呗关单未成功，转入查单确认：payNo={} response={}", payment.getPayNo(), response);
         }
+    }
+
+    /**
+     * 4.9 退款：优先用 out_trade_no 定位原交易，缺失时退回 pay_trace + pay_time。
+     * 同一退款单重试必须复用 out_refund_no，否则会重复退款。
+     */
+    @Override
+    public RefundResult refund(Payment payment, long refundFee, String outRefundNo) {
+        requireConfigured();
+        Map<String, String> params = requestBase(VER_CURRENT, "000", SERVICE_REFUND,
+                newTrace(), LocalDateTime.now());
+        params.put("refund_fee", String.valueOf(refundFee));
+        if (StrUtil.isNotBlank(payment.getOutTradeNo())) {
+            params.put("out_trade_no", payment.getOutTradeNo());
+        } else {
+            params.put("pay_trace", payment.getPayNo());
+            params.put("pay_time", TERMINAL_TIME.format(terminalTime(payment)));
+        }
+        if (StrUtil.isNotBlank(outRefundNo)) {
+            params.put("out_refund_no", outRefundNo);
+        }
+        Map<String, String> response = post(properties.getRefundPath(), params);
+        boolean success = SUCCESS.equals(response.get("return_code"))
+                && SUCCESS.equals(response.get("result_code"));
+        String refundNo = StrUtil.nullToEmpty(response.get("out_refund_no"));
+        String message = StrUtil.nullToEmpty(response.get("return_msg"));
+        if (!success) {
+            log.warn("扫呗退款未成功：payNo={} fee={} msg={}", payment.getPayNo(), refundFee, message);
+        }
+        return new RefundResult(success, refundNo, message);
     }
 
     @Override

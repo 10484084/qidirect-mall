@@ -57,6 +57,20 @@
       <div class="footer-bar">
         <van-button v-if="order.status === 0 && order.payNo" class="grow" type="primary" round @click="goPay">去支付</van-button>
         <van-button v-if="order.status === 0" class="grow" plain round @click="cancel">取消订单</van-button>
+        <van-button
+          v-if="order.status === 1 && !cancelReq"
+          class="grow"
+          plain
+          round
+          @click="applyCancel"
+        >申请取消</van-button>
+        <van-button
+          v-if="order.status === 1 && !cancelReq"
+          class="grow"
+          plain
+          round
+          @click="applyCancel"
+        >申请取消</van-button>
         <van-button v-if="order.status === 2" class="grow" type="primary" round @click="confirm">确认收货</van-button>
       </div>
     </template>
@@ -76,8 +90,26 @@ const router = useRouter();
 const order = ref(null);
 const loading = ref(true);
 
+const cancelReq = ref(null);
+
+const cancelHint = computed(() => {
+  const r = cancelReq.value;
+  if (!r) return '';
+  return {
+    0: '取消申请已提交，等待厂家确认',
+    1: `取消已完成${r.onlineRefund > 0 ? '，款项已原路退回' : ''}${r.depositRefund > 0 ? '，预存已退回余额' : ''}`,
+    2: '取消申请已被厂家驳回',
+    3: `退款处理失败：${r.refundMsg || '请联系厂家'}`,
+    4: '厂家正在退款处理中'
+  }[r.status] || '';
+});
+
+
+
 const statusHint = computed(() => {
   if (!order.value) return '';
+  if (cancelHint.value) return cancelHint.value;
+  if (cancelHint.value) return cancelHint.value;
   return {
     0: '请在 10 分钟内完成支付，超时自动取消',
     1: '厂家正在备货，请耐心等待',
@@ -89,10 +121,31 @@ const statusHint = computed(() => {
 
 onMounted(load);
 
+async function applyCancel() {
+  try {
+    await showConfirmDialog({
+      title: '申请取消订单',
+      message: '提交后需厂家确认；确认后预存部分退回余额，在线支付部分原路退回。',
+      confirmButtonText: '提交申请'
+    });
+  } catch (e) {
+    return;
+  }
+  await orderApi.applyCancel(route.params.id, '');
+  showToast('申请已提交');
+  await load();
+}
+
 async function load() {
   loading.value = true;
   try {
     order.value = await orderApi.detail(route.params.id);
+    if (order.value && order.value.status >= 1) {
+      cancelReq.value = await orderApi.cancelRequest(route.params.id).catch(() => null);
+    }
+    if (order.value && order.value.status >= 1) {
+      cancelReq.value = await orderApi.cancelRequest(route.params.id).catch(() => null);
+    }
   } catch (e) {
     order.value = null;
   } finally {

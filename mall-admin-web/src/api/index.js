@@ -70,6 +70,11 @@ export const orderApi = {
   exportExcel: (params) => download('/orders/export', params, 'orders.xlsx')
 };
 
+export const cancelAuditApi = {
+  page: (params) => get('/order-cancels', params),
+  audit: (id, data) => post(`/order-cancels/${id}/audit`, data)
+};
+
 export const purchaseApi = {
   proxyJoin: (data) => post('/purchase/proxy-join', data),
   offlineCollect: (data) => post('/purchase/offline-collect', data)

@@ -27,8 +27,16 @@ public interface PaymentGateway {
     /** 4.5 查单 */
     PaymentQueryResult query(Payment payment);
 
+    /**
+     * 4.9 退款申请。refundFee 单位分，outRefundNo 为商户退款单号（同一单重试需复用）。
+     */
+    RefundResult refund(Payment payment, long refundFee, String outRefundNo);
+
     /** 4.10 回调验签 */
     boolean verifyNotify(Map<String, String> params);
+
+    record RefundResult(boolean success, String refundNo, String message) {
+    }
 
     record JsapiResult(String payUrl, Map<String, String> payParams, String outTradeNo) {
     }

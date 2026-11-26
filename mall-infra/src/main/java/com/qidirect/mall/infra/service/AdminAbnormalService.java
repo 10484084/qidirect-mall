@@ -35,6 +35,7 @@ import com.qidirect.mall.infra.mapper.StoreLevelMapper;
 import com.qidirect.mall.infra.mapper.StoreMapper;
 import com.qidirect.mall.infra.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
  * 异常单处置：补开通 / 原路退款 / 仅关闭。
  * 异常单指「已收款但业务前置校验失败」的加盟、升级、预存单（status=3）。
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminAbnormalService {
@@ -74,6 +76,7 @@ public class AdminAbnormalService {
     private final WalletService walletService;
     private final CommissionService commissionService;
     private final PerformanceService performanceService;
+    private final PaymentGateway paymentGateway;
 
     public PageResult<AbnormalOrderVO> page(String type, long page, long size) {
         String normalized = normalizeType(type);
@@ -258,19 +261,31 @@ public class AdminAbnormalService {
     }
 
     /**
-     * 原路退款：只改支付单与业务单状态并写 PAY_REFUND 事件，不写余额流水。
+     * 原路退款：调用支付渠道发起真实退款，成功后改支付单与业务单状态并写 PAY_REFUND 事件。
+     * 渠道退款失败时直接抛错回滚，避免出现「标记已退款但钱没退」。
      */
     private void refund(Payment payment, String orderNo, Long storeId, AbnormalResolveRequest request,
                         Long adminId) {
         LocalDateTime now = LocalDateTime.now();
-        String refundNo = "RF" + System.currentTimeMillis();
+        String outRefundNo = "AR" + payment.getPayNo();
+        PaymentGateway.RefundResult result;
+        try {
+            result = paymentGateway.refund(payment, payment.getAmount(), outRefundNo);
+        } catch (Exception e) {
+            log.error("异常单退款调用失败：payNo={} error={}", payment.getPayNo(), e.toString());
+            throw new BizException(ErrorCode.PAY_FAILED.getCode(), "退款接口调用失败，请稍后重试");
+        }
+        if (!result.success()) {
+            throw new BizException(ErrorCode.PAY_FAILED.getCode(),
+                    "退款失败：" + StrUtil.blankToDefault(result.message(), "渠道返回失败"));
+        }
         int updated = paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
                 .eq(Payment::getId, payment.getId())
                 .eq(Payment::getStatus, PAY_SUCCESS)
                 .set(Payment::getStatus, PAY_REFUNDED)
                 .set(Payment::getRefundAt, now)
                 .set(Payment::getRefundAmount, payment.getAmount())
-                .set(Payment::getRefundNo, refundNo)
+                .set(Payment::getRefundNo, StrUtil.blankToDefault(result.refundNo(), outRefundNo))
                 .set(Payment::getRefundBy, adminId));
         if (updated == 0) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "支付单状态已变更，无法退款");

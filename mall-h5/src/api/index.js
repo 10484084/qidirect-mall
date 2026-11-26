@@ -44,7 +44,11 @@ export const orderApi = {
   page: (params) => get('/orders', params),
   detail: (id) => get(`/orders/${id}`),
   cancel: (id) => post(`/orders/${id}/cancel`),
-  confirm: (id) => post(`/orders/${id}/confirm`)
+  confirm: (id) => post(`/orders/${id}/confirm`),
+  applyCancel: (id, reason) => post(`/orders/${id}/cancel-request`, { reason }),
+  cancelRequest: (id) => get(`/orders/${id}/cancel-request`),
+  applyCancel: (id, reason) => post(`/orders/${id}/cancel-request`, { reason }),
+  cancelRequest: (id) => get(`/orders/${id}/cancel-request`)
 };
 
 export const payApi = {

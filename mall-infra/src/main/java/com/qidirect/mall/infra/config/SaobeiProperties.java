@@ -45,4 +45,7 @@ public class SaobeiProperties {
 
     /** 4.8 关闭订单 */
     private String closePath = "/pay/open/close";
+
+    /** 4.9 退款申请 */
+    private String refundPath = "/pay/open/refund";
 }
