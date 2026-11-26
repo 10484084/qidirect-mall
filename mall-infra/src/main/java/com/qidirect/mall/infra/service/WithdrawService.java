@@ -241,6 +241,7 @@ public class WithdrawService {
                 StrUtil.nullToEmpty(withdraw.getBankHolder()),
                 StrUtil.nullToEmpty(withdraw.getBankName()),
                 maskBankAccount(decryptQuietly(withdraw.getBankAccount())),
+                maskBankAccount(decryptQuietly(withdraw.getBankAccount())),
                 withdraw.getStatus(),
                 StrUtil.nullToEmpty(withdraw.getRejectReason()),
                 StrUtil.nullToEmpty(withdraw.getFailReason()),

@@ -242,7 +242,7 @@ public class AdminWithdrawService {
                     .append(csvCell(store == null ? "" : store.getPhone())).append(',')
                     .append(csvCell(withdraw.getBankHolder())).append(',')
                     .append(csvCell(withdraw.getBankName())).append(',')
-                    .append(csvCell(maskBankAccount(decryptQuietly(withdraw.getBankAccount())))).append(',')
+                    .append(csvCell(decryptQuietly(withdraw.getBankAccount()))).append(',')
                     .append(csvCell(BigDecimal.valueOf(withdraw.getAmount(), 2).toPlainString())).append(',')
                     .append(csvCell(withdraw.getApplyTime())).append('\n');
         }
@@ -434,6 +434,7 @@ public class AdminWithdrawService {
                 StrUtil.nullToEmpty(withdraw.getBankHolder()),
                 StrUtil.nullToEmpty(withdraw.getBankName()),
                 maskBankAccount(decryptQuietly(withdraw.getBankAccount())),
+                decryptQuietly(withdraw.getBankAccount()),
                 withdraw.getStatus(),
                 StrUtil.nullToEmpty(withdraw.getRejectReason()),
                 StrUtil.nullToEmpty(withdraw.getFailReason()),

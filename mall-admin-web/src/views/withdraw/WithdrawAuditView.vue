@@ -28,9 +28,13 @@
         <el-table-column label="提现金额" width="120">
           <template #default="{ row }"><span class="money">{{ fen2yuan(row.amount) }}</span></template>
         </el-table-column>
-        <el-table-column label="收款卡" min-width="220">
+        <el-table-column label="收款卡" min-width="260">
           <template #default="{ row }">
-            {{ row.bankHolder }} / {{ row.bankName }} / {{ row.bankAccountMasked }}
+            <div class="bank-line">{{ row.bankHolder }} / {{ row.bankName }}</div>
+            <div class="bank-account">
+              <span class="mono">{{ row.bankAccount || row.bankAccountMasked }}</span>
+              <el-button link type="primary" size="small" @click="copyAccount(row)">复制</el-button>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
@@ -111,7 +115,10 @@
         </el-descriptions-item>
         <el-descriptions-item label="持卡人">{{ detailRow.bankHolder }}</el-descriptions-item>
         <el-descriptions-item label="开户行">{{ detailRow.bankName }}</el-descriptions-item>
-        <el-descriptions-item label="卡号" :span="2">{{ detailRow.bankAccountMasked }}</el-descriptions-item>
+        <el-descriptions-item label="卡号" :span="2">
+          <span class="mono">{{ detailRow.bankAccount || detailRow.bankAccountMasked }}</span>
+          <el-button link type="primary" size="small" @click="copyAccount(detailRow)">复制</el-button>
+        </el-descriptions-item>
         <el-descriptions-item label="批次号">{{ detailRow.batchNo || '-' }}</el-descriptions-item>
         <el-descriptions-item label="申请时间">{{ detailRow.applyTime }}</el-descriptions-item>
         <el-descriptions-item label="审核时间">{{ detailRow.auditTime || '-' }}</el-descriptions-item>
@@ -240,6 +247,16 @@ async function submitPaid() {
 function openDetail(row) {
   detailRow.value = row;
   detailVisible.value = true;
+}
+
+async function copyAccount(row) {
+  const account = row.bankAccount || row.bankAccountMasked || '';
+  try {
+    await navigator.clipboard.writeText(account.replace(/\s/g, ''));
+    ElMessage.success('卡号已复制');
+  } catch (e) {
+    ElMessage.warning('复制失败，请手动选择文本');
+  }
 }
 
 async function createBatch() {
