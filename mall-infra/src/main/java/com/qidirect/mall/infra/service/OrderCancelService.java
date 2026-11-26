@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +52,10 @@ public class OrderCancelService {
         OrderInfo order = orderInfoMapper.selectById(orderId);
         if (order == null || !Objects.equals(order.getStoreId(), storeId)) {
             throw new BizException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        if (order.getPayTime() == null || !order.getPayTime().toLocalDate().equals(LocalDate.now())) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "仅支持支付当天申请取消退款，逾期请联系厂家处理");
         }
         if (!Objects.equals(order.getStatus(), ORDER_PAID)) {
             if (Objects.equals(order.getStatus(), 0)) {

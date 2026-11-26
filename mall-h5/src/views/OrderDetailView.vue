@@ -58,14 +58,7 @@
         <van-button v-if="order.status === 0 && order.payNo" class="grow" type="primary" round @click="goPay">去支付</van-button>
         <van-button v-if="order.status === 0" class="grow" plain round @click="cancel">取消订单</van-button>
         <van-button
-          v-if="order.status === 1 && !cancelReq"
-          class="grow"
-          plain
-          round
-          @click="applyCancel"
-        >申请取消</van-button>
-        <van-button
-          v-if="order.status === 1 && !cancelReq"
+          v-if="order.status === 1 && !cancelReq && canApplyCancel"
           class="grow"
           plain
           round
@@ -91,6 +84,17 @@ const order = ref(null);
 const loading = ref(true);
 
 const cancelReq = ref(null);
+
+// 仅支付当天可申请取消，与服务端校验保持一致
+const canApplyCancel = computed(() => {
+  const t = order.value && order.value.payTime;
+  if (!t) return false;
+  const paid = new Date(String(t).replace(' ', 'T'));
+  const now = new Date();
+  return paid.getFullYear() === now.getFullYear()
+    && paid.getMonth() === now.getMonth()
+    && paid.getDate() === now.getDate();
+});
 
 const cancelHint = computed(() => {
   const r = cancelReq.value;
