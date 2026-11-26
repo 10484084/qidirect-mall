@@ -156,13 +156,13 @@ export const menuRoutes = [
         path: 'notices',
         name: 'notices',
         component: () => import('../views/system/NoticeView.vue'),
-        meta: { title: '通知发送', icon: 'Bell' }
+        meta: { title: '通知发送', icon: 'Bell', hidden: true }
       },
       {
         path: 'sms-templates',
         name: 'sms-templates',
         component: () => import('../views/system/SmsTemplateView.vue'),
-        meta: { title: '短信模板', icon: 'ChatDotSquare' }
+        meta: { title: '短信模板', icon: 'ChatDotSquare', hidden: true }
       },
       {
         path: 'admin-users',
