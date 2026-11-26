@@ -180,7 +180,7 @@ export const menuRoutes = [
         path: 'configs',
         name: 'configs',
         component: () => import('../views/system/ConfigView.vue'),
-        meta: { title: '系统配置', perm: ['system:config'], icon: 'SetUp' }
+        meta: { title: '系统配置', perm: ['system:config'], icon: 'SetUp', hidden: true }
       },
       {
         path: 'operation-logs',
