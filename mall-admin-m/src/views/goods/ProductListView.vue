@@ -105,11 +105,6 @@ onActivated(async () => {
 
 <template>
   <div class="page">
-    <van-nav-bar title="商品档案">
-      <template #right>
-        <van-icon name="plus" size="18" @click="router.push('/products/create')" />
-      </template>
-    </van-nav-bar>
     <van-sticky>
       <van-search
         v-model="keyword"
@@ -122,6 +117,14 @@ onActivated(async () => {
         <van-dropdown-item v-model="status" :options="statusOptions" @change="resetList" />
       </van-dropdown-menu>
     </van-sticky>
+
+    <van-button
+      class="fab"
+      type="primary"
+      icon="plus"
+      round
+      @click="router.push('/products/create')"
+    />
 
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
       <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="loadMore">
@@ -164,6 +167,16 @@ onActivated(async () => {
   min-height: 100vh;
   background: var(--bg);
   padding-bottom: 20px;
+}
+
+.fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 6px 16px rgba(50, 105, 64, 0.3);
 }
 
 .product-item {

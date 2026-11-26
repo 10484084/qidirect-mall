@@ -121,7 +121,6 @@ onMounted(load);
 
 <template>
   <div class="page-plain detail-page">
-    <van-nav-bar title="门店详情" left-arrow fixed placeholder @click-left="router.back()" />
 
     <van-loading v-if="loading" class="loading" vertical>加载中...</van-loading>
 

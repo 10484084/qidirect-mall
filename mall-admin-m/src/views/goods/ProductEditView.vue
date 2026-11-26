@@ -318,12 +318,6 @@ onMounted(load);
 
 <template>
   <div class="page">
-    <van-nav-bar
-      :title="isEdit ? '编辑商品' : '新增商品'"
-      left-arrow
-      @click-left="router.back()"
-    />
-
     <van-loading v-if="loading" class="loading" size="24">加载中...</van-loading>
 
     <template v-else>
