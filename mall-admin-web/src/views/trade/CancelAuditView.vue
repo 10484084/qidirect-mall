@@ -41,7 +41,7 @@ async function audit(row, approved) {
     try {
       await ElMessageBox.confirm(
         `确认通过后：预存部分退回门店余额 ¥${fen2yuan(row.depositRefundHint || 0)}，在线支付部分原路退回。是否继续？`,
-        '通过取消申请',
+        '通过',
         { type: 'warning', confirmButtonText: '确认退款' }
       );
     } catch (e) {
@@ -49,7 +49,7 @@ async function audit(row, approved) {
     }
   } else {
     try {
-      const { value } = await ElMessageBox.prompt('请填写驳回原因', '驳回取消申请', {
+      const { value } = await ElMessageBox.prompt('请填写驳回原因', '驳回', {
         inputPlaceholder: '如：商品已备货完成',
         inputValidator: (v) => (v && v.trim() ? true : '请填写原因')
       });
@@ -115,7 +115,7 @@ onMounted(load);
         <el-table-column label="操作" width="170" fixed="right">
           <template #default="{ row }">
             <template v-if="row.status === 0 || row.status === 3">
-              <el-button link type="primary" @click="audit(row, true)">通过退款</el-button>
+              <el-button link type="primary" @click="audit(row, true)">通过</el-button>
               <el-button link type="danger" @click="audit(row, false)">驳回</el-button>
             </template>
             <span v-else class="text-muted">已处理</span>
