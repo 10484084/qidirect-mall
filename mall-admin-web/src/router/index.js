@@ -84,7 +84,7 @@ export const menuRoutes = [
   },
   {
     path: '/performance',
-    meta: { title: '业绩提成', icon: 'TrendCharts' },
+    meta: { title: '奖励管理', icon: 'TrendCharts' },
     children: [
       {
         path: 'commission',
