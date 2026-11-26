@@ -248,7 +248,6 @@ onActivated(() => {
           </div>
         </div>
 
-        <div v-if="!loading && !rows.length" class="empty-tip">暂无提现申请</div>
       </van-list>
     </van-pull-refresh>
 
