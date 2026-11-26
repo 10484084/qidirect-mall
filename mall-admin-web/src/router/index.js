@@ -18,13 +18,13 @@ export const menuRoutes = [
         path: '',
         name: 'stores',
         component: () => import('../views/store/StoreListView.vue'),
-        meta: { title: '门店列表', icon: 'List' }
+        meta: { title: '门店列表', perm: ['store:list'], icon: 'List' }
       },
       {
         path: 'tree',
         name: 'store-tree',
         component: () => import('../views/store/StoreTreeView.vue'),
-        meta: { title: '门店树', icon: 'Share' }
+        meta: { title: '门店树', perm: ['store:list'], icon: 'Share' }
       }
     ]
   },
@@ -36,19 +36,19 @@ export const menuRoutes = [
         path: 'levels',
         name: 'levels',
         component: () => import('../views/goods/LevelView.vue'),
-        meta: { title: '储值档位', icon: 'Medal' }
+        meta: { title: '储值档位', perm: ['level:manage'], icon: 'Medal' }
       },
       {
         path: 'categories',
         name: 'categories',
         component: () => import('../views/goods/CategoryView.vue'),
-        meta: { title: '商品分类', icon: 'Files' }
+        meta: { title: '商品分类', perm: ['category:manage'], icon: 'Files' }
       },
       {
         path: 'products',
         name: 'products',
         component: () => import('../views/goods/ProductView.vue'),
-        meta: { title: '商品档案', icon: 'Present' }
+        meta: { title: '商品档案', perm: ['product:list'], icon: 'Present' }
       }
     ]
   },
@@ -60,25 +60,25 @@ export const menuRoutes = [
         path: 'orders',
         name: 'orders',
         component: () => import('../views/trade/OrderView.vue'),
-        meta: { title: '订单发货', icon: 'Tickets' }
+        meta: { title: '订单发货', perm: ['order:list'], icon: 'Tickets' }
       },
       {
         path: 'cancel-audit',
         name: 'cancel-audit',
         component: () => import('../views/trade/CancelAuditView.vue'),
-        meta: { title: '取消审核', icon: 'RefreshLeft' }
+        meta: { title: '取消审核', perm: ['order:cancel'], icon: 'RefreshLeft' }
       },
       {
         path: 'purchase',
         name: 'purchase',
         component: () => import('../views/trade/PurchaseView.vue'),
-        meta: { title: '线下补款', icon: 'ShoppingBag' }
+        meta: { title: '线下补款', perm: ['purchase:collect'], icon: 'ShoppingBag' }
       },
       {
         path: 'wallet-adjust',
         name: 'wallet-adjust',
         component: () => import('../views/trade/WalletAdjustView.vue'),
-        meta: { title: '余额调整', icon: 'Coin' }
+        meta: { title: '余额调整', perm: ['wallet:adjust'], icon: 'Coin' }
       }
     ]
   },
@@ -90,13 +90,13 @@ export const menuRoutes = [
         path: 'commission',
         name: 'commission',
         component: () => import('../views/performance/CommissionView.vue'),
-        meta: { title: '推荐奖励', icon: 'Money' }
+        meta: { title: '推荐奖励', perm: ['commission:view'], icon: 'Money' }
       },
       {
         path: 'performance',
         name: 'performance',
         component: () => import('../views/performance/PerformanceView.vue'),
-        meta: { title: '团队奖励', icon: 'DataLine' }
+        meta: { title: '团队奖励', perm: ['performance:view'], icon: 'DataLine' }
       }
     ]
   },
@@ -108,13 +108,13 @@ export const menuRoutes = [
         path: 'audit',
         name: 'withdraw-audit',
         component: () => import('../views/withdraw/WithdrawAuditView.vue'),
-        meta: { title: '提现审核', icon: 'Stamp' }
+        meta: { title: '提现审核', perm: ['withdraw:audit'], icon: 'Stamp' }
       },
       {
         path: 'batches',
         name: 'withdraw-batches',
         component: () => import('../views/withdraw/WithdrawBatchView.vue'),
-        meta: { title: '打款批次', icon: 'Collection' }
+        meta: { title: '打款批次', perm: ['withdraw:batch'], icon: 'Collection' }
       }
     ]
   },
@@ -126,25 +126,25 @@ export const menuRoutes = [
         path: 'wallet-logs',
         name: 'wallet-logs',
         component: () => import('../views/finance/WalletLogView.vue'),
-        meta: { title: '余额流水', icon: 'List' }
+        meta: { title: '余额流水', perm: ['finance:wallet'], icon: 'List' }
       },
       {
         path: 'payments',
         name: 'payments',
         component: () => import('../views/finance/PaymentView.vue'),
-        meta: { title: '支付流水', icon: 'Ticket' }
+        meta: { title: '支付流水', perm: ['finance:payment'], icon: 'Ticket' }
       },
       {
         path: 'reconcile',
         name: 'reconcile',
         component: () => import('../views/finance/ReconcileView.vue'),
-        meta: { title: '对账', icon: 'Checked' }
+        meta: { title: '对账', perm: ['finance:reconcile'], icon: 'Checked' }
       },
       {
         path: 'abnormal',
         name: 'abnormal',
         component: () => import('../views/finance/AbnormalOrderView.vue'),
-        meta: { title: '异常单处置', icon: 'Warning' }
+        meta: { title: '异常单处置', perm: ['finance:abnormal'], icon: 'Warning' }
       }
     ]
   },
@@ -168,25 +168,25 @@ export const menuRoutes = [
         path: 'admin-users',
         name: 'admin-users',
         component: () => import('../views/system/AdminUserView.vue'),
-        meta: { title: '管理员', icon: 'User' }
+        meta: { title: '管理员', perm: ['admin:manage'], icon: 'User' }
       },
       {
         path: 'roles',
         name: 'roles',
         component: () => import('../views/system/RoleView.vue'),
-        meta: { title: '角色权限', icon: 'Lock' }
+        meta: { title: '角色权限', perm: ['role:manage'], icon: 'Lock' }
       },
       {
         path: 'configs',
         name: 'configs',
         component: () => import('../views/system/ConfigView.vue'),
-        meta: { title: '系统配置', icon: 'SetUp' }
+        meta: { title: '系统配置', perm: ['system:config'], icon: 'SetUp' }
       },
       {
         path: 'operation-logs',
         name: 'operation-logs',
         component: () => import('../views/system/OperationLogView.vue'),
-        meta: { title: '操作日志', icon: 'Notebook' }
+        meta: { title: '操作日志', perm: ['log:view'], icon: 'Notebook' }
       }
     ]
   }

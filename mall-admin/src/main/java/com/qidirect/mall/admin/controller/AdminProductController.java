@@ -8,6 +8,7 @@ import com.qidirect.mall.domain.vo.AdminProductVO;
 import com.qidirect.mall.infra.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,29 +45,34 @@ public class AdminProductController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<AdminProductVO> create(@Valid @RequestBody ProductSaveRequest request) {
         return ApiResponse.ok(productService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<AdminProductVO> update(@PathVariable Long id,
                                               @Valid @RequestBody ProductSaveRequest request) {
         return ApiResponse.ok(productService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ApiResponse.ok();
     }
 
     @PutMapping("/sort")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<Void> sort(@Valid @RequestBody AdminSortRequest request) {
         productService.sort(request.ids());
         return ApiResponse.ok();
     }
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<Void> setStatus(@PathVariable Long id, @RequestParam Integer status) {
         productService.setStatus(id, status);
         return ApiResponse.ok();

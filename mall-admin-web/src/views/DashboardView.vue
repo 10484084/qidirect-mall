@@ -1,7 +1,15 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { dashboardApi } from '../api';
+import { useUserStore } from '../stores/user';
 import { fen2yuan } from '../utils/format';
+
+const userStore = useUserStore();
+// 财务类数字只对具备财务/奖励权限的账号展示，避免业务员看到全盘金额
+const canFinance = computed(() => userStore.hasPerm('finance:wallet') || userStore.hasPerm('withdraw:audit'));
+const canWithdraw = computed(() => userStore.hasPerm('withdraw:audit'));
+const canAbnormal = computed(() => userStore.hasPerm('finance:abnormal'));
+const canPerformance = computed(() => userStore.hasPerm('performance:view') || userStore.hasPerm('finance:wallet'));
 
 const loading = ref(false);
 const data = ref({});
@@ -42,13 +50,18 @@ const groups = [
   }
 ];
 
-const pendingItems = [
+const pendingItems = computed(() => [
   { key: 'pendingShipCount', label: '待发货订单', path: '/trade/orders?status=1', type: 'primary' },
-  { key: 'pendingWithdrawCount', label: '待处理提现', path: '/withdraw/audit', type: 'warning' },
-  { key: 'pendingAbnormalCount', label: '待处置异常单', path: '/finance/abnormal', type: 'danger' }
-];
+  ...(canWithdraw.value
+    ? [{ key: 'pendingWithdrawCount', label: '待处理提现', path: '/withdraw/audit', type: 'warning' }]
+    : []),
+  ...(canAbnormal.value
+    ? [{ key: 'pendingAbnormalCount', label: '待处置异常单', path: '/finance/abnormal', type: 'danger' }]
+    : [])
+]);
 
 function display(item) {
+  if (item.money && !canFinance.value) return '—';
   const v = data.value[item.key];
   if (v === null || v === undefined) return '-';
   return item.money ? `¥ ${fen2yuan(v)}` : v;
@@ -73,7 +86,7 @@ function display(item) {
       </el-col>
     </el-row>
 
-    <el-card class="mt16" shadow="never">
+    <el-card v-if="canPerformance" class="mt16" shadow="never">
       <div class="perf">
         <span class="text-muted">本月业绩总额</span>
         <span class="perf-value">¥ {{ fen2yuan(data.monthPerformanceAmount) }}</span>

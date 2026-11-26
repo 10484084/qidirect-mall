@@ -6,6 +6,7 @@ import com.qidirect.mall.domain.vo.GiftRuleVO;
 import com.qidirect.mall.infra.service.GiftRuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,23 +35,27 @@ public class AdminGiftRuleController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<GiftRuleVO> create(@Valid @RequestBody GiftRuleSaveRequest request) {
         return ApiResponse.ok(giftRuleService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<GiftRuleVO> update(@PathVariable Long id,
                                           @Valid @RequestBody GiftRuleSaveRequest request) {
         return ApiResponse.ok(giftRuleService.update(id, request));
     }
 
     @PutMapping("/{id}/enabled")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<GiftRuleVO> setEnabled(@PathVariable Long id,
                                               @RequestParam boolean enabled) {
         return ApiResponse.ok(giftRuleService.setEnabled(id, enabled));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@perm.has('product:edit')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         giftRuleService.delete(id);
         return ApiResponse.ok();

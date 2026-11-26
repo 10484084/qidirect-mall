@@ -7,6 +7,7 @@ import com.qidirect.mall.domain.vo.ProductCategoryVO;
 import com.qidirect.mall.infra.service.ProductCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,23 +35,27 @@ public class AdminProductCategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.has('category:manage')")
     public ApiResponse<ProductCategoryVO> create(@Valid @RequestBody ProductCategorySaveRequest request) {
         return ApiResponse.ok(productCategoryService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@perm.has('category:manage')")
     public ApiResponse<ProductCategoryVO> update(@PathVariable Long id,
                                                  @Valid @RequestBody ProductCategorySaveRequest request) {
         return ApiResponse.ok(productCategoryService.update(id, request));
     }
 
     @PutMapping("/sort")
+    @PreAuthorize("@perm.has('category:manage')")
     public ApiResponse<Void> sort(@Valid @RequestBody AdminSortRequest request) {
         productCategoryService.sort(request.ids());
         return ApiResponse.ok();
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@perm.has('category:manage')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         productCategoryService.delete(id);
         return ApiResponse.ok();

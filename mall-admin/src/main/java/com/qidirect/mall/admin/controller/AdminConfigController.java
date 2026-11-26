@@ -10,6 +10,7 @@ import com.qidirect.mall.infra.security.SecurityUtils;
 import com.qidirect.mall.infra.service.SysConfigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,6 +37,7 @@ public class AdminConfigController {
     }
 
     @PutMapping("/{key}")
+    @PreAuthorize("@perm.has('system:config')")
     public ApiResponse<Void> update(@PathVariable String key,
                                     @Valid @RequestBody ConfigSaveRequest request) {
         sysConfigService.set(key, request.value(), request.remark());

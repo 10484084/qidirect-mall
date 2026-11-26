@@ -6,6 +6,7 @@ import com.qidirect.mall.domain.vo.StoreLevelVO;
 import com.qidirect.mall.infra.service.StoreLevelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,11 +35,13 @@ public class AdminLevelController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.has('level:manage')")
     public ApiResponse<StoreLevelVO> create(@Valid @RequestBody LevelSaveRequest request) {
         return ApiResponse.ok(storeLevelService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@perm.has('level:manage')")
     public ApiResponse<StoreLevelVO> update(@PathVariable Long id,
                                             @Valid @RequestBody LevelSaveRequest request) {
         return ApiResponse.ok(storeLevelService.update(id, request));
@@ -57,6 +60,7 @@ public class AdminLevelController {
      * 删除档位：有门店在使用或已产生储值订单时拒绝，需改用冻结。
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("@perm.has('level:manage')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         storeLevelService.delete(id);
         return ApiResponse.ok();

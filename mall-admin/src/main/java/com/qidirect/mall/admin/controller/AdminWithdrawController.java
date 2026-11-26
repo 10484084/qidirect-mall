@@ -12,6 +12,7 @@ import com.qidirect.mall.infra.service.AdminWithdrawService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,23 +76,27 @@ public class AdminWithdrawController {
     }
 
     @PostMapping("/{id}/approve")
+    @PreAuthorize("@perm.has('withdraw:audit')")
     public ApiResponse<WithdrawVO> approve(@PathVariable Long id) {
         return ApiResponse.ok(adminWithdrawService.approve(id));
     }
 
     @PostMapping("/{id}/reject")
+    @PreAuthorize("@perm.has('withdraw:audit')")
     public ApiResponse<WithdrawVO> reject(@PathVariable Long id,
                                           @Valid @RequestBody WithdrawRejectRequest request) {
         return ApiResponse.ok(adminWithdrawService.reject(id, request));
     }
 
     @PostMapping("/{id}/paid")
+    @PreAuthorize("@perm.has('withdraw:audit')")
     public ApiResponse<WithdrawVO> paid(@PathVariable Long id,
                                         @Valid @RequestBody WithdrawPaidRequest request) {
         return ApiResponse.ok(adminWithdrawService.markPaid(id, request));
     }
 
     @PostMapping("/{id}/fail")
+    @PreAuthorize("@perm.has('withdraw:audit')")
     public ApiResponse<WithdrawVO> fail(@PathVariable Long id,
                                         @Valid @RequestBody WithdrawFailRequest request) {
         return ApiResponse.ok(adminWithdrawService.markFail(id, request));

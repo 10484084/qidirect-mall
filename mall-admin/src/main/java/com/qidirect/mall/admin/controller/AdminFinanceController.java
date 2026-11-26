@@ -14,6 +14,7 @@ import com.qidirect.mall.infra.service.AdminReconcileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,6 +87,7 @@ public class AdminFinanceController {
         return ApiResponse.ok(adminAbnormalService.page(type, page, size));
     }
 
+    @PreAuthorize("@perm.has('finance:abnormal')")
     @PostMapping("/abnormal-orders/{type}/{id}/resolve")
     public ApiResponse<Void> resolveAbnormal(@PathVariable String type,
                                              @PathVariable Long id,

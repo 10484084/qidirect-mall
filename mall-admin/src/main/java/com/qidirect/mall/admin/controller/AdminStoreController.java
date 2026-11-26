@@ -15,6 +15,7 @@ import com.qidirect.mall.infra.service.AdminStoreService;
 import com.qidirect.mall.infra.service.StoreTimelineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,11 +64,13 @@ public class AdminStoreController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.has('store:freeze')")
     public ApiResponse<Long> create(@Valid @RequestBody AdminStoreCreateRequest request) {
         return ApiResponse.ok(adminStoreService.create(request));
     }
 
     @PostMapping("/{id}/reset-phone")
+    @PreAuthorize("@perm.has('store:freeze')")
     public ApiResponse<Void> resetPhone(@PathVariable Long id,
                                         @Valid @RequestBody AdminResetPhoneRequest request) {
         adminStoreService.resetPhone(id, request);
@@ -75,12 +78,14 @@ public class AdminStoreController {
     }
 
     @PostMapping("/{id}/reset-password")
+    @PreAuthorize("@perm.has('store:freeze')")
     public ApiResponse<Void> resetPassword(@PathVariable Long id) {
         adminStoreService.resetPassword(id);
         return ApiResponse.ok();
     }
 
     @PostMapping("/{id}/freeze")
+    @PreAuthorize("@perm.has('store:freeze')")
     public ApiResponse<Void> freeze(@PathVariable Long id,
                                     @RequestBody(required = false) AdminStoreStatusRequest request) {
         adminStoreService.freeze(id, request);
@@ -88,6 +93,7 @@ public class AdminStoreController {
     }
 
     @PostMapping("/{id}/unfreeze")
+    @PreAuthorize("@perm.has('store:freeze')")
     public ApiResponse<Void> unfreeze(@PathVariable Long id,
                                       @RequestBody(required = false) AdminStoreStatusRequest request) {
         adminStoreService.unfreeze(id, request);

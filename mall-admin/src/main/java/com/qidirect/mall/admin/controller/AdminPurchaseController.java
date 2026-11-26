@@ -10,6 +10,7 @@ import com.qidirect.mall.infra.util.ClientIpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ public class AdminPurchaseController {
     private final PurchaseService purchaseService;
 
     @PostMapping("/proxy-join")
+    @PreAuthorize("@perm.has('purchase:collect')")
     public ApiResponse<PurchaseOrderVO> proxyJoin(@Valid @RequestBody ProxyJoinRequest request,
                                                   HttpServletRequest servletRequest) {
         return ApiResponse.ok(purchaseService.proxyJoin(request, SecurityUtils.currentUserId(),
@@ -33,6 +35,7 @@ public class AdminPurchaseController {
     }
 
     @PostMapping("/offline-collect")
+    @PreAuthorize("@perm.has('purchase:collect')")
     public ApiResponse<PurchaseOrderVO> offlineCollect(@Valid @RequestBody OfflineCollectRequest request,
                                                        HttpServletRequest servletRequest) {
         return ApiResponse.ok(purchaseService.offlineCollect(request, SecurityUtils.currentUserId(),

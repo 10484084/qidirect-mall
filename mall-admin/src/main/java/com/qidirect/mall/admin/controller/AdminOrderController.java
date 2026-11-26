@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,6 +70,7 @@ public class AdminOrderController {
     }
 
     @PostMapping("/{id}/ship")
+    @PreAuthorize("@perm.has('order:ship')")
     public ApiResponse<OrderVO> ship(@PathVariable Long id,
                                      @Valid @RequestBody OrderShipRequest request) {
         return ApiResponse.ok(orderService.ship(id, request, SecurityUtils.currentUserId()));

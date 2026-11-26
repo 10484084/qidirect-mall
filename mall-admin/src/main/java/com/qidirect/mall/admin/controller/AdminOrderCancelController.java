@@ -8,6 +8,7 @@ import com.qidirect.mall.infra.service.OrderCancelService;
 import com.qidirect.mall.infra.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +36,7 @@ public class AdminOrderCancelController {
     }
 
     @PostMapping("/{id}/audit")
+    @PreAuthorize("@perm.has('order:cancel')")
     public ApiResponse<OrderCancelVO> audit(@PathVariable Long id,
                                             @Valid @RequestBody OrderCancelAuditRequest request) {
         return ApiResponse.ok(orderCancelService.audit(id, Boolean.TRUE.equals(request.approved()),
