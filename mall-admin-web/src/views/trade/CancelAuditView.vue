@@ -69,7 +69,7 @@ onMounted(load);
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">取消申请</h2>
+      <h2 class="page-title">取消审核</h2>
       <el-button @click="load">刷新</el-button>
     </div>
 

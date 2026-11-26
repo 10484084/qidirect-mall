@@ -60,19 +60,19 @@ export const menuRoutes = [
         path: 'orders',
         name: 'orders',
         component: () => import('../views/trade/OrderView.vue'),
-        meta: { title: '订单与发货', icon: 'Tickets' }
+        meta: { title: '订单发货', icon: 'Tickets' }
       },
       {
         path: 'cancel-audit',
         name: 'cancel-audit',
         component: () => import('../views/trade/CancelAuditView.vue'),
-        meta: { title: '取消申请', icon: 'RefreshLeft' }
+        meta: { title: '取消审核', icon: 'RefreshLeft' }
       },
       {
         path: 'purchase',
         name: 'purchase',
         component: () => import('../views/trade/PurchaseView.vue'),
-        meta: { title: '线下加盟', icon: 'ShoppingBag' }
+        meta: { title: '线下补款', icon: 'ShoppingBag' }
       },
       {
         path: 'wallet-adjust',

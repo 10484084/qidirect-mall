@@ -101,7 +101,7 @@ onMounted(async () => {
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">线下加盟</h2>
+      <h2 class="page-title">线下补款</h2>
     </div>
 
     <el-card shadow="never">

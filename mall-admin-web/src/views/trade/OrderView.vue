@@ -101,7 +101,7 @@ onMounted(load);
 <template>
   <div class="page">
     <div class="page-header">
-      <h2 class="page-title">订单与发货</h2>
+      <h2 class="page-title">订单发货</h2>
       <div>
         <el-button @click="exportExcel">导出 Excel</el-button>
         <el-button @click="load">刷新</el-button>
