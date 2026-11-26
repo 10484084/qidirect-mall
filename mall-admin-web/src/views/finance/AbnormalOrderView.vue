@@ -5,14 +5,14 @@
     </div>
 
     <el-card shadow="never">
-      <div class="filter-bar">
+      <div class="toolbar">
         <el-radio-group v-model="type" @change="search">
           <el-radio-button v-for="item in ABNORMAL_TYPE_OPTIONS" :key="item.value" :value="item.value">
             {{ item.label }}
           </el-radio-button>
         </el-radio-group>
-        <el-button type="primary" @click="load">刷新</el-button>
-        <span class="text-muted">异常单为「已收款但业务前置校验失败」的订单，需人工处置</span>
+        <el-button @click="load">刷新</el-button>
+        <span class="toolbar-hint">异常单 = 已收款但业务前置校验失败的订单，需人工处置</span>
       </div>
 
       <el-table :data="rows" border stripe v-loading="loading">
@@ -146,3 +146,39 @@ async function submit() {
 
 onMounted(load);
 </script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.toolbar-hint {
+  margin-left: auto;
+  font-size: 13px;
+  color: #909399;
+  line-height: 1.5;
+}
+</style>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.toolbar-hint {
+  margin-left: auto;
+  font-size: 13px;
+  color: #909399;
+  line-height: 1.5;
+}
+</style>
