@@ -12,7 +12,7 @@ export const menuRoutes = [
   },
   {
     path: '/stores',
-    meta: { title: '门店管理', icon: 'Shop' },
+    meta: { title: '门店', icon: 'Shop' },
     children: [
       {
         path: '',
@@ -30,7 +30,7 @@ export const menuRoutes = [
   },
   {
     path: '/goods',
-    meta: { title: '档案管理', icon: 'Goods' },
+    meta: { title: '档案', icon: 'Goods' },
     children: [
       {
         path: 'levels',
@@ -54,7 +54,7 @@ export const menuRoutes = [
   },
   {
     path: '/trade',
-    meta: { title: '交易管理', icon: 'ShoppingCart' },
+    meta: { title: '交易', icon: 'ShoppingCart' },
     children: [
       {
         path: 'orders',
@@ -84,7 +84,7 @@ export const menuRoutes = [
   },
   {
     path: '/performance',
-    meta: { title: '奖励管理', icon: 'TrendCharts' },
+    meta: { title: '奖励', icon: 'TrendCharts' },
     children: [
       {
         path: 'commission',
