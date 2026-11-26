@@ -41,6 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,6 +84,9 @@ public class AdminAbnormalService {
         String normalized = normalizeType(type);
         long current = Math.max(page, 1);
         long pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        if ("ALL".equals(normalized)) {
+            return pageAll(current, pageSize);
+        }
         if ("JOIN".equals(normalized)) {
             IPage<JoinOrder> result = joinOrderMapper.selectPage(new Page<>(current, pageSize),
                     Wrappers.<JoinOrder>lambdaQuery()
@@ -125,6 +130,21 @@ public class AdminAbnormalService {
      * 处置异常单。所有分支先按 status=3 条件更新，避免并发重复处置。
      */
     @Transactional
+    /**
+     * 合并展示：加盟/升级异常单与预存异常单按创建时间倒序合并后内存分页。
+     * 异常单为人工处置的低频数据，总量有限，不做跨表 union。
+     */
+    private PageResult<AbnormalOrderVO> pageAll(long current, long pageSize) {
+        List<AbnormalOrderVO> all = new ArrayList<>();
+        all.addAll(page("JOIN", 1, MAX_PAGE_SIZE).getRecords());
+        all.addAll(page("RECHARGE", 1, MAX_PAGE_SIZE).getRecords());
+        all.sort(Comparator.comparing(AbnormalOrderVO::createdAt,
+                Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+        int from = (int) Math.min((current - 1) * pageSize, all.size());
+        int to = (int) Math.min(from + pageSize, all.size());
+        return PageResult.of(new ArrayList<>(all.subList(from, to)), all.size(), current, pageSize);
+    }
+
     public void resolve(String type, Long id, AbnormalResolveRequest request) {
         String normalized = normalizeType(type);
         String action = StrUtil.trimToEmpty(request.action()).toUpperCase();
@@ -400,9 +420,9 @@ public class AdminAbnormalService {
     }
 
     private String normalizeType(String type) {
-        String normalized = StrUtil.isBlank(type) ? "JOIN" : type.trim().toUpperCase();
-        if (!"JOIN".equals(normalized) && !"RECHARGE".equals(normalized)) {
-            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "异常单类型仅支持 JOIN/RECHARGE");
+        String normalized = StrUtil.isBlank(type) ? "ALL" : type.trim().toUpperCase();
+        if (!"ALL".equals(normalized) && !"JOIN".equals(normalized) && !"RECHARGE".equals(normalized)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "异常单类型仅支持 ALL/JOIN/RECHARGE");
         }
         return normalized;
     }

@@ -81,7 +81,7 @@ public class AdminFinanceController {
 
     @GetMapping("/abnormal-orders")
     public ApiResponse<PageResult<AbnormalOrderVO>> abnormalOrders(
-            @RequestParam(required = false, defaultValue = "JOIN") String type,
+            @RequestParam(required = false, defaultValue = "ALL") String type,
             @RequestParam(defaultValue = "1") long page,
             @RequestParam(defaultValue = "20") long size) {
         return ApiResponse.ok(adminAbnormalService.page(type, page, size));

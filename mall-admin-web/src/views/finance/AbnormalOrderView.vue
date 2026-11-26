@@ -6,16 +6,20 @@
 
     <el-card shadow="never">
       <div class="toolbar">
-        <el-radio-group v-model="type" @change="search">
-          <el-radio-button v-for="item in ABNORMAL_TYPE_OPTIONS" :key="item.value" :value="item.value">
-            {{ item.label }}
-          </el-radio-button>
-        </el-radio-group>
+        <span class="toolbar-title">异常单</span>
+        <el-tag size="small" type="info">共 {{ total }} 条</el-tag>
         <el-button @click="load">刷新</el-button>
-        <span class="toolbar-hint">异常单 = 已收款但业务前置校验失败的订单，需人工处置</span>
+        <span class="toolbar-hint">已收款但业务前置校验失败的订单，需人工处置</span>
       </div>
 
       <el-table :data="rows" border stripe v-loading="loading">
+        <el-table-column label="类型" width="110">
+          <template #default="{ row }">
+            <el-tag size="small" :type="row.type === 'JOIN' ? 'warning' : 'primary'" effect="plain">
+              {{ ABNORMAL_TYPE[row.type] || row.type }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="orderNo" label="订单号" min-width="180" show-overflow-tooltip />
         <el-table-column prop="storeName" label="门店" min-width="140" show-overflow-tooltip />
         <el-table-column prop="levelName" label="目标档位" width="120" />
@@ -88,10 +92,9 @@ import { onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import ImageUploader from '../../components/ImageUploader.vue';
 import { financeApi } from '../../api';
-import { ABNORMAL_RESOLVE, ABNORMAL_RESOLVE_OPTIONS, ABNORMAL_TYPE, ABNORMAL_TYPE_OPTIONS } from '../../utils/dict';
+import { ABNORMAL_RESOLVE, ABNORMAL_RESOLVE_OPTIONS, ABNORMAL_TYPE } from '../../utils/dict';
 import { fen2yuan } from '../../utils/format';
 
-const type = ref('JOIN');
 const loading = ref(false);
 const saving = ref(false);
 const rows = ref([]);
@@ -105,7 +108,7 @@ const form = reactive({ action: 'REOPEN', remark: '', proofImages: [] });
 async function load() {
   loading.value = true;
   try {
-    const data = await financeApi.abnormalOrders({ type: type.value, page: query.page, size: query.size });
+    const data = await financeApi.abnormalOrders({ type: 'ALL', page: query.page, size: query.size });
     rows.value = data.records || [];
     total.value = data.total || 0;
   } finally {
@@ -131,7 +134,7 @@ async function submit() {
   saving.value = true;
   try {
     // 升级单在列表中归入 JOIN，与后端接口类型保持一致
-    await financeApi.resolveAbnormal(type.value, current.value.orderId, {
+    await financeApi.resolveAbnormal(current.value.type, current.value.orderId, {
       action: form.action,
       remark: form.remark,
       proofImages: form.proofImages
@@ -157,6 +160,18 @@ onMounted(load);
   border-bottom: 1px solid #f0f2f5;
 }
 
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2421;
+}
+
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2421;
+}
+
 .toolbar-hint {
   margin-left: auto;
   font-size: 13px;
@@ -173,6 +188,18 @@ onMounted(load);
   margin-bottom: 14px;
   padding-bottom: 14px;
   border-bottom: 1px solid #f0f2f5;
+}
+
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2421;
+}
+
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2421;
 }
 
 .toolbar-hint {
