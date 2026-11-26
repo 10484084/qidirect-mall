@@ -150,8 +150,10 @@ onMounted(load);
         </van-button>
       </div>
 
-      <div class="tip muted small">
-        手机端支持改价与上下架；新增商品、增删规格、图片与买赠规则请在电脑端操作。
+      <div class="footer">
+        <van-button type="primary" block round @click="router.push(`/products/${productId}/edit`)">
+          编辑商品
+        </van-button>
       </div>
     </template>
   </div>
@@ -256,9 +258,11 @@ onMounted(load);
   border-radius: 6px;
 }
 
-.tip {
-  padding: 0 20px;
-  line-height: 1.6;
-  text-align: center;
+.footer {
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.page {
+  padding-bottom: 90px;
 }
 </style>

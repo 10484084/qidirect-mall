@@ -105,6 +105,11 @@ onActivated(async () => {
 
 <template>
   <div class="page">
+    <van-nav-bar title="商品档案">
+      <template #right>
+        <van-icon name="plus" size="18" @click="router.push('/products/create')" />
+      </template>
+    </van-nav-bar>
     <van-sticky>
       <van-search
         v-model="keyword"

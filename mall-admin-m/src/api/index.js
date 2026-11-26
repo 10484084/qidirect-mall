@@ -1,4 +1,4 @@
-import { get, post, put } from './request';
+import { del, get, post, put, uploadFile } from './request';
 
 export const authApi = {
   login: (data) => post('/auth/login', data)
@@ -23,12 +23,23 @@ export const storeApi = {
   events: (id, params) => get(`/stores/${id}/events`, params)
 };
 
+export const giftRuleApi = {
+  list: (productId) => get('/gift-rules', productId ? { productId } : undefined),
+  create: (data) => post('/gift-rules', data),
+  update: (id, data) => put(`/gift-rules/${id}`, data),
+  setEnabled: (id, enabled) => put(`/gift-rules/${id}/enabled`, null, { params: { enabled } }),
+  remove: (id) => del(`/gift-rules/${id}`)
+};
+
 export const productApi = {
   page: (params) => get('/products', params),
   detail: (id) => get(`/products/${id}`),
   update: (id, data) => put(`/products/${id}`, data),
-  setStatus: (id, status) => put(`/products/${id}/status`, null, { params: { status } })
+  setStatus: (id, status) => put(`/products/${id}/status`, null, { params: { status } }),
+  create: (data) => post('/products', data)
 };
+
+export { uploadFile };
 
 export const categoryApi = {
   list: () => get('/product-categories')

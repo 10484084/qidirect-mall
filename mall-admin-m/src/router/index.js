@@ -45,6 +45,18 @@ const routes = [
     meta: { title: '商品', tab: 'products' }
   },
   {
+    path: '/products/create',
+    name: 'product-create',
+    component: () => import('../views/goods/ProductEditView.vue'),
+    meta: { title: '新增商品' }
+  },
+  {
+    path: '/products/:id/edit',
+    name: 'product-edit',
+    component: () => import('../views/goods/ProductEditView.vue'),
+    meta: { title: '编辑商品' }
+  },
+  {
     path: '/products/:id',
     name: 'product-detail',
     component: () => import('../views/goods/ProductDetailView.vue'),
