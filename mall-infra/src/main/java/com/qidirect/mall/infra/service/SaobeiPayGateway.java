@@ -133,16 +133,20 @@ public class SaobeiPayGateway implements PaymentGateway {
         Map<String, String> params = requestBase(VER_CURRENT, "000", SERVICE_REFUND,
                 newTrace(), LocalDateTime.now());
         params.put("refund_fee", String.valueOf(refundFee));
+        // 扫呗签名要求「赋值为空字符串的字段也参与签名」，退款接口的 device_no/order_body/attach 必须显式置空
+        params.put("device_no", "");
+        params.put("order_body", "");
+        params.put("attach", "");
+        // 同一退款流水号不允许重复使用，避免网络重试导致重复退款
+        params.put("repeated_trace", "1");
         if (StrUtil.isNotBlank(payment.getOutTradeNo())) {
             params.put("out_trade_no", payment.getOutTradeNo());
         } else {
             params.put("pay_trace", payment.getPayNo());
             params.put("pay_time", TERMINAL_TIME.format(terminalTime(payment)));
         }
-        if (StrUtil.isNotBlank(outRefundNo)) {
-            params.put("out_refund_no", outRefundNo);
-        }
-        Map<String, String> response = post(properties.getRefundPath(), params);
+        // 注意：out_refund_no 不是退款申请的请求参数（文档 4.6），仅作为响应字段返回
+        Map<String, String> response = post(properties.getRefundPath(), params, true);
         boolean success = SUCCESS.equals(response.get("return_code"))
                 && SUCCESS.equals(response.get("result_code"));
         String refundNo = StrUtil.nullToEmpty(response.get("out_refund_no"));
@@ -258,7 +262,13 @@ public class SaobeiPayGateway implements PaymentGateway {
     }
 
     private Map<String, String> post(String path, Map<String, String> params) {
-        params.put("key_sign", sign(params, properties.getAccessToken()));
+        return post(path, params, false);
+    }
+
+    private Map<String, String> post(String path, Map<String, String> params, boolean includeEmpty) {
+        params.put("key_sign", includeEmpty
+                ? signIncludeEmpty(params, properties.getAccessToken())
+                : sign(params, properties.getAccessToken()));
         String url = StrUtil.removeSuffix(properties.getApiBase(), "/") + path;
         // 扫呗 2.0 通信协议为 application/json，表单提交返回 415
         String body;
