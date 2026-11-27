@@ -75,6 +75,7 @@ public class AdminUserService {
         admin.setAccount(request.account().trim());
         admin.setPassword(passwordEncoder.encode(request.password()));
         admin.setRealName(StrUtil.nullToEmpty(request.realName()));
+        admin.setPhone(StrUtil.nullToEmpty(request.phone()));
         admin.setStatus(request.status() == null ? 1 : request.status());
         try {
             adminUserMapper.insert(admin);
@@ -103,6 +104,9 @@ public class AdminUserService {
         }
         if (request.realName() != null) {
             admin.setRealName(request.realName().trim());
+        }
+        if (request.phone() != null) {
+            admin.setPhone(request.phone().trim());
         }
         if (request.status() != null) {
             admin.setStatus(request.status());
@@ -158,7 +162,7 @@ public class AdminUserService {
             List<Long> ids = roleIdsByAdmin.getOrDefault(admin.getId(), List.of());
             List<String> names = ids.stream().map(roleNames::get).filter(Objects::nonNull).toList();
             return new AdminUserVO(admin.getId(), admin.getAccount(), admin.getRealName(),
-                    admin.getStatus(), ids, names, admin.getCreatedAt());
+                    StrUtil.nullToEmpty(admin.getPhone()), admin.getStatus(), ids, names, admin.getCreatedAt());
         }).toList();
     }
 

@@ -18,7 +18,12 @@
 
       <el-table :data="rows" border stripe v-loading="loading">
         <el-table-column prop="account" label="账号" width="160" />
-        <el-table-column prop="realName" label="姓名" width="140" />
+        <el-table-column prop="realName" label="姓名" width="130" />
+        <el-table-column label="手机号" width="140">
+          <template #default="{ row }">
+            <span>{{ row.phone || '—' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="角色" min-width="200">
           <template #default="{ row }">
             <el-tag v-for="name in row.roleNames || []" :key="name" class="mr4">{{ name }}</el-tag>
@@ -63,6 +68,9 @@
         <el-form-item label="姓名">
           <el-input v-model="form.realName" maxlength="32" />
         </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="form.phone" maxlength="11" placeholder="用于忘记密码时自助重置" />
+        </el-form-item>
         <el-form-item label="角色">
           <el-select v-model="form.roleIds" multiple placeholder="选择角色" style="width: 100%">
             <el-option v-for="role in roles" :key="role.id" :label="role.name" :value="role.id" />
@@ -94,7 +102,7 @@ const roles = ref([]);
 const query = reactive({ keyword: '', status: null, page: 1, size: 20 });
 
 const editVisible = ref(false);
-const form = reactive({ id: null, account: '', password: '', realName: '', roleIds: [], status: 1 });
+const form = reactive({ id: null, account: '', password: '', realName: '', phone: '', roleIds: [], status: 1 });
 
 async function load() {
   loading.value = true;
@@ -124,6 +132,7 @@ async function openEdit(row) {
   form.account = row ? row.account : '';
   form.password = '';
   form.realName = row ? row.realName || '' : '';
+  form.phone = row ? row.phone || '' : '';
   form.roleIds = row && row.roleIds ? [...row.roleIds] : [];
   form.status = row ? row.status ?? 1 : 1;
   editVisible.value = true;
@@ -138,6 +147,7 @@ async function save() {
       await adminUserApi.update(form.id, {
         password: form.password || null,
         realName: form.realName,
+        phone: form.phone || '',
         status: form.status,
         roleIds: form.roleIds
       });
@@ -146,6 +156,7 @@ async function save() {
         account: form.account,
         password: form.password,
         realName: form.realName,
+        phone: form.phone || '',
         status: form.status,
         roleIds: form.roleIds
       });

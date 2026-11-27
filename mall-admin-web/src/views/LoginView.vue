@@ -2,6 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { authApi } from '../api';
 import { useUserStore } from '../stores/user';
 
 const route = useRoute();
@@ -10,6 +11,53 @@ const userStore = useUserStore();
 const formRef = ref();
 const loading = ref(false);
 const step = ref('account');
+const resetVisible = ref(false);
+const resetting = ref(false);
+const counting = ref(0);
+const resetForm = reactive({ phone: '', code: '', newPassword: '' });
+let timer = null;
+
+function openReset() {
+  resetForm.phone = '';
+  resetForm.code = '';
+  resetForm.newPassword = '';
+  resetVisible.value = true;
+}
+
+async function sendCode() {
+  if (!/^1[3-9]\d{9}$/.test(resetForm.phone)) {
+    ElMessage.warning('请输入正确的手机号');
+    return;
+  }
+  await authApi.sendAdminResetCode({ phone: resetForm.phone });
+  ElMessage.success('若该手机号已绑定管理员，验证码已发送');
+  counting.value = 60;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    counting.value -= 1;
+    if (counting.value <= 0) clearInterval(timer);
+  }, 1000);
+}
+
+async function doReset() {
+  if (!resetForm.phone || !resetForm.code || !resetForm.newPassword) {
+    ElMessage.warning('请填写完整');
+    return;
+  }
+  resetting.value = true;
+  try {
+    await authApi.resetAdminPassword({
+      phone: resetForm.phone,
+      code: resetForm.code,
+      newPassword: resetForm.newPassword
+    });
+    ElMessage.success('密码已重置，请用新密码登录');
+    resetVisible.value = false;
+    step.value = 'password';
+  } finally {
+    resetting.value = false;
+  }
+}
 
 const form = reactive({
   account: '',
@@ -91,12 +139,58 @@ async function onSubmit() {
           <span class="text-muted small">当前账号：{{ maskedAccount }}</span>
           <el-link type="primary" :underline="false" @click="backStep">修改</el-link>
         </div>
+        <div v-if="step === 'password'" class="login-foot">
+          <span class="text-muted small">忘记密码？</span>
+          <el-link type="primary" :underline="false" @click="openReset">用绑定手机号重置</el-link>
+        </div>
       </el-form>
     </el-card>
+
+    <el-dialog v-model="resetVisible" title="重置密码" width="420px">
+      <el-form label-width="80px">
+        <el-form-item label="手机号" required>
+          <el-input v-model="resetForm.phone" maxlength="11" placeholder="账号绑定的手机号" />
+        </el-form-item>
+        <el-form-item label="验证码" required>
+          <div class="code-row">
+            <el-input v-model="resetForm.code" maxlength="6" placeholder="6 位验证码" />
+            <el-button :disabled="counting > 0" @click="sendCode">
+              {{ counting > 0 ? counting + 's' : '获取验证码' }}
+            </el-button>
+          </div>
+        </el-form-item>
+        <el-form-item label="新密码" required>
+          <el-input v-model="resetForm.newPassword" type="password" show-password maxlength="32"
+                    placeholder="6-32 位" />
+        </el-form-item>
+      </el-form>
+      <div class="reset-tip text-muted small">
+        验证码会发送到该手机号绑定的管理员账号；未绑定手机号请联系超级管理员重置。
+      </div>
+      <template #footer>
+        <el-button @click="resetVisible = false">取消</el-button>
+        <el-button type="primary" :loading="resetting" @click="doReset">确认重置</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped>
+.code-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.code-row .el-input {
+  flex: 1;
+}
+
+.reset-tip {
+  line-height: 1.6;
+  padding-left: 80px;
+}
+
 .login-page {
   height: 100%;
   display: flex;

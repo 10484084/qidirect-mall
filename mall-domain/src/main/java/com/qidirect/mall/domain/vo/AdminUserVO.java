@@ -10,6 +10,7 @@ public record AdminUserVO(
         Long id,
         String account,
         String realName,
+        String phone,
         Integer status,
         List<Long> roleIds,
         List<String> roleNames,

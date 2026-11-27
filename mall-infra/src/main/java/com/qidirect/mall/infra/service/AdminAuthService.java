@@ -31,6 +31,7 @@ public class AdminAuthService {
     private final AdminUserMapper adminUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final SmsCodeService smsCodeService;
 
     public AdminLoginVO login(AdminLoginRequest request) {
         AdminUser admin = adminUserMapper.selectOne(Wrappers.<AdminUser>lambdaQuery()
@@ -44,6 +45,41 @@ public class AdminAuthService {
                 Map.of(AuthConstants.CLAIM_PERMS, perms));
         return new AdminLoginVO(token, admin.getId(), admin.getAccount(),
                 admin.getRealName(), perms);
+    }
+
+    /**
+     * 忘记密码：仅当手机号确实绑定在启用的管理员上才发送验证码。
+     * 前端提示统一为「若该手机号已绑定，验证码已发送」，避免手机号枚举。
+     */
+    public void sendResetCode(String phone) {
+        String trimmed = StrUtil.trimToEmpty(phone);
+        AdminUser admin = adminUserMapper.selectOne(Wrappers.<AdminUser>lambdaQuery()
+                .eq(AdminUser::getPhone, trimmed)
+                .eq(AdminUser::getStatus, 1)
+                .last("limit 1"));
+        if (admin == null) {
+            return;
+        }
+        smsCodeService.send(trimmed);
+    }
+
+    /**
+     * 校验手机号与验证码后重置密码；同一手机号命中多个账号时更新全部（实际业务中手机号唯一）。
+     */
+    public void resetPassword(String phone, String code, String newPassword) {
+        String trimmed = StrUtil.trimToEmpty(phone);
+        AdminUser admin = adminUserMapper.selectOne(Wrappers.<AdminUser>lambdaQuery()
+                .eq(AdminUser::getPhone, trimmed)
+                .eq(AdminUser::getStatus, 1)
+                .last("limit 1"));
+        if (admin == null) {
+            throw new BizException(ErrorCode.SMS_CODE_INVALID);
+        }
+        smsCodeService.verify(trimmed, StrUtil.trimToEmpty(code));
+        AdminUser update = new AdminUser();
+        update.setId(admin.getId());
+        update.setPassword(passwordEncoder.encode(newPassword));
+        adminUserMapper.updateById(update);
     }
 
     private List<String> expandPerms(List<String> rawPerms) {
