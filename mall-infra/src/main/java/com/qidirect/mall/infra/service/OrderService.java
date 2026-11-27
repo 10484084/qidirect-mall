@@ -191,6 +191,7 @@ public class OrderService {
             payment.setExpireAt(now.plusMinutes(orderTimeoutMinutes()));
             paymentMapper.insert(payment);
         } else {
+            // 全额预存抵扣：业绩与提成已在储值时结算（储值不退），此处不重复计
             insertEvent(order, "ORDER_PAID", "订单已结算，等待发货", depositAmount, 0, 0,
                     3, 0L, null, null);
         }
@@ -325,6 +326,10 @@ public class OrderService {
      */
     public OrderVO cancelForStore(Long storeId, Long orderId) {
         OrderInfo order = requireOwned(storeId, orderId);
+        if (!Objects.equals(order.getStatus(), STATUS_PENDING)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "订单已支付，请在订单详情申请取消退款");
+        }
         cancel(order, 1, 0L);
         return storeDetail(storeId, orderId);
     }
