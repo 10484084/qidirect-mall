@@ -56,6 +56,28 @@ public class AdminRoleService {
                         .toString());
     }
 
+    /**
+     * 删除角色：仍有管理员引用时明确告知，避免删掉后被引用成僵尸权限。
+     */
+    @Transactional
+    public void delete(Long id) {
+        AdminRole role = adminRoleMapper.selectById(id);
+        if (role == null) {
+            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "角色不存在");
+        }
+        Long used = adminUserRoleMapper.selectCount(Wrappers.<AdminUserRole>lambdaQuery()
+                .eq(AdminUserRole::getRoleId, id));
+        if (used != null && used > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
+                    "该角色下还有 " + used + " 个管理员，请先在账号管理中解除关联");
+        }
+        adminUserRoleMapper.delete(Wrappers.<AdminUserRole>lambdaQuery()
+                .eq(AdminUserRole::getRoleId, id));
+        adminRoleMapper.deleteById(id);
+        logOperation(SecurityUtils.currentUserId(), "ROLE_DELETE", id,
+                JSONUtil.createObj().set("name", role.getName()).toString());
+    }
+
     @Transactional
     public void update(Long id, AdminRoleSaveRequest request) {
         AdminRole role = adminRoleMapper.selectById(id);

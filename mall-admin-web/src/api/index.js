@@ -147,7 +147,8 @@ export const adminUserApi = {
 export const roleApi = {
   list: () => get('/roles'),
   create: (data) => post('/roles', data),
-  update: (id, data) => put(`/roles/${id}`, data)
+  update: (id, data) => put(`/roles/${id}`, data),
+  remove: (id) => del(`/roles/${id}`)
 };
 
 export const configApi = {

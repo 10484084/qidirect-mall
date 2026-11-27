@@ -22,9 +22,10 @@
             >{{ permLabel(perm) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link type="danger" @click="remove(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,7 +73,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { roleApi } from '../../api';
 import { PERM_GROUPS, permLabel } from '../../utils/perms';
 
@@ -122,6 +123,19 @@ async function load() {
   } finally {
     loading.value = false;
   }
+}
+
+async function remove(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确认删除角色「${row.name}」？删除后无法恢复。`, '删除角色', { type: 'warning' }
+    );
+  } catch (e) {
+    return;
+  }
+  await roleApi.remove(row.id);
+  ElMessage.success('已删除');
+  load();
 }
 
 function openEdit(row) {
