@@ -259,13 +259,44 @@ public class OrderService {
         if (order == null || !Objects.equals(order.getStatus(), STATUS_CANCELED)) {
             return;
         }
-        log.error("已取消订单收到支付成功结果，需人工核查：orderNo={} payNo={}",
+        log.error("已取消订单收到支付成功结果，准备自动退款：orderNo={} payNo={}",
                 order.getOrderNo(), payment.getPayNo());
-        insertEvent(order, "PAY_ABNORMAL", "订单已取消但支付成功，需人工核查",
+        if (order.getPayTime() == null) {
+            // 回写支付时间，自动退款失败转人工时仍可按正常流程处理
+            orderInfoMapper.update(null, Wrappers.<OrderInfo>lambdaUpdate()
+                    .eq(OrderInfo::getId, order.getId())
+                    .set(OrderInfo::getPayTime, payment.getPaidAt() == null ? LocalDateTime.now() : payment.getPaidAt()));
+        }
+        // 订单已关闭，用户仍完成支付：立即原路退回，避免资金滞留在渠道侧等人工处理
+        String outRefundNo = "AR" + payment.getPayNo();
+        try {
+            PaymentGateway.RefundResult result = paymentGateway.refund(payment, payment.getAmount(), outRefundNo);
+            if (result.success()) {
+                paymentMapper.update(null, Wrappers.<Payment>lambdaUpdate()
+                        .eq(Payment::getId, payment.getId())
+                        .eq(Payment::getStatus, 2)
+                        .set(Payment::getStatus, 3)
+                        .set(Payment::getRefundAt, LocalDateTime.now())
+                        .set(Payment::getRefundAmount, payment.getAmount())
+                        .set(Payment::getRefundNo, StrUtil.blankToDefault(result.refundNo(), outRefundNo))
+                        .set(Payment::getRefundBy, 0L));
+                insertEvent(order, "PAY_ABNORMAL_REFUNDED", "订单已取消但支付成功，已自动原路退款",
+                        payment.getAmount(), 1, 1, 3, 0L,
+                        JSONUtil.toJsonStr(Map.of("payNo", payment.getPayNo(), "refundNo", outRefundNo)), null);
+                noticeService.notifyAdmins("已自动退款",
+                        "订单 " + order.getOrderNo() + " 已取消但收到支付，已自动原路退款",
+                        "PAY_ABNORMAL", order.getOrderNo());
+                return;
+            }
+            log.error("自动退款未成功：orderNo={} msg={}", order.getOrderNo(), result.message());
+        } catch (Exception e) {
+            log.error("自动退款调用异常：orderNo={} err={}", order.getOrderNo(), e.toString());
+        }
+        insertEvent(order, "PAY_ABNORMAL", "订单已取消但支付成功，自动退款失败需人工核查",
                 payment.getAmount(), 1, 1, 3, 0L,
                 JSONUtil.toJsonStr(Map.of("payNo", payment.getPayNo())), null);
         noticeService.notifyAdmins("异常订单待处理",
-                "订单 " + order.getOrderNo() + " 已取消但支付成功，需人工核查",
+                "订单 " + order.getOrderNo() + " 已取消但支付成功，自动退款失败需人工处理",
                 "PAY_ABNORMAL", order.getOrderNo());
     }
 
@@ -399,18 +430,21 @@ public class OrderService {
             return;
         }
 
-        // 事务外调用 4.8 与 4.5；任一步失败均不退预存，等待重试。
+        // 事务外调用 4.8 与 4.5。网关侧失败不阻断本地关单：订单生成后门店未必点过支付，
+        // 此时扫呗并无该笔订单，关单必然失败；若因此退回预存会被长期锁死。
         try {
             paymentGateway.close(prepared);
         } catch (Exception e) {
-            throw new BizException(ErrorCode.PAY_FAILED, "支付关单失败，请稍后重试");
+            log.warn("关单失败，继续查单确认：payNo={} err={}", prepared.getPayNo(), e.getMessage());
         }
-        PaymentGateway.PaymentQueryResult queryResult;
+        PaymentGateway.PaymentQueryResult queried;
         try {
-            queryResult = paymentGateway.query(prepared);
+            queried = paymentGateway.query(prepared);
         } catch (Exception e) {
-            throw new BizException(ErrorCode.PAY_FAILED, "支付查单失败，请稍后重试");
+            log.warn("查单失败，按未支付处理并本地关单：payNo={} err={}", prepared.getPayNo(), e.getMessage());
+            queried = new PaymentGateway.PaymentQueryResult(false, null, null);
         }
+        final PaymentGateway.PaymentQueryResult queryResult = queried;
 
         if (queryResult.paid()) {
             // 查单已支付：支付行锁内补记成功，绝不退预存或取消订单。
