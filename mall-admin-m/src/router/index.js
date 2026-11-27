@@ -69,6 +69,12 @@ const routes = [
     meta: { title: '提现审核' }
   },
   {
+    path: '/invite',
+    name: 'invite',
+    component: () => import('../views/InviteView.vue'),
+    meta: { title: '邀请门店' }
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/ProfileView.vue'),

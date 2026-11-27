@@ -1,39 +1,11 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
-import { storeApi } from '../api';
+import { showConfirmDialog, showSuccessToast } from 'vant';
 import { useUserStore } from '../stores/user';
 
 const router = useRouter();
 const userStore = useUserStore();
-
-const inviteVisible = ref(false);
-const invite = ref(null);
-const inviteLoading = ref(false);
-
-watch(inviteVisible, async (show) => {
-  if (!show || invite.value) return;
-  inviteLoading.value = true;
-  try {
-    invite.value = await storeApi.factoryInviteQr();
-  } catch (e) {
-    invite.value = null;
-  } finally {
-    inviteLoading.value = false;
-  }
-});
-
-async function copyInvite() {
-  const url = invite.value && invite.value.inviteUrl;
-  if (!url) return;
-  try {
-    await navigator.clipboard.writeText(url);
-    showSuccessToast('链接已复制');
-  } catch (e) {
-    showFailToast('复制失败，请长按手动复制');
-  }
-}
 
 const initial = computed(() => (userStore.realName || '管').slice(0, 1).toUpperCase());
 const isSuper = computed(() => userStore.perms.includes('*'));
@@ -90,23 +62,9 @@ async function clearCache() {
 
     <van-cell-group inset class="group">
       <van-cell title="提现审核" is-link to="/withdraws" />
-      <van-cell title="邀请门店" is-link @click="inviteVisible = true" />
+      <van-cell title="邀请门店" is-link to="/invite" />
     </van-cell-group>
 
-    <van-popup v-model:show="inviteVisible" position="bottom" round>
-      <div class="invite-box">
-        <div class="invite-title">邀请门店使用</div>
-        <div class="invite-desc">门店扫码注册，注册后归属本厂家</div>
-        <van-loading v-if="inviteLoading" class="invite-loading" size="22" vertical>生成中...</van-loading>
-        <template v-else-if="invite">
-          <img v-if="invite.qrCode" class="invite-qr" :src="invite.qrCode" alt="邀请二维码" />
-          <div class="invite-url">{{ invite.inviteUrl }}</div>
-          <van-button type="primary" block round @click="copyInvite">复制注册链接</van-button>
-        </template>
-        <van-empty v-else description="生成失败，请重试" />
-        <van-button class="invite-close" plain block round @click="inviteVisible = false">关闭</van-button>
-      </div>
-    </van-popup>
 
     <van-cell-group inset class="group">
       <van-cell title="清除本地缓存" is-link @click="clearCache" />
@@ -121,44 +79,6 @@ async function clearCache() {
 </template>
 
 <style scoped>
-.invite-box {
-  padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
-  text-align: center;
-}
-
-.invite-title {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.invite-desc {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--text-sub);
-}
-
-.invite-loading {
-  padding: 36px 0;
-}
-
-.invite-qr {
-  width: 200px;
-  height: 200px;
-  margin: 16px auto 10px;
-  display: block;
-  border-radius: 10px;
-}
-
-.invite-url {
-  margin-bottom: 16px;
-  font-size: 11px;
-  color: #9aa0a8;
-  word-break: break-all;
-}
-
-.invite-close {
-  margin-top: 10px;
-}
 
 .head {
   display: flex;
