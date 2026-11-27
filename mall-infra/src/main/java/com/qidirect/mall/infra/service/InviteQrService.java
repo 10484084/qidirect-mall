@@ -27,6 +27,22 @@ public class InviteQrService {
         this.baseUrl = baseUrl;
     }
 
+    /**
+     * 厂家邀请第一批门店：不带邀请码的注册链接，注册后门店无上级，直接归厂家。
+     */
+    public InviteQrVO buildFactory() {
+        QrConfig config = new QrConfig(QR_SIZE, QR_SIZE);
+        BufferedImage image = QrCodeUtil.generate(baseUrl, config);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "png", out);
+        } catch (IOException e) {
+            throw new IllegalStateException("邀请二维码生成失败", e);
+        }
+        return new InviteQrVO(0L, "", baseUrl, false,
+                "data:image/png;base64," + Base64.encode(out.toByteArray()));
+    }
+
     public InviteQrVO build(Store store) {
         String inviteUrl = baseUrl + (baseUrl.contains("?") ? "&" : "?")
                 + "inviteCode=" + store.getInviteCode();

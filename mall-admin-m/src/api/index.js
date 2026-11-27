@@ -13,6 +13,7 @@ export const levelApi = {
 };
 
 export const storeApi = {
+  factoryInviteQr: () => get('/stores/invite-qr'),
   page: (params) => get('/stores', params),
   detail: (id) => get(`/stores/${id}`),
   resetPhone: (id, phone) => post(`/stores/${id}/reset-phone`, { phone }),

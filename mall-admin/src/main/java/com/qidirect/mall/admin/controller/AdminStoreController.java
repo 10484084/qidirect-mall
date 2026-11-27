@@ -12,6 +12,7 @@ import com.qidirect.mall.domain.vo.AdminStoreVO;
 import com.qidirect.mall.domain.vo.InviteQrVO;
 import com.qidirect.mall.domain.vo.StoreEventVO;
 import com.qidirect.mall.infra.service.AdminStoreService;
+import com.qidirect.mall.infra.service.InviteQrService;
 import com.qidirect.mall.infra.service.StoreTimelineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class AdminStoreController {
 
     private final AdminStoreService adminStoreService;
     private final StoreTimelineService storeTimelineService;
+    private final InviteQrService inviteQrService;
 
     @GetMapping
     public ApiResponse<PageResult<AdminStoreVO>> page(
@@ -98,6 +100,14 @@ public class AdminStoreController {
                                       @RequestBody(required = false) AdminStoreStatusRequest request) {
         adminStoreService.unfreeze(id, request);
         return ApiResponse.ok();
+    }
+
+    /**
+     * 厂家侧邀请码：注册链接不带邀请码，门店自主注册后成为无上级门店。
+     */
+    @GetMapping("/invite-qr")
+    public ApiResponse<InviteQrVO> factoryInviteQr() {
+        return ApiResponse.ok(inviteQrService.buildFactory());
     }
 
     @GetMapping("/{id}/invite-qr")
