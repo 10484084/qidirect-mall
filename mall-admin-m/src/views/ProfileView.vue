@@ -1,11 +1,55 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { showConfirmDialog, showSuccessToast } from 'vant';
+import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
 import { useUserStore } from '../stores/user';
 
 const router = useRouter();
 const userStore = useUserStore();
+
+const phoneVisible = ref(false);
+const phoneSaving = ref(false);
+const counting = ref(0);
+const phoneForm = reactive({ code: '', newPhone: '' });
+let phoneTimer = null;
+
+const maskedPhone = computed(() => {
+  const p = userStore.phone || '';
+  return p.length === 11 ? p.slice(0, 3) + '****' + p.slice(7) : '未绑定';
+});
+
+function openPhone() {
+  phoneForm.code = '';
+  phoneForm.newPhone = '';
+  phoneVisible.value = true;
+}
+
+async function sendPhoneCode() {
+  await authApi.sendChangePhoneCode();
+  showSuccessToast('验证码已发送到原手机号');
+  counting.value = 60;
+  clearInterval(phoneTimer);
+  phoneTimer = setInterval(() => {
+    counting.value -= 1;
+    if (counting.value <= 0) clearInterval(phoneTimer);
+  }, 1000);
+}
+
+async function doChangePhone() {
+  if (!phoneForm.code || !phoneForm.newPhone) {
+    showFailToast('请填写验证码与新手机号');
+    return;
+  }
+  phoneSaving.value = true;
+  try {
+    await authApi.changePhone({ code: phoneForm.code, newPhone: phoneForm.newPhone });
+    showSuccessToast('手机号已修改');
+    phoneVisible.value = false;
+    userStore.setPhone(phoneForm.newPhone);
+  } finally {
+    phoneSaving.value = false;
+  }
+}
 
 const initial = computed(() => (userStore.realName || '管').slice(0, 1).toUpperCase());
 const isSuper = computed(() => userStore.perms.includes('*'));
@@ -63,6 +107,7 @@ async function clearCache() {
     <van-cell-group inset class="group">
       <van-cell title="提现审核" is-link to="/withdraws" />
       <van-cell title="邀请门店" is-link to="/invite" />
+      <van-cell title="修改手机号" :value="userStore.phone || '未绑定'" is-link @click="openPhone" />
     </van-cell-group>
 
 
@@ -74,11 +119,51 @@ async function clearCache() {
       <van-cell title="退出登录" is-link class="danger-cell" @click="logout" />
     </van-cell-group>
 
+    <van-popup v-model:show="phoneVisible" position="bottom" round>
+      <div class="phone-box">
+        <div class="phone-title">修改手机号</div>
+        <div class="phone-desc">验证码将发送到当前绑定手机号 {{ maskedPhone }}</div>
+        <van-field v-model="phoneForm.code" type="digit" maxlength="6" label="验证码" placeholder="原手机号收到的验证码">
+          <template #button>
+            <van-button size="small" plain type="primary" :disabled="counting > 0" @click="sendPhoneCode">
+              {{ counting > 0 ? counting + 's' : '获取验证码' }}
+            </van-button>
+          </template>
+        </van-field>
+        <van-field v-model="phoneForm.newPhone" type="tel" maxlength="11" label="新手机号" placeholder="请输入新手机号" />
+        <van-button class="phone-btn" type="primary" block round :loading="phoneSaving" @click="doChangePhone">
+          确认修改
+        </van-button>
+        <van-button class="phone-btn" block round plain @click="phoneVisible = false">取消</van-button>
+      </div>
+    </van-popup>
+
     <p class="tip">厂家后台 · 数据 / 商品 / 订单 / 门店 / 提现</p>
   </div>
 </template>
 
 <style scoped>
+.phone-box {
+  padding: 22px 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.phone-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.phone-desc {
+  margin: 6px 0 14px;
+  font-size: 12px;
+  color: var(--text-sub);
+  text-align: center;
+}
+
+.phone-btn {
+  margin-top: 12px;
+}
+
 
 .head {
   display: flex;

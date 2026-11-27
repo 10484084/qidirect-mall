@@ -3,7 +3,9 @@ import { del, get, post, put, uploadFile } from './request';
 export const authApi = {
   login: (data) => post('/auth/login', data),
   sendResetCode: (data) => post('/auth/reset-code', data),
-  resetPassword: (data) => post('/auth/reset-password', data)
+  resetPassword: (data) => post('/auth/reset-password', data),
+  sendChangePhoneCode: () => post('/auth/change-phone/code'),
+  changePhone: (data) => post('/auth/change-phone', data)
 };
 
 export const dashboardApi = {

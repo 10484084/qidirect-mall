@@ -4,6 +4,7 @@ import com.qidirect.mall.common.api.ApiResponse;
 import com.qidirect.mall.domain.dto.store.StoreAuthRequest;
 import com.qidirect.mall.domain.dto.store.StoreBankRequest;
 import com.qidirect.mall.domain.dto.store.StoreProfileUpdateRequest;
+import com.qidirect.mall.domain.dto.auth.ChangePhoneRequest;
 import com.qidirect.mall.domain.vo.InviteQrVO;
 import com.qidirect.mall.domain.vo.OrderEligibilityVO;
 import com.qidirect.mall.domain.vo.StoreProfileVO;
@@ -47,6 +48,19 @@ public class StoreController {
     @PutMapping("/bank")
     public ApiResponse<StoreProfileVO> bindBank(@Valid @RequestBody StoreBankRequest request) {
         return ApiResponse.ok(storeProfileService.bindBank(SecurityUtils.currentStoreId(), request));
+    }
+
+    /** 自助修改绑定手机号：验证码发到原手机号 */
+    @PostMapping("/change-phone/code")
+    public ApiResponse<Void> sendChangePhoneCode() {
+        storeProfileService.sendChangePhoneCode(SecurityUtils.currentStoreId());
+        return ApiResponse.ok();
+    }
+
+    @PutMapping("/change-phone")
+    public ApiResponse<Void> changePhone(@Valid @RequestBody ChangePhoneRequest request) {
+        storeProfileService.changePhone(SecurityUtils.currentStoreId(), request.code(), request.newPhone());
+        return ApiResponse.ok();
     }
 
     @GetMapping("/invite-qr")

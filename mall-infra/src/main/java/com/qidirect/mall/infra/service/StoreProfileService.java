@@ -42,6 +42,7 @@ public class StoreProfileService {
     private final IdentityVerifyGateway identityVerifyGateway;
     private final StoreGuard storeGuard;
     private final InviteQrService inviteQrService;
+    private final SmsCodeService smsCodeService;
     private final DataCipher dataCipher;
 
     public StoreProfileVO profile(Long storeId) {
@@ -172,6 +173,44 @@ public class StoreProfileService {
         }
         storeMapper.update(null, update);
         return profile(storeId);
+    }
+
+    /**
+     * 自助修改绑定手机号：验证码发到当前绑定手机号，校验通过才换绑。
+     * 若登录名与旧手机号相同（默认情况），同步更新登录名，避免改号后无法用新号登录。
+     */
+    public void sendChangePhoneCode(Long storeId) {
+        Store store = storeGuard.requireStore(storeId);
+        if (StrUtil.isBlank(store.getPhone())) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "当前账号未绑定手机号，请联系厂家处理");
+        }
+        smsCodeService.send(store.getPhone());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void changePhone(Long storeId, String code, String newPhone) {
+        Store store = storeGuard.requireStore(storeId);
+        String oldPhone = StrUtil.trimToEmpty(store.getPhone());
+        if (StrUtil.isBlank(oldPhone)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "当前账号未绑定手机号，请联系厂家处理");
+        }
+        String trimmedNew = StrUtil.trimToEmpty(newPhone);
+        if (trimmedNew.equals(oldPhone)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "新手机号与当前手机号相同");
+        }
+        smsCodeService.verify(oldPhone, StrUtil.trimToEmpty(code));
+        Long used = storeMapper.selectCount(Wrappers.<Store>lambdaQuery()
+                .eq(Store::getPhone, trimmedNew));
+        if (used != null && used > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "该手机号已被其他门店使用");
+        }
+        Store patch = new Store();
+        patch.setId(storeId);
+        patch.setPhone(trimmedNew);
+        if (oldPhone.equals(StrUtil.trimToEmpty(store.getUsername()))) {
+            patch.setUsername(trimmedNew);
+        }
+        storeMapper.updateById(patch);
     }
 
     public InviteQrVO inviteQr(Long storeId) {

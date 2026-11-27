@@ -15,6 +15,8 @@ export const storeApi = {
   submitAuth: (data) => post('/store/auth', data),
   bindBank: (data) => put('/store/bank', data),
   inviteQr: () => get('/store/invite-qr'),
+  sendChangePhoneCode: () => post('/store/change-phone/code'),
+  changePhone: (data) => put('/store/change-phone', data),
   eligibility: () => get('/store/order-eligibility')
 };
 

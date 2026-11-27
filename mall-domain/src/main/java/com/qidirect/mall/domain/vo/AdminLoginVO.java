@@ -10,5 +10,6 @@ public record AdminLoginVO(
         Long adminId,
         String account,
         String realName,
+        String phone,
         List<String> perms) {
 }

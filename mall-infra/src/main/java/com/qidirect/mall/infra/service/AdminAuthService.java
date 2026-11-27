@@ -44,7 +44,7 @@ public class AdminAuthService {
         String token = jwtUtil.createToken(UserType.ADMIN, admin.getId(),
                 Map.of(AuthConstants.CLAIM_PERMS, perms));
         return new AdminLoginVO(token, admin.getId(), admin.getAccount(),
-                admin.getRealName(), perms);
+                admin.getRealName(), StrUtil.nullToEmpty(admin.getPhone()), perms);
     }
 
     /**
@@ -79,6 +79,46 @@ public class AdminAuthService {
         AdminUser update = new AdminUser();
         update.setId(admin.getId());
         update.setPassword(passwordEncoder.encode(newPassword));
+        adminUserMapper.updateById(update);
+    }
+
+    /**
+     * 自助修改手机号：先向「当前已绑定手机号」发验证码，校验通过才允许换绑。
+     */
+    public void sendChangePhoneCode(Long adminId) {
+        AdminUser admin = adminUserMapper.selectById(adminId);
+        if (admin == null) {
+            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "账号不存在");
+        }
+        if (StrUtil.isBlank(admin.getPhone())) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "当前账号未绑定手机号，请联系超级管理员处理");
+        }
+        smsCodeService.send(admin.getPhone());
+    }
+
+    public void changePhone(Long adminId, String code, String newPhone) {
+        AdminUser admin = adminUserMapper.selectById(adminId);
+        if (admin == null) {
+            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "账号不存在");
+        }
+        String oldPhone = StrUtil.trimToEmpty(admin.getPhone());
+        if (StrUtil.isBlank(oldPhone)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "当前账号未绑定手机号，请联系超级管理员处理");
+        }
+        String trimmedNew = StrUtil.trimToEmpty(newPhone);
+        if (trimmedNew.equals(oldPhone)) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "新手机号与当前手机号相同");
+        }
+        // 验证码发到原手机号
+        smsCodeService.verify(oldPhone, StrUtil.trimToEmpty(code));
+        Long used = adminUserMapper.selectCount(Wrappers.<AdminUser>lambdaQuery()
+                .eq(AdminUser::getPhone, trimmedNew));
+        if (used != null && used > 0) {
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "该手机号已被其他管理员绑定");
+        }
+        AdminUser update = new AdminUser();
+        update.setId(adminId);
+        update.setPhone(trimmedNew);
         adminUserMapper.updateById(update);
     }
 

@@ -20,9 +20,15 @@ export const useUserStore = defineStore('user', {
     perms: (state) => (state.profile && state.profile.perms) || [],
     realName: (state) => (state.profile && (state.profile.realName || state.profile.account)) || '',
     account: (state) => (state.profile && state.profile.account) || '',
+    phone: (state) => (state.profile && state.profile.phone) || '',
     lastAccount: () => getLastAccount()
   },
   actions: {
+    setPhone(phone) {
+      if (!this.profile) this.profile = {};
+      this.profile = { ...this.profile, phone };
+      setProfileCache(this.profile);
+    },
     hasPerm(perm) {
       if (!perm) return true;
       const list = this.perms;
@@ -35,6 +41,7 @@ export const useUserStore = defineStore('user', {
         adminId: data.adminId,
         account: data.account,
         realName: data.realName,
+        phone: data.phone || '',
         perms: data.perms || []
       };
       setToken(data.token);
