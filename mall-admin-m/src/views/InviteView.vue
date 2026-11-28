@@ -65,20 +65,11 @@ async function savePoster() {
         <div ref="posterRef" class="poster">
           <div class="poster-top">
             <img class="poster-logo" :src="logoUrl" alt="发士莲" />
-            <div class="poster-slogan">诚邀您加入发士莲经销网络</div>
-            <div class="poster-sub">扫码注册 · 即刻开店</div>
+            <div class="poster-slogan">欢迎您加入发士莲草本养发</div>
           </div>
 
           <div class="poster-card">
-            <div class="poster-inviter">发士莲 · 厂家直招</div>
             <img class="poster-qr" :src="qr.qrCode" alt="注册二维码" />
-            <div class="poster-hint">微信扫码注册，完成加盟后即可订货</div>
-          </div>
-
-          <div class="poster-benefits">
-            <div class="benefit"><span class="dot"></span>厂家直供价格</div>
-            <div class="benefit"><span class="dot"></span>预存享更高性价比</div>
-            <div class="benefit"><span class="dot"></span>推荐下级拿两级提成</div>
           </div>
 
           <div class="poster-foot">
@@ -122,7 +113,7 @@ async function savePoster() {
 
 .poster {
   position: relative;
-  padding: 28px 20px 22px;
+  padding: 34px 20px 26px;
   border-radius: 20px;
   background: linear-gradient(160deg, #326940 0%, #245234 58%, #1c4429 100%);
   box-shadow: 0 12px 32px rgba(36, 82, 52, 0.28);
@@ -154,77 +145,38 @@ async function savePoster() {
 }
 
 .poster-slogan {
-  margin-top: 14px;
+  margin-top: 20px;
   font-size: 19px;
   font-weight: 700;
   letter-spacing: 1px;
 }
 
-.poster-sub {
-  margin-top: 6px;
-  font-size: 12px;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.68);
-}
 
 .poster-card {
   position: relative;
-  margin-top: 18px;
-  padding: 16px 16px 14px;
+  margin-top: 26px;
+  padding: 20px;
   background: #fff;
   border-radius: 16px;
   text-align: center;
 }
 
-.poster-inviter {
-  font-size: 13px;
-  font-weight: 600;
-  color: #326940;
-}
 
 .poster-qr {
-  width: 168px;
-  height: 168px;
-  margin: 12px auto 0;
+  width: 192px;
+  height: 192px;
+  margin: 0 auto;
   display: block;
   border-radius: 10px;
 }
 
-.poster-hint {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #8a9099;
-  line-height: 1.5;
-}
 
-.poster-benefits {
-  position: relative;
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 6px;
-}
 
-.benefit {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.88);
-}
 
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #90c156;
-  flex-shrink: 0;
-}
 
 .poster-foot {
   position: relative;
-  margin-top: 18px;
+  margin-top: 26px;
   text-align: center;
   color: rgba(255, 255, 255, 0.6);
 }
