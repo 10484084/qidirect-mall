@@ -39,7 +39,9 @@ export const OFFLINE_METHOD_OPTIONS = Object.entries(OFFLINE_METHOD).map(([value
 
 export const BIZ_TYPE = {
   JOIN: '开通',
+  UPGRADE: '升档补差',
   RECHARGE: '预存',
+  OFFLINE: '线下收款',
   ORDER: '商品订单'
 };
 export const BIZ_TYPE_OPTIONS = Object.entries(BIZ_TYPE).map(([value, label]) => ({

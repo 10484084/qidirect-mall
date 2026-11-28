@@ -562,7 +562,8 @@ public class OrderService {
                         .orderByAsc(OrderItem::getId))
                 .stream().map(this::toItemVO).toList() : List.of();
         return new OrderVO(order.getId(), order.getOrderNo(), order.getStoreId(),
-                store == null ? null : store.getName(), store == null ? null : store.getPhone(),
+                store == null ? null : StrUtil.blankToDefault(store.getName(), store.getNickname()),
+                store == null ? null : store.getPhone(),
                 order.getTotalAmount(), order.getDepositAmount(), order.getOnlineAmount(), order.getStatus(),
                 order.getReceiverName(), order.getReceiverPhone(), order.getReceiverAddr(),
                 order.getShipType(), order.getShipCompany(), order.getShipNo(),

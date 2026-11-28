@@ -119,7 +119,7 @@ public class CommissionService {
         }
         StoreLevel level = store.getLevelId() == null || store.getLevelId() == 0
                 ? null : storeLevelMapper.selectById(store.getLevelId());
-        return new CommissionStoreDetailVO(storeId, store.getName(),
+        return new CommissionStoreDetailVO(storeId, StrUtil.blankToDefault(store.getName(), store.getNickname()),
                 level == null ? "未开通" : level.getName(), total, level1, level2, (long) records.size());
     }
 

@@ -570,7 +570,8 @@ public class PerformanceService {
     private PerformanceRecordVO toRecordVO(PerformanceRecord record) {
         Store store = storeMapper.selectById(record.getStoreId());
         return new PerformanceRecordVO(record.getId(), record.getStoreId(),
-                store == null ? "" : store.getName(), record.getMonth(), record.getAmount(),
+                store == null ? "" : StrUtil.blankToDefault(store.getName(), store.getNickname()),
+                record.getMonth(), record.getAmount(),
                 record.getBizType(), record.getBizNo(), record.getSource(), record.getOperatorId(),
                 record.getRemark(), record.getCreatedAt());
     }
@@ -578,7 +579,8 @@ public class PerformanceService {
     private PerformanceBonusVO toBonusVO(PerformanceBonus bonus) {
         Store store = storeMapper.selectById(bonus.getStoreId());
         return new PerformanceBonusVO(bonus.getId(), bonus.getStoreId(),
-                store == null ? "" : store.getName(), bonus.getMonth(), bonus.getPerformance(),
+                store == null ? "" : StrUtil.blankToDefault(store.getName(), store.getNickname()),
+                bonus.getMonth(), bonus.getPerformance(),
                 bonus.getRuleId(), bonus.getRate(), bonus.getBonusAmount(), bonus.getStatus(),
                 bonus.getRevisionOf(), bonus.getSettledAt(), bonus.getCreatedAt());
     }
