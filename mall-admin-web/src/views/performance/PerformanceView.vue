@@ -123,6 +123,16 @@
                 <span v-else-if="row.revisionOf" class="text-muted">冲正记录</span>
               </template>
             </el-table-column>
+            <template #empty>
+              <div class="empty-tip">
+                <div class="empty-tip__main">
+                  {{ bonusEmptyHint }}
+                </div>
+                <div class="empty-tip__sub">
+                  月结奖金需先执行结算：点上方「执行月结」，或等到每月结算日自动执行（结算日可在「系统 → 配置」中调整）。
+                </div>
+              </div>
+            </template>
           </el-table>
           <div class="pager">
             <el-pagination
@@ -211,7 +221,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import StoreSelect from '../../components/StoreSelect.vue';
 import { performanceApi } from '../../api';
@@ -236,6 +246,13 @@ const bonuses = ref([]);
 const bonusTotal = ref(0);
 const bonusLoading = ref(false);
 const bonusQuery = reactive({ storeId: null, month: '', page: 1, size: 20 });
+
+// 空表时说明当前筛选范围，避免「查不到」和「没结算」混淆
+const bonusEmptyHint = computed(() => {
+  const scope = bonusQuery.storeId ? '所选门店' : '全部门店';
+  const month = bonusQuery.month || '全部月份';
+  return `当前筛选（${scope} · ${month}）没有月结记录`;
+});
 
 const adjustVisible = ref(false);
 const adjustForm = reactive({ storeId: null, month: '', amountYuan: 0, remark: '' });
