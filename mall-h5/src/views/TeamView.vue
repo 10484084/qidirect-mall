@@ -29,11 +29,11 @@
             <div class="info">
               <div class="name">
                 {{ member.name || member.phone }}
-                <van-tag v-if="!member.joined" plain>未加盟</van-tag>
+                <van-tag v-if="!member.joined" plain>未开通</van-tag>
                 <van-tag v-else type="primary" plain>{{ member.levelName || `档位 ${member.levelId}` }}</van-tag>
               </div>
               <div class="muted small">{{ member.phone }}</div>
-              <div class="muted small">{{ member.joinTime ? `加盟于 ${formatTime(member.joinTime)}` : '尚未加盟' }}</div>
+              <div class="muted small">{{ member.joinTime ? `开通于 ${formatTime(member.joinTime)}` : '尚未开通' }}</div>
             </div>
             <div class="right">
               <span v-if="member.childCount > 0" class="muted small">{{ member.childCount }} 个下级</span>

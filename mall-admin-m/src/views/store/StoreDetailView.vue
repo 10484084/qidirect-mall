@@ -141,7 +141,7 @@ onMounted(load);
         </div>
         <div class="row">
           <span class="muted">上级：{{ profile.parentName || '无' }}</span>
-          <span class="muted">{{ profile.levelName || '未加盟' }}</span>
+          <span class="muted">{{ profile.levelName || '未开通' }}</span>
         </div>
         <div class="row">
           <span class="muted">邀请码：{{ profile.inviteCode || '-' }}</span>

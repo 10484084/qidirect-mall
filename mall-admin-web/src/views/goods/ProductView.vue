@@ -138,7 +138,15 @@ function emptySku(isBase = false) {
 }
 
 function emptyGiftRule() {
-  return { id: null, thresholdQty: 1, thresholdSpecName: '__base__', giftQty: 1, specName: '__base__' };
+  const firstLevel = sortedLevels.value[0];
+  return {
+    id: null,
+    levelId: firstLevel ? firstLevel.id : 0,
+    thresholdQty: 1,
+    thresholdSpecName: '__base__',
+    giftQty: 1,
+    specName: '__base__'
+  };
 }
 
 function addGiftRule() {
@@ -227,6 +235,7 @@ async function loadGiftRule(productId) {
           : skus.find((sku) => sku.id === r.thresholdSkuId);
         return {
           id: r.id,
+          levelId: r.levelId || 0,
           thresholdQty: r.thresholdQty,
           thresholdSpecName: thresholdSku ? (thresholdSku.isBase ? '__base__' : thresholdSku.specName) : '__base__',
           giftQty: r.giftQty,
@@ -399,6 +408,7 @@ async function saveGiftRule(saved) {
     }
     const payload = {
       productId: saved.id,
+      levelId: Number(rule.levelId) || 0,
       thresholdSkuId: thresholdTarget.id,
       giftSkuId: target.id,
       thresholdQty: Number(rule.thresholdQty) || 1,
@@ -561,7 +571,7 @@ onMounted(async () => {
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="是否参与5万档买赠" label-width="150px">
+            <el-form-item label="是否参与买赠" label-width="130px">
               <el-switch v-model="form.v3GiftEnabled" :active-value="1" :inactive-value="0" />
             </el-form-item>
           </el-col>
@@ -573,6 +583,9 @@ onMounted(async () => {
             <el-button link type="primary" @click="addGiftRule">+ 新增规则</el-button>
           </div>
           <div v-for="(rule, idx) in giftRules" :key="idx" class="gift-row">
+            <el-select v-model="rule.levelId" class="gift-level" placeholder="档位">
+              <el-option v-for="lv in sortedLevels" :key="lv.id" :label="lv.name" :value="lv.id" />
+            </el-select>
             <span class="gift-row__label">买</span>
             <el-input v-model="rule.thresholdQty" class="gift-qty" placeholder="数量" />
             <el-select v-model="rule.thresholdSpecName" class="gift-spec" placeholder="规格">
@@ -586,7 +599,7 @@ onMounted(async () => {
             <el-button link type="danger" @click="removeGiftRule(idx)">删除</el-button>
           </div>
           <div v-if="!giftRules.length" class="gift-box__empty">尚未添加规则，点击右上角「+ 新增规则」</div>
-          <p class="gift-box__tip">门槛规格会按换算关系折算成主单位后与购买量比较；配置多条时，按已达成的最高门槛执行。例：买 2 箱（20 瓶）送 1 瓶。</p>
+          <p class="gift-box__tip">每个档位可配置独立规则：体验店、旗舰店、服务商各配各的，赠品与门槛可以不同。同一档位配多条时按已达成的最高门槛执行。买赠仅对使用预存余额支付的订单生效，余额为 0 全额在线支付不参与。</p>
         </el-card>
 
         <div class="media-row">
@@ -794,6 +807,11 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.gift-level {
+  width: 110px;
+  margin-right: 6px;
 }
 
 .gift-row {

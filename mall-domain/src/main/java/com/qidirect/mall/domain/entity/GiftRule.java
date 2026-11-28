@@ -22,6 +22,9 @@ public class GiftRule {
 
     private Long productId;
 
+    /** 适用档位；0 表示所有已开通档位通用 */
+    private Long levelId;
+
     /** 门槛单位规格；0 表示主单位 */
     private Long thresholdSkuId;
 

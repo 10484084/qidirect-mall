@@ -74,10 +74,10 @@ async function savePoster() {
       <template v-else>
         <div v-if="!joined" class="locked-card">
           <van-icon name="qr" size="42" color="#9aa4b2" />
-          <div class="locked-title">加盟后可生成邀请二维码</div>
-          <div class="locked-desc">邀请下级加盟，可获得两级提成与团队业绩奖</div>
+          <div class="locked-title">开通后可生成邀请二维码</div>
+          <div class="locked-desc">邀请下级开通，可获得两级提成与团队业绩奖</div>
           <van-button class="mt-14" type="primary" round size="small" @click="$router.push('/purchase')">
-            去加盟
+            去开通
           </van-button>
         </div>
 

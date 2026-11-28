@@ -153,7 +153,7 @@ onActivated(() => {
 
           <div class="row meta">
             <span class="muted ellipsis">上级：{{ store.parentName || '无' }}</span>
-            <span class="tag-text tag-gray">{{ store.levelName || '未加盟' }}</span>
+            <span class="tag-text tag-gray">{{ store.levelName || '未开通' }}</span>
           </div>
 
           <div class="row">
@@ -161,7 +161,7 @@ onActivated(() => {
               实名 {{ authLabel(store.authStatus) }}
               <span v-if="store.duplicateFlag" class="dup">· 疑似重复</span>
             </span>
-            <span v-if="store.levelPaidAmount" class="muted">加盟 ¥{{ fen2yuan(store.levelPaidAmount) }}</span>
+            <span v-if="store.levelPaidAmount" class="muted">开通 ¥{{ fen2yuan(store.levelPaidAmount) }}</span>
           </div>
 
           <div class="row">

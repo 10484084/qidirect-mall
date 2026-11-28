@@ -84,7 +84,7 @@ public class TeamService {
                 StrUtil.nullToEmpty(store.getAvatar()),
                 store.getLevelId() == null ? 0L : store.getLevelId(),
                 store.getLevelId() == null || store.getLevelId() == 0
-                        ? "未加盟" : (level == null ? "" : level.getName()),
+                        ? "未开通" : (level == null ? "" : level.getName()),
                 joined,
                 store.getStatus(),
                 store.getJoinTime(),

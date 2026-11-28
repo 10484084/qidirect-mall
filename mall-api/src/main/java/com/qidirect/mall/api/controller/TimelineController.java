@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 门店端统一时间线：加盟 / 预存 / 订货 / 提成 / 业绩 / 提现。
+ * 门店端统一时间线：开通 / 预存 / 订货 / 提成 / 业绩 / 提现。
  */
 @RestController
 @RequestMapping("/events")

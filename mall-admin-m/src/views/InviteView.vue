@@ -86,7 +86,7 @@ async function savePoster() {
 
         <div class="tips">
           <van-icon name="info-o" />
-          <span>保存图片后可直接转发给门店老板；对方扫码注册后归属本厂家，需在后台完成加盟才能下单</span>
+          <span>保存图片后可直接转发给门店老板；对方扫码注册后归属本厂家，需在后台完成开通才能下单</span>
         </div>
       </template>
 

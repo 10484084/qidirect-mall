@@ -133,7 +133,7 @@ function guard() {
     return false;
   }
   if (!user.joined) {
-    showToast('请先加盟后下单');
+    showToast('请先开通后下单');
     router.push('/purchase');
     return false;
   }

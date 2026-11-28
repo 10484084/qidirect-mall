@@ -71,7 +71,7 @@ async function submitProxy() {
       ...proxyForm,
       receivedAt: proxyForm.receivedAt || null
     });
-    ElMessage.success('代客加盟已下单');
+    ElMessage.success('代客开通已下单');
   } finally {
     submitting.value = false;
   }
@@ -109,24 +109,24 @@ onMounted(async () => {
         type="info"
         :closable="false"
         show-icon
-        title="未储值门店可用「代客加盟」直接开通档位；已储值门店的升级/续费请用「线下收款」登记。"
+        title="未储值门店可用「代客开通」直接开通档位；已储值门店的升级/续费请用「线下收款」登记。"
         class="mb16"
       />
       <el-tabs v-model="tab">
-        <el-tab-pane label="代客加盟" name="proxy">
+        <el-tab-pane label="代客开通" name="proxy">
           <el-form ref="proxyFormRef" :model="proxyForm" label-width="120px" class="form">
             <el-form-item label="门店" prop="storeId" :rules="[{ required: true, message: '请选择门店' }]">
               <div style="width: 320px">
                 <StoreSelect v-model="proxyForm.storeId" @change="onStoreChange" />
               </div>
               <div v-if="storeInfo" class="store-tip">
-                当前档位：{{ storeInfo.profile.levelName || '未加盟' }}
+                当前档位：{{ storeInfo.profile.levelName || '未开通' }}
                 <span v-if="storeInfo.profile.levelId" class="text-danger">
-                  （已加盟门店请改用线下收款）
+                  （已开通门店请改用线下收款）
                 </span>
               </div>
             </el-form-item>
-            <el-form-item label="加盟档位" prop="levelId" :rules="[{ required: true, message: '请选择档位' }]">
+            <el-form-item label="开通档位" prop="levelId" :rules="[{ required: true, message: '请选择档位' }]">
               <el-select v-model="proxyForm.levelId" placeholder="请选择档位" style="width: 320px">
                 <el-option
                   v-for="l in levels"
@@ -180,7 +180,7 @@ onMounted(async () => {
               <el-input v-model="proxyForm.remark" type="textarea" :rows="2" style="width: 480px" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="submitting" @click="submitProxy">提交代客加盟</el-button>
+              <el-button type="primary" :loading="submitting" @click="submitProxy">提交代客开通</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -192,7 +192,7 @@ onMounted(async () => {
                 <StoreSelect v-model="collectForm.storeId" @change="onStoreChange" />
               </div>
               <div v-if="storeInfo" class="store-tip">
-                当前档位：{{ storeInfo.profile.levelName || '未加盟' }}
+                当前档位：{{ storeInfo.profile.levelName || '未开通' }}
               </div>
             </el-form-item>
             <el-form-item label="收款档位/金额" prop="levelId" :rules="[{ required: true, message: '请选择档位' }]">

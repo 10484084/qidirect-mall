@@ -58,7 +58,7 @@ export function withdrawStatusType(status) {
 
 export function actionText(action) {
   return {
-    JOIN: '首次加盟',
+    JOIN: '首次开通',
     UPGRADE: '窗口期补差',
     RECHARGE: '全额预存'
   }[action] || action;
@@ -66,7 +66,7 @@ export function actionText(action) {
 
 export function bizTypeText(bizType) {
   return {
-    JOIN: '加盟',
+    JOIN: '开通',
     UPGRADE: '补差升档',
     RECHARGE: '预存',
     ORDER_BALANCE: '订单抵扣',
@@ -83,7 +83,7 @@ export function bizTypeText(bizType) {
 
 export function eventTypeText(type) {
   return {
-    JOIN: '加盟成功',
+    JOIN: '开通成功',
     UPGRADE: '升档成功',
     RECHARGE: '预存成功',
     ORDER: '订单创建',
@@ -92,7 +92,7 @@ export function eventTypeText(type) {
     PAY_ABNORMAL: '支付异常',
     LEVEL_CHANGE: '档位变更',
     ADJUST: '余额调整',
-    JOIN_PAID: '加盟成功',
+    JOIN_PAID: '开通成功',
     UPGRADE_PAID: '升档成功',
     RECHARGE_PAID: '预存成功',
     OFFLINE_PAID: '线下收款',
@@ -112,7 +112,7 @@ export function eventTypeText(type) {
     STORE_FREEZE: '门店冻结',
     STORE_UNFREEZE: '门店解冻',
     PAY_ABNORMAL: '支付异常',
-    JOIN: '加盟',
+    JOIN: '开通',
     RECHARGE: '预存',
     ORDER: '订货',
     BONUS: '业绩',

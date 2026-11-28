@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 后台代客加盟与已加盟门店线下收款。
+ * 后台代客开通与已开通门店线下收款。
  */
 @RestController
 @RequestMapping("/purchase")

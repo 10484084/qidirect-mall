@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * 门店状态守卫：未实名、未加盟、冻结均不能下单。
+ * 门店状态守卫：未实名、未开通、冻结均不能下单。
  */
 @Service
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class StoreGuard {
     }
 
     /**
-     * 加盟、升级、预存等购买行为：已实名且未冻结即可，未加盟门店可走加盟单。
+     * 开通、升级、预存等购买行为：已实名且未冻结即可，未开通门店可走开通单。
      */
     public Store assertCanPurchase(Long storeId) {
         Store store = requireStore(storeId);
@@ -44,7 +44,7 @@ public class StoreGuard {
     }
 
     /**
-     * 订货：需已实名且已加盟。
+     * 订货：需已实名且已开通。
      */
     public Store assertCanOrder(Long storeId) {
         Store store = assertCanPurchase(storeId);

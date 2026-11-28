@@ -52,8 +52,8 @@ import java.util.Objects;
 import java.util.Map;
 
 /**
- * 统一购买：加盟 / 补差升级 / 预存，三条路径由判定表决定。
- * 加盟费、补差与预存款在支付成功后全额转入预存余额；补差与超期升档规则见 spec 3.3。
+ * 统一购买：开通 / 补差升级 / 预存，三条路径由判定表决定。
+ * 开通费、补差与预存款在支付成功后全额转入预存余额；补差与超期升档规则见 spec 3.3。
  */
 @Slf4j
 @Service
@@ -112,7 +112,7 @@ public class PurchaseService {
         PathDecision decision = decide(store, level, now);
         String description;
         if (WalletBizType.JOIN.name().equals(decision.action())) {
-            description = "首次加盟，全额收款";
+            description = "首次开通，全额收款";
         } else if (WalletBizType.UPGRADE.name().equals(decision.action())) {
             description = "窗口期内升级，仅支付差额";
         } else {
@@ -227,7 +227,7 @@ public class PurchaseService {
     }
 
     /**
-     * 超时关单查单确认未支付后取消加盟/补差/预存单，返回是否成功取消。
+     * 超时关单查单确认未支付后取消开通/补差/预存单，返回是否成功取消。
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public boolean cancelUnpaid(Long paymentId) {
@@ -276,7 +276,7 @@ public class PurchaseService {
         storeGuard.assertNotFrozen(store);
         if (store.getLevelId() != null && store.getLevelId() > 0) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
-                    "门店已加盟，只能走线下收款或预存/升级");
+                    "门店已开通，只能走线下收款或预存/升级");
         }
         StoreLevel level = storeLevelService.requireLevel(request.levelId());
         Agreement agreement = agreementService.requireActive();
@@ -291,7 +291,7 @@ public class PurchaseService {
         PathDecision decision = new PathDecision(WalletBizType.JOIN.name(), level.getFee(), level);
         PaidContext context = new PaidContext(WalletSource.OFFLINE,
                 jsonArray(request.proofImages()), operatorId,
-                StrUtil.blankToDefault(request.remark(), "代客加盟"),
+                StrUtil.blankToDefault(request.remark(), "代客开通"),
                 SIGN_PAPER, jsonArray(request.agreementImages()), ip, agreement);
         CreatedOrder created = createOrder(store, level, decision, null,
                 CHANNEL_OFFLINE, request.offlineMethod(), receivedAt, context);
@@ -299,14 +299,14 @@ public class PurchaseService {
     }
 
     /**
-     * 已加盟门店线下收款：金额由判定表计算，后台只读。
+     * 已开通门店线下收款：金额由判定表计算，后台只读。
      */
     @Transactional
     public PurchaseOrderVO offlineCollect(OfflineCollectRequest request, Long operatorId, String ip) {
         Store store = storeGuard.requireStore(request.storeId());
         storeGuard.assertNotFrozen(store);
         if (store.getLevelId() == null || store.getLevelId() == 0) {
-            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "未加盟门店请使用代客加盟");
+            throw new BizException(ErrorCode.PARAM_ERROR.getCode(), "未开通门店请使用代客开通");
         }
         StoreLevel level = storeLevelService.requireLevel(request.levelId());
         validateOfflineMethod(request.offlineMethod());
@@ -541,7 +541,7 @@ public class PurchaseService {
     private void applyJoinPaid(Payment payment, PaidContext context) {
         JoinOrder order = joinOrderMapper.selectById(payment.getBizId());
         if (order == null) {
-            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "加盟单不存在");
+            throw new BizException(ErrorCode.NOT_FOUND.getCode(), "开通单不存在");
         }
         LocalDateTime paidAt = payment.getPaidAt() == null ? LocalDateTime.now() : payment.getPaidAt();
         int claimed = joinOrderMapper.update(null, Wrappers.<JoinOrder>lambdaUpdate()
@@ -577,7 +577,7 @@ public class PurchaseService {
         walletService.creditDeposit(store.getId(), order.getAmount(), walletBiz, order.getOrderNo(),
                 context.source(), context.proofImages(), context.operatorId(), context.remark());
 
-        String title = WalletBizType.UPGRADE.name().equals(payment.getBizType()) ? "补差升档成功" : "加盟成功";
+        String title = WalletBizType.UPGRADE.name().equals(payment.getBizType()) ? "补差升档成功" : "开通成功";
         insertEvent(store.getId(), payment.getBizType(), order.getOrderNo(), title, order.getAmount(),
                 context, Map.of("levelId", target.getId(), "beforeLevelId", order.getBeforeLevelId()));
         noticeService.notifyStore(store.getId(), title,

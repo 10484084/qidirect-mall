@@ -103,7 +103,7 @@ public class AdminStoreService {
         List<AdminStoreVO> records = stores.stream()
                 .map(store -> new AdminStoreVO(store.getId(), store.getName(), store.getNickname(),
                         store.getPhone(), store.getParentId(), parentNames.getOrDefault(store.getParentId(), ""),
-                        store.getPath(), store.getLevelId(), levelNames.getOrDefault(store.getLevelId(), "未加盟"),
+                        store.getPath(), store.getLevelId(), levelNames.getOrDefault(store.getLevelId(), "未开通"),
                         store.getLevelPaidAmount(), store.getStatus(), store.getAuthStatus(),
                         store.getDuplicateFlag(), store.getInviteCode(), store.getJoinTime(),
                         store.getCreatedAt()))
@@ -136,7 +136,7 @@ public class AdminStoreService {
         return children.stream()
                 .map(store -> new AdminStoreNodeVO(store.getId(), store.getName(), store.getNickname(),
                         store.getPhone(), store.getParentId(), store.getPath(), store.getLevelId(),
-                        levelNames.getOrDefault(store.getLevelId(), "未加盟"), store.getStatus(),
+                        levelNames.getOrDefault(store.getLevelId(), "未开通"), store.getStatus(),
                         counts.getOrDefault(store.getId(), 0L)))
                 .toList();
     }
@@ -158,7 +158,7 @@ public class AdminStoreService {
     }
 
     /**
-     * 后台新增门店：生成邀请码、路径与钱包，等待门店实名与加盟。
+     * 后台新增门店：生成邀请码、路径与钱包，等待门店实名与开通。
      */
     @Transactional
     public Long create(AdminStoreCreateRequest request) {
@@ -556,7 +556,7 @@ public class AdminStoreService {
     }
 
     /**
-     * 是否已产生实收：加盟/升级后 join_time 或 level_paid_amount 会有值。
+     * 是否已产生实收：开通/升级后 join_time 或 level_paid_amount 会有值。
      */
     private boolean hasRealReceipt(Store store) {
         return store.getJoinTime() != null

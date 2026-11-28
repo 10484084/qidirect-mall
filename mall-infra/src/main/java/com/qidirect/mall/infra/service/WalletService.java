@@ -66,7 +66,7 @@ public class WalletService {
     }
 
     /**
-     * 预存入账（加盟、预存、线下收款、订单退回等）。
+     * 预存入账（开通、预存、线下收款、订单退回等）。
      */
     @Transactional
     public long creditDeposit(Long storeId, long amount, WalletBizType bizType, String bizNo,

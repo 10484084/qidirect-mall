@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 门店时间线：按加盟 / 预存 / 订货 / 提成 / 业绩 / 提现归类筛选，门店端强制只能看自己。
+ * 门店时间线：按开通 / 预存 / 订货 / 提成 / 业绩 / 提现归类筛选，门店端强制只能看自己。
  */
 @Service
 @RequiredArgsConstructor

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 门店端统一购买：档位选项、协议正文、创建加盟/补差/预存单。
+ * 门店端统一购买：档位选项、协议正文、创建开通/补差/预存单。
  */
 @RestController
 @RequestMapping("/purchase")

@@ -146,10 +146,10 @@ public class StoreLevelService {
     }
 
     /**
-     * 非最高档位禁止开启专属权益。
+     * 非最高档位禁止开启长期提成与团队奖励；买赠按档位在商品档案中独立配置，不受档位高低限制。
      */
     private void validateBenefitSwitch(Integer sort, Long excludeId, LevelSaveRequest request) {
-        if (flag(request.longTerm()) == 0 && flag(request.hasBonus()) == 0 && flag(request.hasGift()) == 0) {
+        if (flag(request.longTerm()) == 0 && flag(request.hasBonus()) == 0) {
             return;
         }
         Long higher = storeLevelMapper.selectCount(Wrappers.<StoreLevel>lambdaQuery()
@@ -157,7 +157,7 @@ public class StoreLevelService {
                 .ne(excludeId != null, StoreLevel::getId, excludeId));
         if (higher != null && higher > 0) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
-                    "非最高档位不能开启长期提成、业绩奖或买赠");
+                    "非最高档位不能开启长期提成或团队奖励");
         }
     }
 
@@ -169,11 +169,10 @@ public class StoreLevelService {
                 .lt(StoreLevel::getSort, sort)
                 .ne(excludeId != null, StoreLevel::getId, excludeId)
                 .and(wrapper -> wrapper.eq(StoreLevel::getLongTerm, 1)
-                        .or().eq(StoreLevel::getHasBonus, 1)
-                        .or().eq(StoreLevel::getHasGift, 1)));
+                        .or().eq(StoreLevel::getHasBonus, 1)));
         if (count != null && count > 0) {
             throw new BizException(ErrorCode.PARAM_ERROR.getCode(),
-                    "存在非最高档位已开启专属权益，请先关闭后再调整排序");
+                    "存在非最高档位已开启长期提成或团队奖励，请先关闭后再调整排序");
         }
     }
 

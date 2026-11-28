@@ -28,7 +28,8 @@ import java.util.Objects;
 
 /**
  * 买赠规则：任一时刻同一商品仅一条 enabled=1；启用新规则时同事务先停用旧规则。
- * 赠品按「实付瓶数 / 门槛 × 赠送瓶数」向下取整，仅最高档位（has_gift=1）且商品开启 V3 买赠时生效。
+ * 规则按档位独立配置（level_id=0 为通用），赠品按「实付瓶数 / 门槛 × 赠送瓶数」向下取整。
+ * 仅当订单使用了预存余额抵扣时才计算赠品，纯在线支付不参与。
  */
 @Service
 @RequiredArgsConstructor
@@ -62,7 +63,7 @@ public class GiftRuleService {
         GiftRule rule = requireRule(id);
         if (enabled) {
             assertNotFuture(rule.getStartTime());
-            disableOthers(rule.getProductId(), rule.getId());
+            disableOthers(rule.getProductId(), rule.getLevelId(), rule.getId());
             rule.setEnabled(1);
         } else {
             rule.setEnabled(0);
@@ -84,7 +85,7 @@ public class GiftRuleService {
         if (!giftAllowed(store) || !Objects.equals(product.getV3GiftEnabled(), 1)) {
             return null;
         }
-        GiftRule rule = activeRule(product.getId(), LocalDateTime.now());
+        GiftRule rule = activeRule(product.getId(), store.getLevelId(), LocalDateTime.now());
         return rule == null ? null : toVO(rule);
     }
 
@@ -106,7 +107,7 @@ public class GiftRuleService {
             if (product == null || !Objects.equals(product.getV3GiftEnabled(), 1)) {
                 continue;
             }
-            List<GiftRule> rules = activeRules(product.getId(), now);
+            List<GiftRule> rules = activeRules(product.getId(), store.getLevelId(), now);
             if (rules.isEmpty()) {
                 continue;
             }
@@ -161,7 +162,9 @@ public class GiftRuleService {
         }
 
         GiftRule rule = id == null ? new GiftRule() : requireRule(id);
+        Long levelId = request.levelId() == null ? 0L : request.levelId();
         rule.setProductId(product.getId());
+        rule.setLevelId(levelId);
         rule.setThresholdSkuId(thresholdSkuId);
         rule.setGiftSkuId(request.giftSkuId());
         rule.setThresholdQty(request.thresholdQty());
@@ -187,9 +190,10 @@ public class GiftRuleService {
         }
     }
 
-    private void disableOthers(Long productId, Long excludeId) {
+    private void disableOthers(Long productId, Long levelId, Long excludeId) {
         giftRuleMapper.update(null, Wrappers.<GiftRule>lambdaUpdate()
                 .eq(GiftRule::getProductId, productId)
+                .eq(GiftRule::getLevelId, levelId == null ? 0L : levelId)
                 .eq(GiftRule::getEnabled, 1)
                 .ne(excludeId != null, GiftRule::getId, excludeId)
                 .set(GiftRule::getEnabled, 0));
@@ -198,10 +202,12 @@ public class GiftRuleService {
     /**
      * 商品当前生效的买赠规则（可配置多条阶梯规则）。
      */
-    private List<GiftRule> activeRules(Long productId, LocalDateTime now) {
+    private List<GiftRule> activeRules(Long productId, Long levelId, LocalDateTime now) {
+        Long lv = levelId == null ? 0L : levelId;
         return giftRuleMapper.selectList(Wrappers.<GiftRule>lambdaQuery()
                         .eq(GiftRule::getProductId, productId)
                         .eq(GiftRule::getEnabled, 1)
+                        .and(w -> w.eq(GiftRule::getLevelId, 0L).or().eq(GiftRule::getLevelId, lv))
                         .orderByAsc(GiftRule::getThresholdQty))
                 .stream()
                 .filter(rule -> rule.getStartTime() == null || !now.isBefore(rule.getStartTime()))
@@ -209,17 +215,16 @@ public class GiftRuleService {
                 .toList();
     }
 
-    private GiftRule activeRule(Long productId, LocalDateTime now) {
-        List<GiftRule> rules = activeRules(productId, now);
+    private GiftRule activeRule(Long productId, Long levelId, LocalDateTime now) {
+        List<GiftRule> rules = activeRules(productId, levelId, now);
         return rules.isEmpty() ? null : rules.get(0);
     }
 
+    /**
+     * 所有已开通档位都可参与买赠，具体能拿什么由该档位配置的规则决定。
+     */
     private boolean giftAllowed(Store store) {
-        if (store.getLevelId() == null || store.getLevelId() == 0) {
-            return false;
-        }
-        StoreLevel level = storeLevelMapper.selectById(store.getLevelId());
-        return level != null && Objects.equals(level.getHasGift(), 1);
+        return store.getLevelId() != null && store.getLevelId() > 0;
     }
 
     private GiftRule requireRule(Long id) {
@@ -234,7 +239,10 @@ public class GiftRuleService {
         ProductSku giftSku = productSkuMapper.selectById(rule.getGiftSkuId());
         ProductSku thresholdSku = rule.getThresholdSkuId() == null || rule.getThresholdSkuId() == 0
                 ? null : productSkuMapper.selectById(rule.getThresholdSkuId());
-        return new GiftRuleVO(rule.getId(), rule.getProductId(),
+        Long lvId = rule.getLevelId() == null ? 0L : rule.getLevelId();
+        StoreLevel lv = lvId > 0 ? storeLevelMapper.selectById(lvId) : null;
+        return new GiftRuleVO(rule.getId(), rule.getProductId(), lvId,
+                lv == null ? "通用" : lv.getName(),
                 rule.getThresholdSkuId() == null ? 0L : rule.getThresholdSkuId(),
                 thresholdSku == null ? StrUtil.EMPTY : thresholdSku.getSpecName(),
                 rule.getGiftSkuId(),

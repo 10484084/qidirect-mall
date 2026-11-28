@@ -57,7 +57,7 @@ router.afterEach((to) => {
     cart: '购物车',
     orders: '我的订单',
     mine: '我的',
-    purchase: '加盟 / 预存',
+    purchase: '开通 / 预存',
     wallet: '我的钱包',
     withdraw: '提现',
     team: '我的团队',

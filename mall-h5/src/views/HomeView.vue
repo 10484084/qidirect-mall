@@ -7,7 +7,7 @@
           <div class="store-name">{{ profile ? (profile.name || profile.nickname || profile.phone) : '门店用户' }}</div>
           <div class="level-line">
             <span v-if="user.joined">{{ profile.levelName || `档位 ${profile.levelId}` }}</span>
-            <span v-else>尚未加盟</span>
+            <span v-else>尚未开通</span>
             <span v-if="profile && profile.authStatus !== 1" class="badge">未实名</span>
           </div>
         </div>
@@ -37,7 +37,7 @@
         <template v-if="profile.authStatus !== 1">
           <div>
             <div class="action-title">完成实名认证</div>
-            <div class="muted small">实名后方可加盟与下单</div>
+            <div class="muted small">实名后方可开通与下单</div>
           </div>
           <van-button size="small" type="primary" round @click="$router.push('/auth-verify')">去实名</van-button>
         </template>

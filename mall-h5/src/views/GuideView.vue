@@ -16,7 +16,7 @@
       <van-button plain block round class="mt-12" @click="continueBrowse">仅浏览（无法支付）</van-button>
     </div>
 
-    <p class="tips">提示：在电脑浏览器中可浏览加盟与商品信息，但支付环节会被拦截。</p>
+    <p class="tips">提示：在电脑浏览器中可浏览开通与商品信息，但支付环节会被拦截。</p>
   </div>
 </template>
 

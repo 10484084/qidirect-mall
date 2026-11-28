@@ -159,7 +159,7 @@ defineExpose({ open });
             {{ profile.parentName || '-' }}（{{ profile.parentId || '无' }}）
           </el-descriptions-item>
           <el-descriptions-item label="档位">
-            {{ profile.levelName || '未加盟' }}
+            {{ profile.levelName || '未开通' }}
             <span v-if="profile.levelPaidAmount" class="text-muted">
               / 实付 ¥{{ fen2yuan(profile.levelPaidAmount) }}
             </span>
@@ -241,7 +241,7 @@ defineExpose({ open });
             style="width: 180px"
             @change="loadEvents(1)"
           >
-            <el-option label="加盟" value="JOIN" />
+            <el-option label="开通" value="JOIN" />
             <el-option label="预存" value="RECHARGE" />
             <el-option label="订单" value="ORDER" />
             <el-option label="提成" value="COMMISSION" />

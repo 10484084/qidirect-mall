@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 档位。加盟费单位为分，档位高低按 sort 比较。
+ * 档位。开通费单位为分，档位高低按 sort 比较。
  */
 @Data
 @TableName("store_level")

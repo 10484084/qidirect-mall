@@ -1,7 +1,7 @@
 package com.qidirect.mall.domain.vo;
 
 /**
- * 后台工作台概览：今日/本月加盟、预存、订货数据与待处理事项。
+ * 后台工作台概览：今日/本月开通、预存、订货数据与待处理事项。
  */
 public record AdminDashboardVO(
         long todayJoinCount,

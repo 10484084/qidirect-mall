@@ -62,7 +62,7 @@ public class StoreProfileService {
                 store.getParentId(),
                 parent == null ? "" : StrUtil.blankToDefault(parent.getName(), parent.getNickname()),
                 store.getLevelId(),
-                level == null ? "未加盟" : level.getName(),
+                level == null ? "未开通" : level.getName(),
                 store.getLevelPaidAmount(),
                 store.getJoinTime(),
                 store.getUpgradeDeadline(),

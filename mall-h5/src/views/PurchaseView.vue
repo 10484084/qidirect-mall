@@ -46,7 +46,7 @@
       <div class="card agreement-card">
         <van-checkbox v-model="agreed" icon-size="16">
           我已阅读并同意
-          <a @click.stop="showAgreement">《{{ agreement.title || '加盟协议' }}》</a>
+          <a @click.stop="showAgreement">《{{ agreement.title || '开通协议' }}》</a>
         </van-checkbox>
         <div v-if="agreement.version" class="muted small mt-8">协议版本：{{ agreement.version }}</div>
       </div>

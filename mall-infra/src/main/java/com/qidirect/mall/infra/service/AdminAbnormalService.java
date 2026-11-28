@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 
 /**
  * 异常单处置：补开通 / 原路退款 / 仅关闭。
- * 异常单指「已收款但业务前置校验失败」的加盟、升级、预存单（status=3）。
+ * 异常单指「已收款但业务前置校验失败」的开通、升级、预存单（status=3）。
  */
 @Slf4j
 @Service
@@ -131,7 +131,7 @@ public class AdminAbnormalService {
      */
     @Transactional
     /**
-     * 合并展示：加盟/升级异常单与预存异常单按创建时间倒序合并后内存分页。
+     * 合并展示：开通/升级异常单与预存异常单按创建时间倒序合并后内存分页。
      * 异常单为人工处置的低频数据，总量有限，不做跨表 union。
      */
     private PageResult<AbnormalOrderVO> pageAll(long current, long pageSize) {
@@ -208,7 +208,7 @@ public class AdminAbnormalService {
     }
 
     /**
-     * 补开通加盟/升级单：门店当前档位不低于目标时只入预存，否则完整补做档位变更、
+     * 补做开通/升级单：门店当前档位不低于目标时只入预存，否则完整补做档位变更、
      * 预存入账、提成与业绩。已结算业绩月份不允许补开通。
      */
     private void reopenJoin(JoinOrder order, Store store, Payment payment,

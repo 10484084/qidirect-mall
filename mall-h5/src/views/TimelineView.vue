@@ -4,7 +4,7 @@
 
     <van-tabs v-model:active="type" sticky @change="reload">
       <van-tab title="全部" name="" />
-      <van-tab title="加盟" name="join" />
+      <van-tab title="开通" name="join" />
       <van-tab title="预存" name="recharge" />
       <van-tab title="订货" name="order" />
       <van-tab title="提成" name="commission" />

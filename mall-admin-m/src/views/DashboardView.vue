@@ -32,8 +32,8 @@ const groups = [
   {
     title: '今日数据',
     items: [
-      { key: 'todayJoinCount', label: '加盟门店', unit: '家' },
-      { key: 'todayJoinAmount', label: '加盟金额', money: true },
+      { key: 'todayJoinCount', label: '开通门店', unit: '家' },
+      { key: 'todayJoinAmount', label: '开通金额', money: true },
       { key: 'todayRechargeCount', label: '预存笔数', unit: '笔' },
       { key: 'todayRechargeAmount', label: '预存金额', money: true },
       { key: 'todayOrderCount', label: '订单数', unit: '笔' },
@@ -43,8 +43,8 @@ const groups = [
   {
     title: '本月数据',
     items: [
-      { key: 'monthJoinCount', label: '加盟门店', unit: '家' },
-      { key: 'monthJoinAmount', label: '加盟金额', money: true },
+      { key: 'monthJoinCount', label: '开通门店', unit: '家' },
+      { key: 'monthJoinAmount', label: '开通金额', money: true },
       { key: 'monthRechargeCount', label: '预存笔数', unit: '笔' },
       { key: 'monthRechargeAmount', label: '预存金额', money: true },
       { key: 'monthOrderCount', label: '订单数', unit: '笔' },

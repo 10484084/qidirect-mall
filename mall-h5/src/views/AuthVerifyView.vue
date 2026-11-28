@@ -20,7 +20,7 @@
       <template v-else>
         <div class="card">
           <div class="card-title">填写实名信息</div>
-          <p class="muted small tip">请填写本人真实姓名与身份证号，用于加盟、下单与提现。</p>
+          <p class="muted small tip">请填写本人真实姓名与身份证号，用于开通、下单与提现。</p>
           <van-form @submit="onSubmit">
             <van-field
               v-model="form.realName"

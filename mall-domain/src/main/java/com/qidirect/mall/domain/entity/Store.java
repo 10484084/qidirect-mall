@@ -26,7 +26,7 @@ public class Store {
 
     private String path;
 
-    /** 档位，0=未加盟 */
+    /** 档位，0=未开通 */
     private Long levelId;
 
     /** 当前等级已付对价（分），等级变更置值不累加 */

@@ -441,7 +441,7 @@ public class PerformanceService {
                                 .orderByDesc(PerformanceBonus::getId))
                 .stream().map(this::toBonusVO).toList();
         return new StorePerformanceVO(yearMonth.toString(),
-                level == null ? "未加盟" : level.getName(),
+                level == null ? "未开通" : level.getName(),
                 level != null && Objects.equals(level.getHasBonus(), 1),
                 teamPerformance, ownPerformance,
                 current == null ? null : current.getMinAmount(),

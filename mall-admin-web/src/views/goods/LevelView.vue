@@ -117,7 +117,7 @@ onMounted(load);
       type="info"
       :closable="false"
       show-icon
-      title="专属权益（长期提成 / 团队奖励 / 买赠权益）仅最高 sort 档位可开启；调整排序后请确认权益开关。"
+      title="长期提成与团队奖励仅最高档位可开启；买赠权益各档位均可开启，具体规则在商品档案里按档位配置。"
     />
 
     <el-card shadow="never">

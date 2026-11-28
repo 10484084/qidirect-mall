@@ -131,13 +131,16 @@ public class OrderService {
             totalAmount += levelPrice.getPrice() * cartItem.getQty();
             productBottles.merge(product.getId(), sku.getFactor() * cartItem.getQty(), Integer::sum);
         }
-        List<GiftRewardVO> gifts = giftRuleService.calculateGifts(store, productBottles);
-
         long depositAmount = 0L;
         if (request.depositEnabled() && totalAmount > 0) {
             depositAmount = Math.min(totalAmount, walletService.getWallet(storeId).depositBalance());
         }
         long onlineAmount = totalAmount - depositAmount;
+        // 买赠只对使用了预存余额的订单生效：余额不足时允许「预存 + 微信」组合支付并照常享受，
+        // 余额为 0 只能全额在线支付，此时不参与买赠。
+        List<GiftRewardVO> gifts = depositAmount > 0
+                ? giftRuleService.calculateGifts(store, productBottles)
+                : List.of();
         LocalDateTime now = LocalDateTime.now();
 
         OrderInfo order = new OrderInfo();

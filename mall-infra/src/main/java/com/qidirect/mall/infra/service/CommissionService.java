@@ -41,8 +41,8 @@ import java.util.Objects;
 
 /**
  * 两级提成：按厂家实收金额计算，一级 / 二级比例后台可配，金额向下取整到分。
- * 首次加盟任意档位上级均可拿；补差、预存、线下收款、订货在线支付仅长期提成档位（5 万档）受益人可拿；
- * 未加盟门店与厂家不参与；用预存余额订货不产生提成；受益人冻结照常入账。
+ * 首次开通任意档位上级均可拿；补差、预存、线下收款、订货在线支付仅长期提成档位（5 万档）受益人可拿；
+ * 未开通门店与厂家不参与；用预存余额订货不产生提成；受益人冻结照常入账。
  */
 @Slf4j
 @Service
@@ -120,7 +120,7 @@ public class CommissionService {
         StoreLevel level = store.getLevelId() == null || store.getLevelId() == 0
                 ? null : storeLevelMapper.selectById(store.getLevelId());
         return new CommissionStoreDetailVO(storeId, store.getName(),
-                level == null ? "未加盟" : level.getName(), total, level1, level2, (long) records.size());
+                level == null ? "未开通" : level.getName(), total, level1, level2, (long) records.size());
     }
 
     public PageResult<CommissionRecordVO> storeRecords(Long storeId, long page, long size) {
@@ -226,7 +226,7 @@ public class CommissionService {
 
     private String titleOf(CommissionBizType bizType) {
         return switch (bizType) {
-            case JOIN -> "加盟提成";
+            case JOIN -> "开通提成";
             case UPGRADE -> "补差提成";
             case RECHARGE -> "预存提成";
             case OFFLINE -> "线下收款提成";

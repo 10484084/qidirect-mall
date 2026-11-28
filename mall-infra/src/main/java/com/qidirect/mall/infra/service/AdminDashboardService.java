@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 后台工作台统计：今日/本月加盟、预存、订货与待处理事项。
+ * 后台工作台统计：今日/本月开通、预存、订货与待处理事项。
  */
 @Service
 @RequiredArgsConstructor
@@ -77,7 +77,7 @@ public class AdminDashboardService {
     }
 
     /**
-     * 加盟单统计：仅首次加盟（type=1）且已支付。
+     * 开通单统计：仅首次开通（type=1）且已支付。
      */
     private long[] joinStat(LocalDateTime start) {
         LambdaQueryWrapper<JoinOrder> countQuery = Wrappers.<JoinOrder>lambdaQuery()

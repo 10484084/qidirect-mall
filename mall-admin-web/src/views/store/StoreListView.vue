@@ -136,7 +136,7 @@ onMounted(async () => {
         </el-table-column>
         <el-table-column label="档位" min-width="130">
           <template #default="{ row }">
-            <div>{{ row.levelName || '未加盟' }}</div>
+            <div>{{ row.levelName || '未开通' }}</div>
             <div v-if="row.levelPaidAmount" class="text-muted">¥{{ fen2yuan(row.levelPaidAmount) }}</div>
           </template>
         </el-table-column>

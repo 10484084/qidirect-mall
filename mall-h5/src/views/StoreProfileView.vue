@@ -13,7 +13,7 @@
         <div class="kv"><span class="muted">当前档位</span><span>{{ profile.levelId > 0 ? profile.levelName : '未储值' }}</span></div>
         <div class="kv"><span class="muted">上级门店</span><span>{{ profile.parentName || '-' }}</span></div>
         <div class="kv"><span class="muted">邀请码</span><span>{{ profile.inviteCode || '-' }}</span></div>
-        <div class="kv"><span class="muted">加盟时间</span><span>{{ formatTime(profile.joinTime) || '-' }}</span></div>
+        <div class="kv"><span class="muted">开通时间</span><span>{{ formatTime(profile.joinTime) || '-' }}</span></div>
         <div class="kv"><span class="muted">升级截止</span><span>{{ formatTime(profile.upgradeDeadline) || '-' }}</span></div>
         <div class="kv"><span class="muted">门店状态</span>
           <van-tag :type="profile.status === 1 ? 'success' : 'danger'">{{ profile.status === 1 ? '正常' : '已冻结' }}</van-tag>

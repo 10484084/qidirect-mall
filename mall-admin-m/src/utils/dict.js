@@ -38,7 +38,7 @@ export const OFFLINE_METHOD_OPTIONS = Object.entries(OFFLINE_METHOD).map(([value
 }));
 
 export const BIZ_TYPE = {
-  JOIN: '加盟',
+  JOIN: '开通',
   RECHARGE: '预存',
   ORDER: '商品订单'
 };
@@ -112,7 +112,7 @@ export const SHIP_TYPE_OPTIONS = Object.entries(SHIP_TYPE).map(([value, label]) 
 
 export const NOTICE_TARGET = { 1: '全部门店', 2: '指定门店' };
 
-export const ABNORMAL_TYPE = { JOIN: '加盟/升级异常单', RECHARGE: '预存异常单' };
+export const ABNORMAL_TYPE = { JOIN: '开通/升级异常单', RECHARGE: '预存异常单' };
 export const ABNORMAL_TYPE_OPTIONS = Object.entries(ABNORMAL_TYPE).map(([value, label]) => ({ value, label }));
 export const ABNORMAL_RESOLVE = { REOPEN: '重新打开', REFUND: '退款', CLOSE: '关闭' };
 export const ABNORMAL_RESOLVE_OPTIONS = Object.entries(ABNORMAL_RESOLVE).map(([value, label]) => ({ value, label }));

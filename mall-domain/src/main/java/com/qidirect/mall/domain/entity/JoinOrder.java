@@ -10,7 +10,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 加盟/补差单。同门店同类型最多一张未结单（待支付/异常），由 active_mark 唯一约束保证。
+ * 开通/补差单。同门店同类型最多一张未结单（待支付/异常），由 active_mark 唯一约束保证。
  */
 @Data
 @TableName("join_order")
@@ -25,7 +25,7 @@ public class JoinOrder {
 
     private Long levelId;
 
-    /** 1 新加盟，2 补差升级 */
+    /** 1 新开通，2 补差升级 */
     private Integer type;
 
     private Long beforeLevelId;
